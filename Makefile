@@ -13,7 +13,7 @@ pre-commit:
 # Run mypy type checking.
 # Not included in standard pre-commit because it takes a bit more time.
 type-check:
-	poetry run mypy cookiecutter_niicck_django
+	poetry run mypy django_flex_reviews
 
 # Create .env from template if .env doesn't already exist
 env-file:

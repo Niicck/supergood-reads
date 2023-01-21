@@ -21,20 +21,3 @@ repos:
   hooks:
     - id: flake8
       args: ["--config=setup.cfg"]
-
-- repo: local
-  hooks:
-    - id: migrations-check
-      language: system
-      name: Check for uncreated migrations.
-      entry: sh ./utils/pre_commit/migrations_check.sh
-      files: "models\\.py$"
-      stages: [commit]
-
-- repo: local
-  hooks:
-    - id: build-requirements-txt
-      language: system
-      name: Build requirements.txt from pyproject.toml
-      entry: sh ./utils/pre_commit/build_requirements_txt.sh
-      stages: [commit]
