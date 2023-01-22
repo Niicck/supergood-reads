@@ -1,4 +1,4 @@
-from .reviews.models import Review, UserReviewStrategyDefault
+from .review.models import Review, UserReviewStrategyDefault
 
 __all__ = [
     Review,

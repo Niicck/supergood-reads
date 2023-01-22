@@ -1,62 +1,37 @@
 SHELL := /bin/bash
 -include .env
 
-.PHONY: install pre-commit type-check env-file build up shell shell_plus db_shell superuser
-
+.PHONY: install
 install:
 	poetry
 
 # Run pre-commit without commiting.
+.PHONY: pre-commit
 pre-commit:
 	pre-commit
 
 # Run mypy type checking.
 # Not included in standard pre-commit because it takes a bit more time.
+.PHONY: type-check
 type-check:
 	poetry run mypy django_flex_reviews
 
-# Create .env from template if .env doesn't already exist
-env-file:
-	cp -n ./utils/.env-sample .env
-
-# Build your django app docker container
-build:
-	sh ./utils/build_requirements_txt.sh
-	docker compose \
-		-f ./docker/docker-compose.yml \
-		-f ./docker/docker-compose.local.yml \
-		--env-file .env \
-		build
-
 # Run your django app docker container
+.PHONY: up
 up:
-	docker compose \
-		-f ./docker/docker-compose.yml \
-		-f ./docker/docker-compose.local.yml \
-		--env-file .env \
-		up
+	poetry run python manage.py runserver
 
-# Run a django app docker container without runserver
-troubleshoot:
-	docker compose \
-		-f ./docker/docker-compose.yml \
-		-f ./docker/docker-compose.local.yml \
-		-f ./docker/docker-compose.troubleshooting.yml \
-		--env-file .env \
-		up
-
-# Enter into a bash shell inside your running django app docker container
+# Start django python shell
+.PHONY: shell
 shell:
-	docker exec -it docker-app-1 /bin/bash
+	poetry run python manage.py shell
 
-# Enter into the django python shell inside your running django app docker container
-shell_plus:
-	docker exec -it docker-app-1 python manage.py shell_plus
-
-# Enter into the postgres db shell inside your running postgres container
-db-shell:
-	docker exec -it docker-db-1 psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -w
+# Start debugable python shell.
+.PHONY: debug-shell
+debug-shell:
+	poetry run python -m debugpy --listen localhost:5678 manage.py shell
 
 # Create a superuser for your django app
+.PHONY: superuser
 superuser:
-	docker exec -it docker-app-1 python manage.py createsuperuser
+	poetry run python manage.py createsuperuser
