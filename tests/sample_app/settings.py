@@ -14,14 +14,14 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-PROJECT_DIR = BASE_DIR / "tests" / "sample_app"
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = BASE_DIR
 
 SECRET_KEY = "dummy"
 
 DEBUG = True
 
-ROOT_URLCONF = "tests.sameple_app.urls"
+ROOT_URLCONF = "tests.sample_app.urls"
 
 TEMPLATES = [
     {
@@ -40,6 +40,9 @@ TEMPLATES = [
     },
 ]
 
+STATIC_URL = "static/"
+MEDIA_URL = "media/"
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -51,12 +54,12 @@ USE_TZ = True
 DATABASES = {
     "default": {
         "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("DATABASE_NAME", ":memory:"),
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
         "USER": os.environ.get("DATABASE_USER", ""),
         "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
         "HOST": os.environ.get("DATABASE_HOST", ""),
         "PORT": os.environ.get("DATABASE_PORT", ""),
-        "TEST": {"NAME": os.environ.get("DATABASE_NAME", "")},
+        "TEST": {"NAME": os.environ.get("DATABASE_NAME", ":memory:")},
     }
 }
 
@@ -68,7 +71,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.postgres",
     # Local
     "django_flex_reviews",
 ]

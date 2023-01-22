@@ -1,6 +1,11 @@
 from django.apps import AppConfig
 
+from .default_settings import apply_default_settings
+
 
 class DjangoFlexReviewsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'django_flex_reviews'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "django_flex_reviews"
+
+    def ready(self):
+        apply_default_settings()
