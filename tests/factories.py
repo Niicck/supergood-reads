@@ -67,11 +67,13 @@ class ReviewFactory(factory.django.DjangoModelFactory):
         # fields to be blank.
         if completed_at is None:
             return kwargs
+        assert completed_at is not None
 
         # If "completed_at" is unset and the completed_at fields are also unset, then
         # fill in faker date values for them.
         if unset_completed_at and unset_completed_at_fields:
             completed_at = fake.date_time()
+        assert type(completed_at) is datetime
 
         kwargs["completed_at_day"] = completed_at.day
         kwargs["completed_at_month"] = completed_at.month
