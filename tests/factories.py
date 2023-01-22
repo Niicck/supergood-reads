@@ -45,6 +45,8 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     """
 
     user = factory.SubFactory(UserFactory)
+    created_at = factory.LazyFunction(datetime.now)
+    updated_at = factory.LazyFunction(datetime.now)
 
     @classmethod
     def _adjust_completed_at(cls, **kwargs):

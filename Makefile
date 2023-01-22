@@ -35,3 +35,13 @@ debug-shell:
 .PHONY: superuser
 superuser:
 	poetry run python manage.py createsuperuser
+
+# Run pytest
+.PHONY: pytest
+pytest:
+	poetry run pytest
+
+# Run pytest with debugger
+.PHONY: debug-pytest
+debug-pytest:
+	poetry run python -m debugpy --listen localhost:5678 --wait-for-client -m pytest

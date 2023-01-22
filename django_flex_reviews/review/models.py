@@ -27,16 +27,24 @@ class Review(models.Model):
 
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, related_name="strategy_review_set"
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="strategy_review_set",
+        blank=True,
+        null=True,
     )
-    strategy_object_id = models.PositiveIntegerField()
+    strategy_object_id = models.PositiveIntegerField(blank=True, null=True)
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
     # Allow reviews of any Media type
     media_content_type = models.ForeignKey(
-        ContentType, on_delete=models.PROTECT, related_name="media_review_set"
+        ContentType,
+        on_delete=models.PROTECT,
+        related_name="media_review_set",
+        blank=True,
+        null=True,
     )
-    media_object_id = models.PositiveIntegerField()
+    media_object_id = models.PositiveIntegerField(blank=True, null=True)
     media = GenericForeignKey("media_content_type", "media_object_id")
 
     class Meta:
@@ -104,7 +112,7 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         now = timezone.now()
-        if not self.pk:
+        if self._state.adding:
             self.created_at = now
         self.updated_at = now
         super().save(*args, **kwargs)
