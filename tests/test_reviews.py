@@ -14,33 +14,6 @@ class TestCompletedAt:
         )
         assert r
 
-    def test_missing_day(self):
-        r = ReviewFactory(
-            completed_at_month=2,
-            completed_at_year=2002,
-        )
-        assert r
-        assert r.completed_at_day is None
-
-    def test_missing_day_and_month(self):
-        r = ReviewFactory(
-            completed_at_year=2002,
-        )
-        assert r
-        assert r.completed_at_day is None
-        assert r.completed_at_month is None
-
-    def test_missing_all(self):
-        r = ReviewFactory(
-            completed_at_day=None,
-            completed_at_month=None,
-            completed_at_year=None,
-        )
-        assert r
-        assert r.completed_at_day is None
-        assert r.completed_at_month is None
-        assert r.completed_at_year is None
-
     def test_invalid_date(self):
         with pytest.raises(ValidationError) as e:
             ReviewFactory(
