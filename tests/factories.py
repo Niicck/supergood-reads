@@ -75,7 +75,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
         # fill in faker date values for them.
         if unset_completed_at and unset_completed_at_fields:
             completed_at = fake.date_time()
-        assert type(completed_at) is datetime
+        assert isinstance(completed_at, datetime)
 
         kwargs["completed_at_day"] = completed_at.day
         kwargs["completed_at_month"] = completed_at.month
