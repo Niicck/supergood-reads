@@ -11,7 +11,7 @@ from django_flex_reviews import models
 fake = Faker()
 
 
-class FactoryParam(Enum):
+class FactoryParam(str, Enum):
     UNSET_COMPLETED_AT = "UNSET_COMPLETED_AT"
 
 

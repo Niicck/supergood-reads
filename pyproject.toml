@@ -33,21 +33,15 @@ classifiers = [
 python = ">=3.8.1"
 django = ">=3.2"
 
-# These packages are optional, but will be installed on production.
-[tool.poetry.group.utils.dependencies]
-ipython = "^8.4"
-
-# These packages are useful for development, but will not be installed on production.
 [tool.poetry.group.dev.dependencies]
+ipython = "^8.4"
 debugpy = "^1.6.5"
 
-# These packages are required for testing.
 [tool.poetry.group.test.dependencies]
 pytest = ">=7.2.0"
 pytest-django = "^4.5"
 factory-boy = "^3.2.1"
 
-# These packages are required for linting.
 [tool.poetry.group.lint.dependencies]
 mypy = "^0.991"
 django-stubs = "^1.13.0"
