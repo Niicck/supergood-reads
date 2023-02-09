@@ -1,3 +1,4 @@
+"""Nox sessions."""
 import tempfile
 
 import nox
@@ -53,3 +54,15 @@ def mypy(session):
     install_poetry_groups(session, "mypy")
     session.run("mypy", *args)
     session.run("mypy", "noxfile.py")
+
+
+@nox.session(python=PYTHON_VERSIONS[0])
+def safety(session) -> None:
+    """Scan dependencies for insecure packages."""
+    install_poetry_groups(session, "safety")
+    session.run(
+        "bash",
+        "-c",
+        "poetry export --format=requirements.txt | safety check --full-report --stdin",
+        external=True,
+    )

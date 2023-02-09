@@ -5,16 +5,20 @@ SHELL := /bin/bash
 install:
 	poetry
 
-# Run pre-commit without commiting.
-.PHONY: pre-commit
-pre-commit:
-	nox -s pre-commit
+# Lint all files using pre-commit
+.PHONY: lint
+lint:
+	nox -s lint
+
+# Scan dependencies for insecure packages
+.PHONY safety
+safety:
+	nox -s safety
 
 # Run mypy type checking.
-# Not included in standard pre-commit because it takes a bit more time.
-.PHONY: type-check
-type-check:
-	poetry run mypy django_flex_reviews
+.PHONY: mypy
+mypy:
+	nox -s mypy-3.11
 
 # Run your django app docker container
 .PHONY: up
