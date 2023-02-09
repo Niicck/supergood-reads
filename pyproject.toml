@@ -39,6 +39,9 @@ pytest = "^7.2.0"
 pytest-django = "^4.5"
 factory-boy = "^3.2.1"
 
+[tool.poetry.group.coverage.dependencies]
+coverage = "^7.1.0"
+
 [tool.poetry.group.mypy.dependencies]
 mypy = "^1.0.0"
 django-stubs = "^1.13.0"

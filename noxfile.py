@@ -1,5 +1,6 @@
 """Nox sessions."""
 import tempfile
+from pathlib import Path
 
 import nox
 
@@ -42,9 +43,13 @@ def lint(session):
 def test(session, django_version):
     """Run the pytest suite."""
     args = session.posargs
-    install_poetry_groups(session, "main", "test")
+    install_poetry_groups(session, "main", "test", "coverage")
     session.install(f"django=={django_version}")
-    session.run("pytest", *args)
+    try:
+        session.run("coverage", "run", "--parallel", "-m", "pytest", *args)
+    finally:
+        if session.interactive:
+            session.notify("coverage", posargs=[])
 
 
 @nox.session(python=PYTHON_VERSIONS)
@@ -66,3 +71,21 @@ def safety(session) -> None:
         "poetry export --format=requirements.txt | safety check --full-report --stdin",
         external=True,
     )
+
+
+@nox.session(python=PYTHON_VERSIONS[0])
+def coverage(session) -> None:
+    """Produce the coverage report.
+
+    Combines the results from all test runs from all versions of python. This is because
+    some logic branches may only apply to certain versions of python - we want to avoid
+    false negative coverage failures when those branches aren't covered by pytest runs
+    from other python versions.
+    """
+    args = session.posargs or ["report"]
+    install_poetry_groups(session, "coverage")
+
+    if not session.posargs and any(Path().glob(".coverage.*")):
+        session.run("coverage", "combine")
+
+    session.run("coverage", *args)
