@@ -1,24 +1,55 @@
+import tempfile
+
 import nox
 
-from tools.poetry_install_helper import PoetryInstallHelper
+PYTHON_VERSIONS = ["3.11", "3.10", "3.9", "3.8"]
+DJANGO_VERSIONS = ["4.1", "4.0", "3.2"]
 
-PYTHON_VERSIONS = [
-    "3.8",
-    "3.9",
-    "3.10",
-    "3.11",
-]
-DJANGO_VERSIONS = [
-    "3.2",
-    "4.0",
-    "4.1",
-]
+
+def install_poetry_groups(session, *groups: str):
+    """Install dependencies from poetry groups.
+
+    Using this as s workaround until my PR is merged in:
+    https://github.com/cjolowicz/nox-poetry/pull/1080
+    """
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            *[f"--only={group}" for group in groups],
+            "--format=requirements.txt",
+            "--without-hashes",
+            f"--output={requirements.name}",
+            external=True,
+        )
+        session.install("-r", requirements.name)
+
+
+@nox.session(python=PYTHON_VERSIONS[0])
+def lint(session):
+    """Lint using pre-commit."""
+    args = session.posargs or [
+        "run",
+        "--all-files",
+        "--hook-stage=manual",
+    ]
+    session.run("pre-commit", *args, external=True)
 
 
 @nox.session(python=PYTHON_VERSIONS)
 @nox.parametrize("django_version", DJANGO_VERSIONS)
-def tests(session, django_version):
+def test(session, django_version):
+    """Run the pytest suite."""
     args = session.posargs
+    install_poetry_groups(session, "main", "test")
     session.install(f"django=={django_version}")
-    PoetryInstallHelper(session, extra_groups="test", blocklist="django")
     session.run("pytest", *args)
+
+
+@nox.session(python=PYTHON_VERSIONS)
+def mypy(session):
+    """Type-check using mypy."""
+    args = session.posargs or ["django_flex_reviews", "tests"]
+    install_poetry_groups(session, "mypy")
+    session.run("mypy", *args)
+    session.run("mypy", "noxfile.py")

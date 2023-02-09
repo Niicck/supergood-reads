@@ -8,7 +8,7 @@ install:
 # Run pre-commit without commiting.
 .PHONY: pre-commit
 pre-commit:
-	pre-commit
+	nox -s pre-commit
 
 # Run mypy type checking.
 # Not included in standard pre-commit because it takes a bit more time.
