@@ -6,3 +6,7 @@ class AbstractStrategy(models.Model):
 
     class Meta:
         abstract = True
+
+    @property
+    def display_rating(self) -> str:
+        return ""

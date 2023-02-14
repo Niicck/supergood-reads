@@ -60,7 +60,7 @@ DATABASES = {
         "HOST": os.environ.get("DATABASE_HOST", ""),
         "PORT": os.environ.get("DATABASE_PORT", ""),
         "TEST": {"NAME": os.environ.get("DATABASE_NAME", ":memory:")},
-    }
+    },
 }
 
 INSTALLED_APPS = [
@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Local
     "django_flex_reviews",
+    "tests.sample_app",
 ]
 
 MIDDLEWARE = [

@@ -6,7 +6,7 @@ from django.conf import settings
 
 def apply_default_settings() -> None:
     """Apply default setting values on app start up."""
-    from django_flex_reviews.media_types.models import AbstractMedia
+    from django_flex_reviews.media_types.models import AbstractMediaType
     from django_flex_reviews.strategies.base.models import AbstractStrategy
 
     class DefaultSettings(Enum):
@@ -34,7 +34,7 @@ def apply_default_settings() -> None:
                 MyNewMediaType
             )
         """
-        DJANGO_FLEX_REVIEW_MEDIA_CHOICES: list[Type[AbstractMedia]] = []
+        DJANGO_FLEX_REVIEW_MEDIA_CHOICES: list[Type[AbstractMediaType]] = []
 
         """
         This is the default strategy that will applied to a new Review.

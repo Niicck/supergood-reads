@@ -75,6 +75,27 @@ class Review(models.Model):
     def __str__(self) -> str:
         return str(self.id)
 
+    @property
+    def completed_at(self) -> str:
+        """Generate human-readable completed_at datestring."""
+        if not self.completed_at_year:
+            return ""
+        elif not self.completed_at_month:
+            return self.completed_at_year
+        elif not self.completed_day:
+            return datetime.strptime(
+                self.completed_at_month + " " + self.completed_at_year, "%Y"
+            ).strftime("%b %Y")
+        else:
+            return datetime.strptime(
+                self.completed_at_day
+                + " "
+                + self.completed_at_month
+                + " "
+                + self.completed_at_year,
+                "%d %m %Y",
+            ).strftime("%d %b %Y")
+
     def validate_completed_at(self) -> None:
         """
         completed_at allows for approximate dates.

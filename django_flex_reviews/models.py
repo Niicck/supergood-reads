@@ -1,4 +1,4 @@
-from .media_types.models import AbstractMedia
+from .media_types.models import AbstractMediaType
 from .reviews.models import Review, UserReviewStrategyDefault
 from .strategies.models import (
     AbstractStrategy,
@@ -12,7 +12,7 @@ from .strategies.models import (
 __all__ = [
     "Review",
     "UserReviewStrategyDefault",
-    "AbstractMedia",
+    "AbstractMediaType",
     "AbstractStrategy",
     "EbertStrategy",
     "GoodreadsStrategy",
