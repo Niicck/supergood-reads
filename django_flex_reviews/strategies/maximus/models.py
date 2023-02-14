@@ -1,11 +1,10 @@
+"""Replicate Joaquin Phoenix's scoring strategy from Gladiator (2000)."""
 from django.db import models
-from strategies.base.models import AbstractStategyBase
+
+from django_flex_reviews.strategies.base.models import AbstractStrategy
 
 
-class MaximusStrategy(AbstractStategyBase):
-    """
-    The Maximus Strategy is a simple yes/no boolean strategy.
-    """
+class MaximusStrategy(AbstractStrategy):
+    """The Maximus Strategy is a simple yes/no boolean strategy."""
 
-    text = models.TextField(blank=True, null=True)
     recommended = models.BooleanField(null=False)

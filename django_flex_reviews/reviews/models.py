@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -11,6 +12,13 @@ from django.utils import timezone
 
 
 class Review(models.Model):
+    """Entry Class for generating a User Review.
+
+    Each Review can connect to:
+        - 1 Media instance
+        - 1 Strategy instance
+    """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
@@ -24,6 +32,7 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(12)], blank=True, null=True
     )
     completed_at_year = models.IntegerField(blank=True, null=True)
+    text = models.TextField(default="")
 
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
@@ -63,16 +72,18 @@ class Review(models.Model):
             models.Index(fields=["media_content_type", "media_object_id"]),
         ]
 
-    """
-    completed_at allows for approximate dates.
-    Users are allowed to input:
-        - a day, a month, and a year
-        - just a month and a year
-        - just a year
-    Any other permutation is not allowed.
-    """
+    def __str__(self) -> str:
+        return str(self.id)
 
-    def validate_completed_at(self):
+    def validate_completed_at(self) -> None:
+        """
+        completed_at allows for approximate dates.
+        Users are allowed to input:
+            - a day, a month, and a year
+            - just a month and a year
+            - just a year
+        Any other permutation is not allowed.
+        """
         day = self.completed_at_day
         month = self.completed_at_month
         year = self.completed_at_year
@@ -105,11 +116,11 @@ class Review(models.Model):
                 }
             )
 
-    def clean(self):
+    def clean(self) -> None:
         super().clean()
         self.validate_completed_at()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()
         now = timezone.now()
         if self._state.adding:
@@ -119,6 +130,8 @@ class Review(models.Model):
 
 
 class UserReviewStrategyDefault(models.Model):
+    """Assign per-User default strategies for each Media type."""
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     media = models.ForeignKey(
         ContentType,
@@ -130,3 +143,6 @@ class UserReviewStrategyDefault(models.Model):
         on_delete=models.CASCADE,
         related_name="strategy_user_default_set",
     )
+
+    def __str__(self) -> str:
+        return str(self.id)

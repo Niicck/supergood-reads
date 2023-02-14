@@ -1,20 +1,21 @@
 import pytest
 from django.core.exceptions import ValidationError
 
+from django_flex_reviews.reviews.models import Review
 from tests.factories import ReviewFactory
 
 
 @pytest.mark.django_db
 class TestCompletedAt:
-    def test_valid_date(self):
-        r = ReviewFactory(
+    def test_valid_date(self) -> None:
+        r: Review = ReviewFactory(
             completed_at_day=2,
             completed_at_month=2,
             completed_at_year=2002,
         )
         assert r
 
-    def test_invalid_date(self):
+    def test_invalid_date(self) -> None:
         with pytest.raises(ValidationError) as e:
             ReviewFactory(
                 completed_at_day=31,
@@ -23,7 +24,7 @@ class TestCompletedAt:
             )
         assert "{'completed_at_day': ['Invalid date.']}" in str(e)
 
-    def test_missing_month_and_year(self):
+    def test_missing_month_and_year(self) -> None:
         with pytest.raises(ValidationError) as e:
             ReviewFactory(
                 completed_at_day=2,
@@ -33,7 +34,7 @@ class TestCompletedAt:
             in str(e)
         )
 
-    def test_missing_year(self):
+    def test_missing_year(self) -> None:
         with pytest.raises(ValidationError) as e:
             ReviewFactory(
                 completed_at_day=31,
@@ -44,7 +45,7 @@ class TestCompletedAt:
             e
         )
 
-    def test_missing_day_and_year(self):
+    def test_missing_day_and_year(self) -> None:
         with pytest.raises(ValidationError) as e:
             ReviewFactory(
                 completed_at_month=2,

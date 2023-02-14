@@ -3,10 +3,11 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from django_flex_reviews.strategies.base.models import BaseStategy
+from django_flex_reviews.strategies.base.models import AbstractStrategy
 
 
-def ebert_star_validator(value):
+def ebert_star_validator(value: Decimal) -> None:
+    """Ensure that star rating is valid."""
     if not value:
         return
     elif value < 0:
@@ -17,16 +18,17 @@ def ebert_star_validator(value):
         raise ValidationError("Star rating must be a multiple of 0.5")
 
 
-class EbertStrategy(BaseStategy):
-    """
-    The Ebert Strategy is a star rating from 0 to 4.
+class EbertStrategy(AbstractStrategy):
+    """Replicate Roger Ebert's film scoring strategy.
+
+    Star rating from 0 to 4.
     Null values are allowed.
     There is also a "Great Film" boolean value that supercedes the star rating.
     """
 
-    text = models.TextField(blank=True, null=True)
     stars = models.DecimalField(
         decimal_places=1,
+        max_digits=2,
         null=True,
         validators=[ebert_star_validator],
     )

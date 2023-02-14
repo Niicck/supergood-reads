@@ -5,13 +5,18 @@ SHELL := /bin/bash
 install:
 	poetry
 
+# Start venv
+.PHONY: venv
+venv:
+	source "$(poetry env info --path)/bin/activate"
+
 # Lint all files using pre-commit
 .PHONY: lint
 lint:
 	nox -s lint
 
 # Scan dependencies for insecure packages
-.PHONY safety
+.PHONY: safety
 safety:
 	nox -s safety
 

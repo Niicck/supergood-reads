@@ -1,4 +1,3 @@
-"""Nox sessions."""
 import tempfile
 from pathlib import Path
 
@@ -8,7 +7,7 @@ PYTHON_VERSIONS = ["3.11", "3.10", "3.9", "3.8"]
 DJANGO_VERSIONS = ["4.1", "4.0", "3.2"]
 
 
-def install_poetry_groups(session, *groups: str):
+def install_poetry_groups(session, *groups: str) -> None:
     """Install dependencies from poetry groups.
 
     Using this as s workaround until my PR is merged in:
@@ -28,7 +27,7 @@ def install_poetry_groups(session, *groups: str):
 
 
 @nox.session(python=PYTHON_VERSIONS[0])
-def lint(session):
+def lint(session: nox.Session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or [
         "run",
@@ -40,7 +39,7 @@ def lint(session):
 
 @nox.session(python=PYTHON_VERSIONS)
 @nox.parametrize("django_version", DJANGO_VERSIONS)
-def test(session, django_version):
+def test(session: nox.Session, django_version: str) -> None:
     """Run the pytest suite."""
     args = session.posargs
     install_poetry_groups(session, "main", "test", "coverage")
@@ -53,16 +52,15 @@ def test(session, django_version):
 
 
 @nox.session(python=PYTHON_VERSIONS)
-def mypy(session):
+def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["django_flex_reviews", "tests"]
-    install_poetry_groups(session, "mypy")
+    install_poetry_groups(session, "main", "test", "mypy")
     session.run("mypy", *args)
-    session.run("mypy", "noxfile.py")
 
 
 @nox.session(python=PYTHON_VERSIONS[0])
-def safety(session) -> None:
+def safety(session: nox.Session) -> None:
     """Scan dependencies for insecure packages."""
     install_poetry_groups(session, "safety")
     session.run(
@@ -74,7 +72,7 @@ def safety(session) -> None:
 
 
 @nox.session(python=PYTHON_VERSIONS[0])
-def coverage(session) -> None:
+def coverage(session: nox.Session) -> None:
     """Produce the coverage report.
 
     Combines the results from all test runs from all versions of python. This is because

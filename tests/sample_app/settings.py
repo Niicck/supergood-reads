@@ -17,7 +17,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR
 
-SECRET_KEY = "dummy"
+SECRET_KEY = os.environ.get("SECRET_KEY", "test_dummy")
 
 DEBUG = True
 

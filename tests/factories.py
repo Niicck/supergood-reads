@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import factory
 from django.conf import settings
@@ -12,10 +12,14 @@ fake = Faker()
 
 
 class FactoryParam(str, Enum):
+    """Distinguish an empty "completed_at" field from an explit completed_at=None."""
+
     UNSET_COMPLETED_AT = "UNSET_COMPLETED_AT"
 
 
 class UserFactory(factory.django.DjangoModelFactory):
+    """Fake User for test data generation."""
+
     username = factory.LazyFunction(fake.unique.name)
     email = factory.LazyFunction(fake.unique.email)
     is_staff = False
@@ -25,7 +29,13 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 
 class ReviewFactory(factory.django.DjangoModelFactory):
-    """
+    """Fake Review for test data generation.
+
+    Includes an option to speed up test data generation by accepting a single
+    "completed_at" datetime kwarg rather than forcing developers to enter
+    completed_at_day, completed_at_month, and completed_at_year. Real Users submitting
+    a non-factory Review would have to supply those 3 values.
+
     kwargs:
         completed_at: optional datetime that will be broken out into
           completed_at_day, completed_at_month, completed_at_year.
@@ -49,7 +59,8 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     updated_at = factory.LazyFunction(datetime.now)
 
     @classmethod
-    def _adjust_completed_at(cls, **kwargs):
+    def _adjust_completed_at(cls, **kwargs: Any) -> Any:
+        """Instructions for parsing a factory-only "completed_at" kwarg."""
         completed_at: Union[
             Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
         ] = kwargs.get("completed_at")
