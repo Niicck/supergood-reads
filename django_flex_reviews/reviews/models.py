@@ -42,19 +42,19 @@ class Review(models.Model):
         blank=True,
         null=True,
     )
-    strategy_object_id = models.PositiveIntegerField(blank=True, null=True)
+    strategy_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
     # Allow reviews of any Media type
-    media_content_type = models.ForeignKey(
+    media_type_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.PROTECT,
-        related_name="media_review_set",
+        related_name="media_type_review_set",
         blank=True,
         null=True,
     )
-    media_object_id = models.PositiveIntegerField(blank=True, null=True)
-    media = GenericForeignKey("media_content_type", "media_object_id")
+    media_type_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
+    media_type = GenericForeignKey("media_type_content_type", "media_type_object_id")
 
     class Meta:
         ordering = (
@@ -69,7 +69,7 @@ class Review(models.Model):
                 name="review_completed_at_idx",
             ),
             models.Index(fields=["strategy_content_type", "strategy_object_id"]),
-            models.Index(fields=["media_content_type", "media_object_id"]),
+            models.Index(fields=["media_type_content_type", "media_type_object_id"]),
         ]
 
     def __str__(self) -> str:
@@ -81,18 +81,18 @@ class Review(models.Model):
         if not self.completed_at_year:
             return ""
         elif not self.completed_at_month:
-            return self.completed_at_year
-        elif not self.completed_day:
+            return str(self.completed_at_year)
+        elif not self.completed_at_day:
             return datetime.strptime(
-                self.completed_at_month + " " + self.completed_at_year, "%Y"
+                str(self.completed_at_month) + " " + str(self.completed_at_year), "%Y"
             ).strftime("%b %Y")
         else:
             return datetime.strptime(
-                self.completed_at_day
+                str(self.completed_at_day)
                 + " "
-                + self.completed_at_month
+                + str(self.completed_at_month)
                 + " "
-                + self.completed_at_year,
+                + str(self.completed_at_year),
                 "%d %m %Y",
             ).strftime("%d %b %Y")
 
@@ -117,25 +117,21 @@ class Review(models.Model):
                         "completed_at_day": "Invalid date.",
                     }
                 )
-        if day and not month and not year:
-            raise ValidationError(
-                {
-                    "completed_at_day": "Can't input a day without a month or year.",
-                }
-            )
-        if day and month and not year:
-            raise ValidationError(
-                {
-                    "completed_at_day": "Can't input a day without a year.",
-                    "completed_at_month": "Can't input a month without a year.",
-                }
-            )
-        if not day and month and not year:
+        if month and not year:
             raise ValidationError(
                 {
                     "completed_at_month": "Can't input a month without a year.",
                 }
             )
+        if day:
+            if not month and not year:
+                raise ValidationError(
+                    {"completed_at_day": "Can't input a day without month and year."}
+                )
+            if not month:
+                raise ValidationError(
+                    {"completed_at_day": "Can't input a day without a month."}
+                )
 
     def clean(self) -> None:
         super().clean()

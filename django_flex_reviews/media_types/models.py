@@ -1,9 +1,12 @@
+import uuid
+
 from django.db import models
 
 
 class AbstractMediaType(models.Model):
     """Abstract class common to all MediaTypes."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(default="", max_length=256)
 
     class Meta:

@@ -33,3 +33,6 @@ class EbertStrategy(AbstractStrategy):
         validators=[ebert_star_validator],
     )
     great_film = models.BooleanField(default=False, null=False)
+
+    class Meta:
+        verbose_name = "Ebert"

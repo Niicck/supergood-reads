@@ -1,3 +1,7 @@
-# from django.shortcuts import render
+from django.views.generic.edit import FormView
 
-# Create your views here.
+from django_flex_reviews.reviews.forms import ReviewForm
+
+
+class ReviewFormView(FormView[ReviewForm]):
+    template_name = "review_form.html"

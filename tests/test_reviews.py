@@ -30,7 +30,7 @@ class TestCompletedAt:
                 completed_at_day=2,
             )
         assert (
-            "'completed_at_day': [\"Can't input a day without a month or year.\"]"
+            "'completed_at_day': [\"Can't input a day without month or year.\"]"
             in str(e)
         )
 
@@ -40,7 +40,6 @@ class TestCompletedAt:
                 completed_at_day=31,
                 completed_at_month=2,
             )
-        assert "'completed_at_day': [\"Can't input a day without a year.\"]" in str(e)
         assert "'completed_at_month': [\"Can't input a month without a year.\"]" in str(
             e
         )
