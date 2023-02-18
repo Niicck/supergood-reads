@@ -11,6 +11,8 @@ GREAT_FILM = "GREAT_FILM"
 class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
     rating = forms.ChoiceField(
         choices=(
+            (None, ""),
+            (GREAT_FILM, "Great Film"),
             ("4.0", "★★★★"),
             ("3.5", "★★★½"),
             ("3.0", "★★★"),
@@ -21,12 +23,12 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
             ("0.5", "½"),
             ("0.0", "Zero Stars"),
             (None, "No Star Rating"),
-            (GREAT_FILM, "Great Film"),
         )
     )
 
     class Meta:
         model = EbertStrategy
+        fields = ["rating"]
 
     def clean(self) -> Optional[Dict[str, Any]]:
         """Convert rating choice into EbertStrategy model fields."""

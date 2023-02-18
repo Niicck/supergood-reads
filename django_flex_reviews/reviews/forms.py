@@ -1,16 +1,15 @@
 from typing import Any
 
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.forms import ModelForm
 
 import django_flex_reviews.strategies.models as strategy_models
 from django_flex_reviews.reviews.models import Review
 
-strategy_forms = [
+eligible_strategy_models = [
     strategy_models.EbertStrategy,
     strategy_models.GoodreadsStrategy,
-    strategy_models.ImdbStrategy,
-    strategy_models.LetterboxdStrategy,
     strategy_models.MaximusStrategy,
 ]
 
@@ -18,7 +17,6 @@ strategy_forms = [
 class ReviewForm(ModelForm[Review]):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        pass
 
     class Meta:
         model = Review
@@ -27,12 +25,16 @@ class ReviewForm(ModelForm[Review]):
             "completed_at_month",
             "completed_at_year",
             "text",
-            "strategy",
+            "strategy_content_type",
         ]
 
-    strategy = forms.ChoiceField(
+    strategy_content_type = forms.ChoiceField(
         choices=(
-            (strategy._meta.verbose_name, strategy._meta.verbose_name)
-            for strategy in strategy_forms
-        )
+            (
+                ContentType.objects.get_for_model(strategy_model).id,
+                strategy_model._meta.verbose_name,
+            )
+            for strategy_model in eligible_strategy_models
+        ),
+        label="Strategy",
     )

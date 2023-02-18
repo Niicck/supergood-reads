@@ -1,0 +1,5 @@
+<form method="post">
+  {% csrf_token %} {{ review_form.as_div }} {{
+  strategy_forms.ebertstrategy_form.as_div }}
+  <input type="submit" value="Send message" />
+</form>
