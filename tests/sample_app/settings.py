@@ -14,14 +14,20 @@ import os
 from pathlib import Path
 
 import django_stubs_ext
+import environ
 
+# Add type-checking for django
 django_stubs_ext.monkeypatch()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent
-PROJECT_DIR = BASE_DIR
+PROJECT_ROOT = BASE_DIR.parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "test_dummy")
+# Read .env file
+env = environ.Env()
+environ.Env.read_env(os.path.join(PROJECT_ROOT, ".env"))
+
+SECRET_KEY = env("SECRET_KEY")
 
 DEBUG = True
 
@@ -44,8 +50,8 @@ TEMPLATES = [
     },
 ]
 
-STATIC_URL = "static/"
-MEDIA_URL = "media/"
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
 
 LANGUAGE_CODE = "en-us"
 
@@ -57,13 +63,13 @@ USE_TZ = True
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("DATABASE_ENGINE", "django.db.backends.sqlite3"),
+        "ENGINE": env("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
         "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-        "USER": os.environ.get("DATABASE_USER", ""),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
-        "HOST": os.environ.get("DATABASE_HOST", ""),
-        "PORT": os.environ.get("DATABASE_PORT", ""),
-        "TEST": {"NAME": os.environ.get("DATABASE_NAME", ":memory:")},
+        "USER": env("DATABASE_USER", default=""),
+        "PASSWORD": env("DATABASE_PASSWORD", default=""),
+        "HOST": env("DATABASE_HOST", default=""),
+        "PORT": env("DATABASE_PORT", default=""),
+        "TEST": {"NAME": env("DATABASE_NAME", default=":memory:")},
     },
 }
 
@@ -76,8 +82,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Local
-    "django_flex_reviews",
-    "tests.sample_app",
+    "django_flex_reviews",  # add django_flex_reviews
+    "tests.sample_app",  # add your own local app
+    # Third Party
+    "django_vite",  # add django_vite
 ]
 
 MIDDLEWARE = [
@@ -92,3 +100,11 @@ MIDDLEWARE = [
 
 # Django Extensions
 SHELL_PLUS = "ipython"
+
+# Django-vite
+DJANGO_VITE_ASSETS_PATH = os.path.join(PROJECT_ROOT, env("DJANGO_VITE_ASSETS_PATH"))
+DJANGO_VITE_DEV_MODE = DEBUG
+DJANGO_VITE_DEV_SERVER_PORT = env("DJANGO_VITE_DEV_SERVER_PORT")
+STATICFILES_DIRS = [
+    DJANGO_VITE_ASSETS_PATH,
+]

@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 .PHONY: install
 install:
-	poetry
+	poetry --with dev
 
 # Start venv
 .PHONY: venv
@@ -24,6 +24,10 @@ safety:
 .PHONY: mypy
 mypy:
 	nox -s mypy-3.11
+
+# Create .env from template if .env doesn't already exist
+.env:
+	cp -n ./tools/.env-sample .env
 
 # Run your django app docker container
 .PHONY: up
