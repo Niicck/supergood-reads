@@ -20,10 +20,15 @@ lint:
 safety:
 	nox -s safety
 
-# Run mypy type checking.
+# Run mypy type checking for python files.
 .PHONY: mypy
 mypy:
 	nox -s mypy-3.11
+
+# Run typescript type checking for typescript files.
+.PHONY: tsc-check
+tsc-check:
+	npx tsc --noEmit --incremental
 
 # Create .env from template if .env doesn't already exist
 .env:

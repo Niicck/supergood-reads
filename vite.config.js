@@ -1,5 +1,16 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
+
+const postcssConfig = {
+  plugins: [
+    require('postcss-import')(),
+    require('postcss-simple-vars')(),
+    require('tailwindcss/nesting')(),
+    require('tailwindcss')(),
+    require('autoprefixer')(),
+  ],
+};
 
 export default defineConfig((mode) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -11,6 +22,9 @@ export default defineConfig((mode) => {
     },
     root: resolve('./django_flex_reviews/static'),
     base: '/static/',
+    css: {
+      postcss: postcssConfig,
+    },
     server: {
       port: env.DJANGO_VITE_DEV_SERVER_PORT,
     },
@@ -22,6 +36,7 @@ export default defineConfig((mode) => {
       rollupOptions: {
         input: {
           form: resolve('./django_flex_reviews/static/js/form.ts'),
+          tailwind: resolve('./django_flex_reviews/static/css/tailwind.css.js'),
           css: resolve('./django_flex_reviews/static/css/main.css.js'),
         },
         output: {

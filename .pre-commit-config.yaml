@@ -43,8 +43,30 @@ repos:
     hooks:
       - id: djhtml
 
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.34.0
+    hooks:
+      - id: eslint
+        types: [file]
+        types_or: [javascript, jsx, ts, tsx, vue]
+        additional_dependencies:
+          - eslint@v8.34.0
+          - eslint-config-prettier@v8.6.0
+          - '@typescript-eslint/parser@v5.53.0'
+          - '@typescript-eslint/eslint-plugin@v5.53.0'
+
+  - repo: local
+    hooks:
+      - id: typescript
+        require_serial: true
+        language: system
+        name: typescript
+        entry: make tsc-check
+        types: [file]
+        types_or: [ts, tsx, vue]
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
       - id: prettier
-        types_or: [css, scss, javascript, ts, tsx, json, yaml]
+        types_or: [css, scss, json, yaml, javascript, jsx, ts, tsx, vue]
