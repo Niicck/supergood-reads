@@ -39,6 +39,28 @@
       "es6": true
     }
   },
+  "stylelint": {
+    "extends": [
+      "stylelint-config-standard",
+      "stylelint-config-rational-order"
+    ],
+    "rules": {
+      "at-rule-no-unknown": [
+        true,
+        {
+          "ignoreAtRules": [
+            "tailwind",
+            "apply",
+            "variants",
+            "responsive",
+            "screen",
+            "layer"
+          ]
+        }
+      ],
+      "import-notation": "string"
+    }
+  },
   "prettier": {
     "arrowParens": "always",
     "bracketSameLine": false,

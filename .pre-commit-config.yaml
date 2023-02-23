@@ -65,6 +65,15 @@ repos:
         types: [file]
         types_or: [ts, tsx, vue]
 
+  - repo: https://github.com/thibaudcolas/pre-commit-stylelint
+    rev: v15.2.0
+    hooks:
+      - id: stylelint
+        additional_dependencies:
+          - stylelint@15.2.0
+          - stylelint-config-standard@30.0.1
+          - stylelint-config-rational-order@0.1.2
+
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
