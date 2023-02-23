@@ -29,10 +29,15 @@ mypy:
 .env:
 	cp -n ./tools/.env-sample .env
 
-# Run your django app docker container
+# Run django app
 .PHONY: up
 up:
 	poetry run python manage.py runserver
+
+# Run vite static asset compilation
+.PHONY: vite
+vite:
+	npm run dev
 
 # Start django python shell
 .PHONY: shell

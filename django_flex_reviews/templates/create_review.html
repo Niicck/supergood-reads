@@ -1,11 +1,17 @@
-{% load django_vite %}
-{% vite_hmr_client %}
-{% vite_asset 'css/main.css.js' %}
-{% vite_asset 'js/form.ts' %}
+{% extends "base.html" %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ review_form.as_div }}
-    {{ strategy_forms.ebertstrategy_form.as_div }}
-    <input type="submit" value="Send message" />
-</form>
+{% load django_vite %}
+
+{% block content %}
+
+    {% vite_asset 'css/main.css.js' %}
+    {% vite_asset 'js/form.ts' %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ review_form.as_div }}
+        {{ strategy_forms.ebertstrategy_form.as_div }}
+        <input type="submit" value="Send message" />
+    </form>
+
+{% endblock content %}
