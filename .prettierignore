@@ -1,0 +1,4 @@
+# Irrelevant files ignored for performance reasons.
+node_modules
+dist
+build

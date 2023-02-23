@@ -6,9 +6,11 @@ Add flexible review schemas to your django application.
 
 To your `INSTALLED_APPS` add:
 
-- `django.contrib.contenttypes` (if it isn't included already)
+- `django.contrib.contenttypes`
 - `django_flex_reviews`
 
 ## Development Guide
 
 1. Install nox: `pip install --user --upgrade nox`
+
+(To be continued)
