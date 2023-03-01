@@ -12,7 +12,11 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@": ["django_flex_reviews/*"]
+    }
   },
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

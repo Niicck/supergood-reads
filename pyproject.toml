@@ -31,6 +31,7 @@ python = ">=3.8.1,<4"
 django = ">=3.2"
 django-stubs-ext = ">=0.7.0"
 django-vite = "^2.0.2"
+django-widget-tweaks = "^1.4.12"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.4"

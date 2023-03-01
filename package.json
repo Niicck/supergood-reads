@@ -7,10 +7,15 @@
     "build": "cross-env TAILWIND_MODE=build vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "vue": "^3.2.47"
+  },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@tailwindcss/typography": "^0.5.9",
+    "@vitejs/plugin-vue": "^4.0.0",
     "autoprefixer": "^10.4.13",
     "cross-env": "^7.0.3",
     "postcss": "^8.4.21",

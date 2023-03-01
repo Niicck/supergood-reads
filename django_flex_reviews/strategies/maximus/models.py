@@ -8,3 +8,6 @@ class MaximusStrategy(AbstractStrategy):
     """The Maximus Strategy is a simple yes/no boolean strategy."""
 
     recommended = models.BooleanField(null=False)
+
+    class Meta:
+        verbose_name = "Maximus"

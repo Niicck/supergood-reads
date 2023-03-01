@@ -14,3 +14,6 @@ class GoodreadsStrategy(AbstractStrategy):
     stars = models.IntegerField(
         null=False, validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
+
+    class Meta:
+        verbose_name = "Goodreads"

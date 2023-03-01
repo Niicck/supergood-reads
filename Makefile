@@ -39,6 +39,11 @@ tsc-check:
 up:
 	poetry run python manage.py runserver
 
+# Run django app with debugger enabled
+.PHONY: debug-up
+debug-up:
+	poetry run python -m debugpy --listen localhost:5678 --wait-for-client manage.py runserver
+
 # Run vite static asset compilation
 .PHONY: vite
 vite:

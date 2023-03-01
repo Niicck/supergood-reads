@@ -1,17 +1,38 @@
 {% extends "base.html" %}
 
 {% load django_vite %}
+{% load widget_tweaks %}
+
+{% block header %}
+    Add a Review
+{% endblock header %}
 
 {% block content %}
 
     {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/form.ts' %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ review_form.as_div }}
-        {{ strategy_forms.ebertstrategy_form.as_div }}
-        <input type="submit" value="Send message" />
-    </form>
+    {{form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategy"}}
+    <div id="review-form-vue-app">
+        <form method="post" class="space-y-8 divide-y divide-gray-200">
+            <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
+                {% csrf_token %}
+                [[message]]
+                {{ form.non_field_errors }}
+                {% for field in review_form %}
+                    {% if field.name == "strategy_content_type" %}
+                        {% include "common/form_field.html" with field=field|attr:"v-model:selectedStrategy" %}
+                    {% else %}
+                        {% include "common/form_field.html" with field=field %}
+                    {% endif %}
+                {% endfor %}
+                Strategy is: [[selectedStrategy]]<br/>
+                {% for strategy_form in strategy_forms %}
+                {% endfor %}
+                {{ strategy_forms.ebertstrategy_form.as_div }}
+                <input type="submit" value="Send message" />
+            </div>
+        </form>
+    </div>
 
 {% endblock content %}

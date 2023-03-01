@@ -85,7 +85,8 @@ INSTALLED_APPS = [
     "django_flex_reviews",  # add django_flex_reviews
     "tests.sample_app",  # add your own local app
     # Third Party
-    "django_vite",  # add django_vite
+    "django_vite",  # add django-vite
+    "widget_tweaks",  # add django-widget-tweaks
 ]
 
 MIDDLEWARE = [

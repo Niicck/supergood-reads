@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
+import vue from '@vitejs/plugin-vue';
 
 const postcssConfig = {
   plugins: [
@@ -15,9 +16,11 @@ const postcssConfig = {
 export default defineConfig((mode) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    plugins: [vue()],
     resolve: {
       alias: {
         '@': resolve('./django_flex_reviews'),
+        'vue': 'vue/dist/vue.esm-bundler.js',
       },
     },
     root: resolve('./django_flex_reviews/static'),

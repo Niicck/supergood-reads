@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional, Type
 
+from django import forms
 from django.apps import AppConfig
 from django.conf import settings
 
@@ -9,6 +10,9 @@ def apply_default_settings() -> None:
     """Apply default setting values on app start up."""
     import django_flex_reviews.media_types.models as media_types
     import django_flex_reviews.strategies.models as strategies
+    from django_flex_reviews.strategies.ebert.forms import EbertStrategyForm
+    from django_flex_reviews.strategies.goodreads.forms import GoodreadsStrategyForm
+    from django_flex_reviews.strategies.maximus.forms import MaximusStrategyForm
 
     class DefaultSettings(Enum):
         """Default values for django.conf.settings introduced by django_flex_reviews."""
@@ -23,12 +27,10 @@ def apply_default_settings() -> None:
                 MyNewStrategy
             )
         """
-        DJANGO_FLEX_REVIEW_STRATEGY_CHOICES: list[Type[strategies.AbstractStrategy]] = [
-            strategies.EbertStrategy,
-            strategies.GoodreadsStrategy,
-            strategies.ImdbStrategy,
-            strategies.LetterboxdStrategy,
-            strategies.MaximusStrategy,
+        DJANGO_FLEX_REVIEW_STRATEGY_FORMS: list[Type[forms.ModelForm]] = [
+            EbertStrategyForm,
+            GoodreadsStrategyForm,
+            MaximusStrategyForm,
         ]
 
         """

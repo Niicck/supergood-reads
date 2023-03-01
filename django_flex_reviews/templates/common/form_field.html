@@ -1,0 +1,20 @@
+{% load widget_tweaks %}
+
+<div class="space-y-6 sm:space-y-5">
+    <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 sm:pt-5">
+        {{ field.errors }}
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+            {{ field.label }}
+        </label>
+        <div class="mt-1 sm:col-span-2 sm:mt-0">
+            {% if field.widget_type == "number" %}
+                {{ field|add_class:"mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" }}
+            {% else %}
+                {{ field|add_class:"block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
+            {% endif %}
+            {% if field.help_text %}
+                <p class="mt-2 text-sm text-gray-500">{{ field.help_text|safe }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
