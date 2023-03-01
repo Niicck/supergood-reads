@@ -16,7 +16,7 @@ const formComponent: Component = {
   data() {
     return {
       message: 'HEEEEEELLLOOOO',
-      selectedStrategy: parseJsonScriptFilter('initialSelectedStrategy'),
+      selectedStrategyId: parseJsonScriptFilter('initialSelectedStrategyId'),
     };
   },
 };

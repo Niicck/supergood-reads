@@ -12,7 +12,7 @@
     {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/form.ts' %}
 
-    {{form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategy"}}
+    {{form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
     <div id="review-form-vue-app">
         <form method="post" class="space-y-8 divide-y divide-gray-200">
             <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
@@ -21,15 +21,19 @@
                 {{ form.non_field_errors }}
                 {% for field in review_form %}
                     {% if field.name == "strategy_content_type" %}
-                        {% include "common/form_field.html" with field=field|attr:"v-model:selectedStrategy" %}
+                        {% include "common/form_field.html" with field=field|attr:"v-model:selectedStrategyId" %}
                     {% else %}
                         {% include "common/form_field.html" with field=field %}
                     {% endif %}
                 {% endfor %}
-                Strategy is: [[selectedStrategy]]<br/>
-                {% for strategy_form in strategy_forms %}
+                Strategy is: [[selectedStrategyId]]<br/>
+                {% for strategy_id, strategy_form in strategy_forms.items %}
+                    <div v-show="{{strategy_id}} == selectedStrategyId">
+                        {% for field in strategy_form %}
+                            {% include "common/form_field.html" with field=field %}
+                        {% endfor %}
+                    </div>
                 {% endfor %}
-                {{ strategy_forms.ebertstrategy_form.as_div }}
                 <input type="submit" value="Send message" />
             </div>
         </form>
