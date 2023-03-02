@@ -1,0 +1,33 @@
+<fieldset class="pt-6 sm:pt-5">
+    <div class="sm:grid sm:grid-cols-3 sm:items-baseline sm:gap-4">
+        <div>
+            <legend
+                class="text-base font-medium text-gray-900 sm:text-sm sm:text-gray-700"
+            >
+                {{ field.label }}
+            </legend>
+        </div>
+        <div class="sm:col-span-2">
+            <div class="max-w-lg">
+                {% if field.help_text %}
+                    <p class="text-sm text-gray-500">
+                        {{ field.help_text|safe }}
+                    </p>
+                {% endif %}
+                <div class="mt-4 space-y-4">
+                    {% for choice in field %}
+                        <div class="flex items-center">
+                            {{ choice.tag }}
+                            <label
+                                for={{ choice.id_for_label }}
+                                class="ml-3 block text-sm font-medium text-gray-700"
+                            >
+                                {{ choice.choice_label }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</fieldset>
