@@ -12,10 +12,8 @@ const parseJsonScriptFilter = (value: string): string => {
 
 const formComponent: Component = {
   delimiters: ['[[', ']]'],
-  // emits: ["selectedStrategy"],
   data() {
     return {
-      message: 'HEEEEEELLLOOOO',
       selectedStrategyId: parseJsonScriptFilter('initialSelectedStrategyId'),
     };
   },

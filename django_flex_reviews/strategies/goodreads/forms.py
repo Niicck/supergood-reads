@@ -4,7 +4,7 @@ from .models import GoodreadsStrategy
 
 
 class GoodreadsStrategyForm(forms.ModelForm[GoodreadsStrategy]):
-    stars = forms.ChoiceField(choices=tuple((i + 1, i + 1) for i in range(5)))
+    stars = forms.ChoiceField(choices=tuple((i, i) for i in range(5, 0, -1)))
 
     class Meta:
         model = GoodreadsStrategy

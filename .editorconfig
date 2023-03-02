@@ -6,5 +6,6 @@ indent_style = space
 indent_size = 2
 max_line_length = 88
 
-[html, python]
+[*.{html,py,pyi}]
+indent_style = space
 indent_size = 4

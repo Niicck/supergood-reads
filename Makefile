@@ -13,17 +13,17 @@ venv:
 # Lint all files using pre-commit
 .PHONY: lint
 lint:
-	nox -s lint
+	nox -rs lint
 
 # Scan dependencies for insecure packages
 .PHONY: safety
 safety:
-	nox -s safety
+	nox -rs safety
 
 # Run mypy type checking for python files.
 .PHONY: mypy
 mypy:
-	nox -s mypy-3.11
+	nox -rs mypy-3.11
 
 # Run typescript type checking for typescript files.
 .PHONY: tsc-check
@@ -42,7 +42,7 @@ up:
 # Run django app with debugger enabled
 .PHONY: debug-up
 debug-up:
-	poetry run python -m debugpy --listen localhost:5678 --wait-for-client manage.py runserver
+	poetry run python -m debugpy --listen localhost:5678 manage.py runserver
 
 # Run vite static asset compilation
 .PHONY: vite

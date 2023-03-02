@@ -42,7 +42,7 @@ def lint(session: nox.Session) -> None:
 def test(session: nox.Session, django_version: str) -> None:
     """Run the pytest suite."""
     args = session.posargs
-    install_poetry_groups(session, "main", "test", "coverage")
+    install_poetry_groups(session, "main", "test", "dev", "coverage")
     session.install(f"django=={django_version}")
     try:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *args)
@@ -55,7 +55,7 @@ def test(session: nox.Session, django_version: str) -> None:
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["django_flex_reviews", "tests"]
-    install_poetry_groups(session, "main", "test", "mypy")
+    install_poetry_groups(session, "main", "dev", "test", "mypy")
     session.run("mypy", *args)
 
 
