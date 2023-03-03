@@ -70,6 +70,4 @@ class ReviewForm(ModelForm[Review]):
         }
 
     strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
-    media_type_content_type = forms.ChoiceField(
-        label="What would you like to Review?", choices=[]
-    )
+    media_type_content_type = forms.ChoiceField(label="Media Type", choices=[])

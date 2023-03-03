@@ -36,6 +36,7 @@ django-widget-tweaks = "^1.4.12"
 # Dependencies required to run app locally.
 [tool.poetry.group.dev.dependencies]
 django-environ = "^0.9.0"
+beautifulsoup4 = "^4.11.2"
 
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.4"
