@@ -12,6 +12,8 @@
             <div class="mt-1 sm:col-span-2 sm:mt-0">
                 {% if field_type == "number" %}
                     {{ field|add_class:"mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" }}
+                {% elif field_type == "textarea" %}
+                    {{ field|add_class:"block w-full max-w-lg rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:py-1.5 sm:text-sm sm:leading-6" }}
                 {% else %}
                     {{ field|add_class:"block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
                 {% endif %}

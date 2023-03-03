@@ -37,6 +37,9 @@ class Book(AbstractMediaType):
     def __str__(self) -> str:
         return self.title
 
+    class Meta:
+        verbose_name = "Book"
+
 
 class Country(models.Model):
     country = models.CharField(max_length=256)
@@ -58,3 +61,6 @@ class Film(AbstractMediaType):
 
     def __str__(self) -> str:
         return self.title
+
+    class Meta:
+        verbose_name = "Film"

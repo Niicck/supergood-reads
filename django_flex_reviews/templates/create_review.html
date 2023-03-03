@@ -13,13 +13,14 @@
     {% vite_asset 'js/form.ts' %}
 
     {{form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
+
     <div id="review-form-vue-app">
         <form method="post" class="space-y-8 divide-y divide-gray-200">
             <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
                 {% for field in review_form %}
-                    {% if field.name != "strategy_content_type" %}
+                    {% if field.name != "strategy_content_type" and field.name != "text" %}
                         {% field_wrapper field %}
                     {% endif %}
                 {% endfor %}
@@ -32,6 +33,7 @@
                             {% endfor %}
                         </div>
                     {% endfor %}
+                    {% field_wrapper field=review_form.text border=false %}
                 </div>
                 <input type="submit" value="Send message" />
             </div>

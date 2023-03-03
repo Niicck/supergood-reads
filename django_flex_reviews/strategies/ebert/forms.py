@@ -24,7 +24,7 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
             ("0.0", "Zero Stars"),
             (None, "No Star Rating"),
         ),
-        label="What rating would you give it?",
+        label="Rating",
     )
 
     class Meta:
