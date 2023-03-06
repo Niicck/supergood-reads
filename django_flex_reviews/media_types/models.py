@@ -17,7 +17,7 @@ class AbstractMediaType(models.Model):
 
 
 class Genre(models.Model):
-    genre = models.CharField(max_length=256)
+    genre = models.CharField(max_length=256, unique=True)
 
     def __str__(self) -> str:
         return self.genre
@@ -42,10 +42,10 @@ class Book(AbstractMediaType):
 
 
 class Country(models.Model):
-    country = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, unique=True)
 
     def __str__(self) -> str:
-        return self.country
+        return self.name
 
 
 class Film(AbstractMediaType):
