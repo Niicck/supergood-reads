@@ -1,7 +1,6 @@
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Type, Union
 
 from django import forms
-from django.db import models
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
@@ -35,8 +34,10 @@ class ReviewForm(ModelForm[Review]):
         )
 
     def add_models_to_content_type_field(
-        self, content_type_field_name: str, models: List[Type[models.Model]]
-    ):
+        self,
+        content_type_field_name: str,
+        models: Union[List[Type[AbstractStrategy]], List[Type[AbstractMediaType]]],
+    ) -> None:
         """Plug in models' content_type_ids into ChoiceField for a ContentType relation.
 
         Args:
@@ -47,7 +48,7 @@ class ReviewForm(ModelForm[Review]):
             List of models that can be selected from the content_type_field
         """
         content_type_field = self.fields[content_type_field_name]
-        assert type(content_type_field) is ChoiceField
+        assert isinstance(content_type_field, ChoiceField)
         content_type_field.choices = []
         for model in models:
             model_content_type_id = Utils.get_content_type_id(model)

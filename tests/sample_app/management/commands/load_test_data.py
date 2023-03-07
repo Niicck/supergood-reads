@@ -1,7 +1,8 @@
 import csv
+from pathlib import Path
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
 from django_flex_reviews.media_types.models import Book, Country, Film, Genre
@@ -27,7 +28,7 @@ class Command(BaseCommand):
     help = "Load fixture data"
     batch_size = 1000
 
-    def handle(self, *args, verbose=False, **kwargs):
+    def handle(self, verbose: bool = False) -> None:
         self.verbose = verbose
         self.load_films("bfi_2022")
         self.load_films("bfi_2022_directors")
@@ -35,16 +36,16 @@ class Command(BaseCommand):
         self.load_books("goodreads")
         self.success()
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "verbose", nargs="?", type=bool, help="Log every title that is loaded"
         )
 
-    def get_csv_file(self, filename: str):
+    def get_csv_file(self, filename: str) -> Path:
         return settings.PROJECT_ROOT / "tests" / "data" / f"{filename}.csv"
 
     @transaction.atomic
-    def load_films(self, filename):
+    def load_films(self, filename: str) -> None:
         print(f"~~~~ Loading {filename} films")
         with open(self.get_csv_file(filename), newline="") as f:
             reader = csv.DictReader(f)
@@ -83,7 +84,7 @@ class Command(BaseCommand):
                 film.countries.add(*country_instances)
 
     @transaction.atomic
-    def load_books(self, filename):
+    def load_books(self, filename: str) -> None:
         print(f"~~~~ Loading {filename} books")
         with open(self.get_csv_file(filename), newline="") as f:
             reader = csv.DictReader(f)
@@ -113,5 +114,5 @@ class Command(BaseCommand):
                         )
                 book.genres.add(*genre_instances)
 
-    def success(self):
+    def success(self) -> None:
         print("Fixtures loaded sucessfully")

@@ -15,12 +15,12 @@ from django_flex_reviews.utils import Utils
 
 class CreateReviewView(TemplateView):
     template_name = "create_review.html"
-    strategy_forms = [
+    strategy_forms: List[Type[forms.ModelForm[Any]]] = [
         EbertStrategyForm,
         GoodreadsStrategyForm,
         MaximusStrategyForm,
     ]
-    media_type_forms = [
+    media_type_forms: List[Type[forms.ModelForm[Any]]] = [
         BookForm,
         FilmForm,
     ]
@@ -55,7 +55,7 @@ class CreateReviewView(TemplateView):
         self,
         context: Dict[str, Any],
         form_group_name: str,
-        forms: List[Type[forms.ModelForm]],
+        forms: List[Type[forms.ModelForm[Any]]],
     ) -> Dict[str, Any]:
         """Add a list of forms to the context of the rendered template.
 
