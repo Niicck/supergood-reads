@@ -65,6 +65,7 @@ class ReviewForm(ModelForm[Review]):
             "text",
             "strategy_content_type",
             "media_type_content_type",
+            "media_type_object_id",
         ]
         labels = {
             "text": "Review",

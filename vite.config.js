@@ -38,7 +38,7 @@ export default defineConfig((mode) => {
       outDir: resolve(env.DJANGO_VITE_ASSETS_PATH),
       rollupOptions: {
         input: {
-          form: resolve('./django_flex_reviews/static/js/form.ts'),
+          createReview: resolve('./django_flex_reviews/static/js/createReview.ts'),
           tailwind: resolve('./django_flex_reviews/static/css/tailwind.css.js'),
           css: resolve('./django_flex_reviews/static/css/main.css.js'),
         },
