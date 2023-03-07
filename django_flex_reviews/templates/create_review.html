@@ -12,18 +12,29 @@
     {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/form.ts' %}
 
-    {{form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
+    {{review_form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
+    {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeId"}}
 
     <div id="review-form-vue-app">
         <form method="post" class="space-y-8 divide-y divide-gray-200">
             <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
-                {% for field in review_form %}
-                    {% if field.name != "strategy_content_type" and field.name != "text" %}
-                        {% field_wrapper field %}
-                    {% endif %}
-                {% endfor %}
+                <div class="sm:border-t sm:border-gray-200">
+                    {% field_wrapper review_form.completed_at_day border=false %}
+                    {% field_wrapper review_form.completed_at_month border=false %}
+                    {% field_wrapper review_form.completed_at_year border=false %}
+                </div>
+                <div class="sm:border-t sm:border-gray-200">
+                    {% field_wrapper review_form.media_type_content_type|attr:"v-model:selectedMediaTypeId" %}
+                    {% for media_type_id, media_type_form in media_type_forms.items %}
+                        <div v-show="{{media_type_id}} == selectedMediaTypeId">
+                            {% for field in media_type_form %}
+                                {% field_wrapper field border=false %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
                 <div class="sm:border-t sm:border-gray-200">
                     {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms.items %}

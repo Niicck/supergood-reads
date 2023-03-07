@@ -15,6 +15,7 @@ const formComponent: Component = {
   data() {
     return {
       selectedStrategyId: parseJsonScriptFilter('initialSelectedStrategyId'),
+      selectedMediaTypeId: parseJsonScriptFilter('initialSelectedMediaTypeId'),
     };
   },
 };
