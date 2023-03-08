@@ -1,4 +1,4 @@
-from .media_types.models import AbstractMediaType
+from .media_types.models import AbstractMediaType, Book, Country, Film, Genre
 from .reviews.models import Review, UserReviewStrategyDefault
 from .strategies.models import (
     AbstractStrategy,
@@ -19,4 +19,8 @@ __all__ = [
     "ImdbStrategy",
     "LetterboxdStrategy",
     "MaximusStrategy",
+    "Genre",
+    "Country",
+    "Book",
+    "Film",
 ]

@@ -1,8 +1,10 @@
+import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Any, Literal, Optional, Union
 
 import factory
+import factory.fuzzy
 from django.conf import settings
 from faker import Faker
 
@@ -106,3 +108,86 @@ class ReviewFactory(factory.django.DjangoModelFactory):
         completed_at: Union[
             Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
         ] = FactoryParam.UNSET_COMPLETED_AT
+
+
+class GenreFactory(factory.django.DjangoModelFactory):
+    genre = factory.fuzzy.FuzzyChoice(
+        ["Drama", "Comedy", "Horror", "Documentary", "Action"]
+    )
+
+    class Meta:
+        model = models.Genre
+        django_get_or_create = ("genre",)
+
+
+class CountryFactory(factory.django.DjangoModelFactory):
+    name = factory.LazyFunction(fake.country)
+
+    class Meta:
+        model = models.Country
+        django_get_or_create = ("name",)
+
+
+class BookFactory(factory.django.DjangoModelFactory):
+    id = factory.LazyFunction(uuid.uuid4)
+    title = factory.LazyFunction(fake.unique.sentence)
+    author = factory.LazyFunction(fake.name)
+    publication_year = factory.LazyFunction(fake.year)
+
+    class Meta:
+        model = models.Book
+
+    @factory.post_generation
+    def genres(self, create, extracted):
+        """
+        Args:
+          extracted:
+            Optional list of genres passed into initial factory invocation.
+            BookFactory.create(genres=(genre1, genre2, genre3))
+        """
+        if not create:
+            return
+        elif extracted:
+            self.genres.add(*extracted)
+        else:
+            self.genres.add(GenreFactory())
+
+
+class FilmFactory(factory.django.DjangoModelFactory):
+    id = factory.LazyFunction(uuid.uuid4)
+    title = factory.LazyFunction(fake.unique.sentence)
+    director = factory.LazyFunction(fake.name)
+    release_year = factory.LazyFunction(fake.year)
+
+    class Meta:
+        model = models.Film
+
+    @factory.post_generation
+    def genres(self, create, extracted):
+        """
+        Args:
+          extracted:
+            Optional list of genres passed into initial factory invocation.
+            FilmFactory.create(genres=(genre1, genre2, genre3))
+        """
+        if not create:
+            return
+        elif extracted:
+            self.genres.add(*extracted)
+        else:
+            self.genres.add(GenreFactory())
+
+    @factory.post_generation
+    def countries(self, create, extracted):
+        """
+        Args:
+          extracted:
+            Optional list of countries passed into initial factory invocation.
+            FilmFactory.create(genres=(country1, country2, country3))
+        """
+        if not create:
+            return
+        elif extracted:
+            self.countries.add(*extracted)
+        else:
+            self.countries.add(CountryFactory())

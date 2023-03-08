@@ -64,10 +64,10 @@ debug-shell:
 superuser:
 	poetry run python manage.py createsuperuser
 
-# Run pytest
+# Run pytest via nox. Includes coverage check
 .PHONY: pytest
 pytest:
-	poetry run pytest
+	nox -rs "test-3.11(django_version='4.1')"
 
 # Run pytest with debugger
 .PHONY: debug-pytest

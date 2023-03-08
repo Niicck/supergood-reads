@@ -1,16 +1,19 @@
 from typing import Any, Dict, List, Type
 
 from django import forms
+from django.http import HttpRequest, JsonResponse
+from django.views import View
 from django.views.generic import TemplateView
 
 from django_flex_reviews.media_types.forms import BookForm, FilmForm
-from django_flex_reviews.media_types.models import AbstractMediaType
+from django_flex_reviews.media_types.models import AbstractMediaType, Book, Film
 from django_flex_reviews.reviews.forms import ReviewForm
 from django_flex_reviews.strategies.base.models import AbstractStrategy
 from django_flex_reviews.strategies.ebert.forms import EbertStrategyForm
 from django_flex_reviews.strategies.goodreads.forms import GoodreadsStrategyForm
 from django_flex_reviews.strategies.maximus.forms import MaximusStrategyForm
 from django_flex_reviews.utils import Utils
+from django_flex_reviews.utils.json import UUIDEncoder
 
 
 class CreateReviewView(TemplateView):
@@ -96,3 +99,37 @@ class CreateReviewView(TemplateView):
             model_content_type_id = Utils.get_content_type_id(form_model)
             context[form_group_name][model_content_type_id] = form(prefix=model_name)
         return context
+
+
+class FilmAutocompleteView(View):
+    limit = 10
+
+    def get(self, request: HttpRequest) -> JsonResponse:
+        query_dict = request.GET
+        q = query_dict.get("q", "")
+        films = Film.objects.filter(title__icontains=q)[: self.limit]
+        film_values = films.values("id", "title", "release_year")
+
+        return JsonResponse(
+            {
+                "results": list(film_values),
+            },
+            encoder=UUIDEncoder,
+        )
+
+
+class BookAutocompleteView(View):
+    limit = 10
+
+    def get(self, request: HttpRequest) -> JsonResponse:
+        query_dict = request.GET
+        q = query_dict.get("q", "")
+        books = Book.objects.filter(title__icontains=q)[: self.limit]
+        book_values = books.values("id", "title", "publication_year")
+
+        return JsonResponse(
+            {
+                "results": list(book_values),
+            },
+            encoder=UUIDEncoder,
+        )

@@ -29,9 +29,11 @@ def field_wrapper(
       field_type:
         Override default Field Widget rendering instructions.
     """
-    field_type: Union[CustomFieldTypeOption, str] = field_type or field.widget_type
+    rendered_field_type: Union[CustomFieldTypeOption, str] = (
+        field_type or field.widget_type
+    )
     return {
         "field": field,
-        "field_type": field_type,
+        "field_type": rendered_field_type,
         "border": border,
     }
