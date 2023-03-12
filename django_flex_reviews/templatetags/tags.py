@@ -1,17 +1,23 @@
+import json
 from enum import Enum
 from typing import Any, Dict, Literal, Optional, Union
 
 from django import template
 from django.forms.boundfield import BoundField
+from django.utils.html import _json_script_escapes, format_html
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
 
 class CustomFieldType(Enum):
     ALGOLIA_AUTOCOMPLETE = "algolia_autocomplete"
+    RADIO_CARDS = "radio_cards"
 
 
-CustomFieldTypeOption = Literal[CustomFieldType.ALGOLIA_AUTOCOMPLETE,]
+CustomFieldTypeOption = Literal[
+    CustomFieldType.ALGOLIA_AUTOCOMPLETE, CustomFieldType.RADIO_CARDS
+]
 
 
 @register.inclusion_tag("common/field_wrapper.html")
@@ -20,20 +26,87 @@ def field_wrapper(
     border: bool = True,
     field_type: Optional[CustomFieldTypeOption] = None,
 ) -> Dict[str, Any]:
-    """Renders a form field.
-    Args:
+    """Renders a form field. Returns context variables to support.
+
+    Returns:
       field:
         The form field to render.
       border:
         Indicate whether to draw a border around field.
       field_type:
-        Override default Field Widget rendering instructions.
+        Defaults to the field's widget_type. However, the inclusion template
+        supports custom field rendering for the types listed in CustomFieldType.
+      radio_cards_json_script_id:
+        If field_type == "radio_type", then also return radio_cards_json_script_id which
+        identifies the element where the jsonified field data will be stored.
     """
     rendered_field_type: Union[CustomFieldTypeOption, str] = (
         field_type or field.widget_type
     )
+
+    if rendered_field_type == "radio_cards":
+        radio_cards_json_script_id: Optional[
+            str
+        ] = f"radio_cards_json_script_id_{field.id_for_label}"
+    else:
+        radio_cards_json_script_id = None
+
     return {
         "field": field,
         "field_type": rendered_field_type,
         "border": border,
+        "radio_cards_json_script_id": radio_cards_json_script_id,
     }
+
+
+@register.filter(is_safe=True)
+def field_to_dict(field: BoundField) -> Dict[str, Any]:
+    """Convert django field into dict consumable by vue Component props."""
+    field_data = {
+        "name": field.html_name,
+        "label": field.label,
+        "choices": field.field.choices,
+    }
+    return field_data
+
+
+"""
+Attributes:
+  v-pre:
+    Disables vue compilation. This will prevent valid json code from conflicting with vue delimiters.
+  v-show=false:
+    Hides the json that would be rendered since compilation was diabled with v-pre.
+  :is="\'script\'"
+    Indicates that this component should be treated like a <script/>. Yes, the escaped
+    single quotes are mandatory.
+"""
+vue_json_script_template = '<div v-show="false"><component v-pre :is="\'script\'" id="{}" type="application/json">{}</component></div>'
+
+
+@register.filter(is_safe=True)
+def vue_json_script(value, element_id=None, encoder=None):
+    """
+    Modify default json_script filter to work with vue.
+
+    If you try to use the json_script within a vue application, the script will not be
+    read. You  will see this error:
+
+    [Vue warn]: Template compilation error: Tags with side effect (<script> and <style>)
+    are ignored in client component templates.
+
+    In order to be compatible with vue, the output of our json_script must be wrapped in
+    the vue_json_script_template.
+    """
+    from django.core.serializers.json import DjangoJSONEncoder
+
+    json_str = json.dumps(value, cls=encoder or DjangoJSONEncoder).translate(
+        _json_script_escapes
+    )
+    if element_id:
+        # The following line is the only difference from django.utils.html.json_script
+        template = vue_json_script_template
+        args = (element_id, mark_safe(json_str))  # noqa: S703,S308
+    else:
+        template = '<script type="application/json">{}</script>'
+        args = (mark_safe(json_str),)  # noqa: S703,S308
+    return format_html(template, *args)

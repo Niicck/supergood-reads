@@ -10,7 +10,8 @@
 
 {% block content %}
     {% vite_asset 'css/main.css.js' %}
-    {% vite_asset 'js/createReview.ts' %}
+    {% vite_asset 'js/apps/createReview.ts' %}
+    {% vite_asset 'js/apps/autocomplete.ts' %}
 
     {{review_form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
     {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeContentType"}}
@@ -27,11 +28,13 @@
                     {% field_wrapper review_form.completed_at_year border=false %}
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper review_form.media_type_content_type|attr:"v-model:selectedMediaTypeContentType" %}
+                    {% field_wrapper review_form.media_type_content_type|attr:"v-model:selectedMediaTypeContentType" field_type="radio_cards" %}
+                    <div>You have chosen: [[selectedMediaTypeObjectId]]</div>
                     {% for media_type_id, media_type_form in media_type_forms.items %}
                         <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
+                            <div id="autocomplete-vue-app"></div>
                             <div>You have chosen: [[selectedMediaTypeObjectId]]</div>
-                            {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %}
+                            {% comment %} {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %} {% endcomment %}
                             {% for field in media_type_form %}
                                 {% field_wrapper field border=false %}
                             {% endfor %}

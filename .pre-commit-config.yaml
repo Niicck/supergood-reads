@@ -50,11 +50,14 @@ repos:
       - id: eslint
         types: [file]
         types_or: [javascript, jsx, ts, tsx, vue]
+        args: ['--fix']
         additional_dependencies:
           - eslint@v8.34.0
           - eslint-config-prettier@v8.6.0
           - '@typescript-eslint/parser@v5.53.0'
           - '@typescript-eslint/eslint-plugin@v5.53.0'
+          - eslint-plugin-vue@v9.9.0
+          - vue-eslint-parser@9.1.0
 
   - repo: local
     hooks:

@@ -1,5 +1,4 @@
-import 'vite/modulepreload-polyfill'; // required for vite entrypoints
-import { createApp, defineComponent } from 'vue';
+import { defineComponent } from 'vue';
 import { autocomplete } from '@algolia/autocomplete-js';
 import '@algolia/autocomplete-theme-classic';
 
@@ -8,16 +7,7 @@ type MediaTypeContentItem = {
   id: string;
 };
 
-const parseJsonScriptFilter = (value: string): string => {
-  /** Extract contents of "json_script" filter from a django template. */
-  const element = document.getElementById(value);
-  if (!element) {
-    return '';
-  }
-  return JSON.parse(element.textContent || '');
-};
-
-const mountAutocomplete = (vueComponent: InstanceType<typeof formComponent>) => {
+const mountAutocomplete = () => {
   autocomplete<MediaTypeContentItem>({
     container: '#media-type-autocomplete',
     openOnFocus: true,
@@ -39,7 +29,7 @@ const mountAutocomplete = (vueComponent: InstanceType<typeof formComponent>) => 
             ].filter(({ label }) => label.toLowerCase().includes(query.toLowerCase()));
           },
           onSelect({ item }) {
-            vueComponent.selectedMediaTypeObjectId = item.id;
+            // TODO: emit state change
             setQuery(item.label);
           },
           templates: {
@@ -53,26 +43,10 @@ const mountAutocomplete = (vueComponent: InstanceType<typeof formComponent>) => 
   });
 };
 
-const formComponent = defineComponent({
-  delimiters: ['[[', ']]'],
-  data() {
-    return {
-      selectedStrategyId: parseJsonScriptFilter('initialSelectedStrategyId'),
-      selectedMediaTypeContentType: parseJsonScriptFilter(
-        'initialSelectedMediaTypeContentType',
-      ),
-      selectedMediaTypeObjectId: parseJsonScriptFilter(
-        'initialSelectedMediaTypeObjectId',
-      ),
-    };
-  },
+const AlgoliaAutocomplete = defineComponent({
   mounted() {
-    mountAutocomplete(this);
+    mountAutocomplete();
   },
 });
 
-const formApp = createApp(formComponent);
-
-formApp.mount('#review-form-vue-app');
-
-export {};
+export { AlgoliaAutocomplete };
