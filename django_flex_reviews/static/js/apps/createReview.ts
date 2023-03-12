@@ -12,8 +12,8 @@ const RootComponent = defineComponent({
     'radio-cards': RadioCards,
   },
   setup() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const store = useCreateReviewStore();
+    window.store = store;
     return { store };
   },
   mounted() {

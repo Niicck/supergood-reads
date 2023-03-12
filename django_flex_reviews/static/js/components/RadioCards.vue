@@ -1,6 +1,7 @@
 <template>
+  <p>State value is {{ store[stateKey] }}</p>
   <div>
-    <RadioGroup name="{{ fieldData.name }}" class="mt-2">
+    <RadioGroup v-model="store[stateKey]" name="{{ fieldData.name }}" class="mt-2">
       <RadioGroupLabel class="sr-only"> {{ fieldData.label }} </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
         <RadioGroupOption
@@ -30,6 +31,8 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
+import type { PropType } from 'vue';
+import type { State } from '@/static/js/stores';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
 
@@ -39,9 +42,15 @@ type FieldData = {
   choices: Array<Array<string | number | boolean>>;
 };
 
+const fieldData = ref<FieldData>({
+  name: '',
+  label: '',
+  choices: [],
+});
+
 const props = defineProps({
-  selectedMediaTypeObjectId: {
-    type: String,
+  stateKey: {
+    type: String as PropType<keyof State>,
     default: null,
   },
   jsonScriptId: {
@@ -50,13 +59,7 @@ const props = defineProps({
   },
 });
 
-const fieldData = ref<FieldData>({
-  name: '',
-  label: '',
-  choices: [],
-});
-
-const emit = defineEmits(['update:modelValue']);
+const store = window.store;
 
 onMounted(() => {
   fieldData.value = parseJsonScriptFilter(props.jsonScriptId) as FieldData;

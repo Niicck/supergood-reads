@@ -25,6 +25,7 @@ def field_wrapper(
     field: BoundField,
     border: bool = True,
     field_type: Optional[CustomFieldTypeOption] = None,
+    state_key: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Renders a form field. Returns context variables to support.
 
@@ -38,7 +39,25 @@ def field_wrapper(
         supports custom field rendering for the types listed in CustomFieldType.
       radio_cards_json_script_id:
         If field_type == "radio_type", then also return radio_cards_json_script_id which
-        identifies the element where the jsonified field data will be stored.
+        identifies the html element where the jsonified field data will be stored.
+      state_key:
+        Some form inputs need to be bound to a state in our vue pinia store.
+
+        Usually, this can be accomplished by adding the attribute
+        "v-model:store.[[state_key]]" to the field html element directly.
+
+        But some form input renderings are more complicated. They might need to be
+        rendered by a custom vue component within this field_wrapper template.
+
+        You can't pass a v-model to a child vue component and have it dynamically update
+        the parent vue component.
+
+        But the child vue component can directly update the pinia store without talking
+        to its parent.
+
+        By passing in the state_key as a string directly to the child, we can create an
+        abstract way to bind any vue component to any attribute in our state, without
+        hardcoding anything.
     """
     rendered_field_type: Union[CustomFieldTypeOption, str] = (
         field_type or field.widget_type
@@ -56,6 +75,7 @@ def field_wrapper(
         "field_type": rendered_field_type,
         "border": border,
         "radio_cards_json_script_id": radio_cards_json_script_id,
+        "state_key": state_key,
     }
 
 

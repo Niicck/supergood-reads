@@ -1,8 +1,14 @@
 import { defineStore } from 'pinia';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
 
+interface State {
+  selectedStrategyId: string;
+  selectedMediaTypeContentType: string;
+  selectedMediaTypeObjectId: string;
+}
+
 const useCreateReviewStore = defineStore('createReview', {
-  state: () => ({
+  state: (): State => ({
     selectedStrategyId: '',
     selectedMediaTypeContentType: '',
     selectedMediaTypeObjectId: '',
@@ -19,12 +25,11 @@ const useCreateReviewStore = defineStore('createReview', {
         'initialSelectedMediaTypeObjectId',
       ) as string;
     },
-    set(key: string, value: string) {
-      if (key === 'selectedMediaTypeObjectId') {
-        this.selectedMediaTypeObjectId = value;
-      }
+    set(key: keyof State, value: string) {
+      this[key] = value;
     },
   },
 });
 
 export { useCreateReviewStore };
+export type { State };
