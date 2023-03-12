@@ -1,28 +1,29 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
+import { createPinia } from 'pinia';
 import RadioCards from '@/static/js/components/RadioCards.vue';
-import { parseJsonScriptFilter } from '../utils/parseJsonScriptFilter';
+import { useCreateReviewStore } from '@/static/js/stores';
 
-const ReviewFormRootComponent = defineComponent({
+const pinia = createPinia();
+
+const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],
   components: {
     'radio-cards': RadioCards,
   },
-  data() {
-    return {
-      selectedStrategyId: parseJsonScriptFilter('initialSelectedStrategyId'),
-      selectedMediaTypeContentType: parseJsonScriptFilter(
-        'initialSelectedMediaTypeContentType',
-      ),
-      selectedMediaTypeObjectId: parseJsonScriptFilter(
-        'initialSelectedMediaTypeObjectId',
-      ),
-    };
+  setup() {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const store = useCreateReviewStore();
+    return { store };
+  },
+  mounted() {
+    const store = useCreateReviewStore();
+    store.initiate();
   },
 });
 
-const reviewFormApp = createApp(ReviewFormRootComponent);
-
-reviewFormApp.mount('#review-form-vue-app');
+const app = createApp(RootComponent);
+app.use(pinia);
+app.mount('#review-form-vue-app');
 
 export {};

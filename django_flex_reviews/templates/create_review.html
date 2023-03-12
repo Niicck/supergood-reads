@@ -28,12 +28,12 @@
                     {% field_wrapper review_form.completed_at_year border=false %}
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper review_form.media_type_content_type|attr:"v-model:selectedMediaTypeContentType" field_type="radio_cards" %}
-                    <div>You have chosen: [[selectedMediaTypeObjectId]]</div>
+                    {% field_wrapper review_form.media_type_content_type|attr:"v-model:store.selectedMediaTypeContentType" field_type="radio_cards" %}
+                    <div>You have chosen: [[store.selectedMediaTypeObjectId]]</div>
                     {% for media_type_id, media_type_form in media_type_forms.items %}
-                        <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
+                        <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
                             <div id="autocomplete-vue-app"></div>
-                            <div>You have chosen: [[selectedMediaTypeObjectId]]</div>
+                            <div>You have chosen: [[store.selectedMediaTypeObjectId]]</div>
                             {% comment %} {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %} {% endcomment %}
                             {% for field in media_type_form %}
                                 {% field_wrapper field border=false %}
@@ -42,9 +42,9 @@
                     {% endfor %}
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
+                    {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:store.selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms.items %}
-                        <div v-show="{{strategy_id}} == selectedStrategyId">
+                        <div v-show="{{strategy_id}} == store.selectedStrategyId">
                             {% for field in strategy_form %}
                                 {% field_wrapper field border=false %}
                             {% endfor %}
