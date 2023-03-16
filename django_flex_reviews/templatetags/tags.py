@@ -24,6 +24,7 @@ CustomFieldTypeOption = Literal[
 def field_wrapper(
     field: BoundField,
     border: bool = True,
+    label_above: bool = False,
     field_type: Optional[CustomFieldTypeOption] = None,
     state_key: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -74,6 +75,7 @@ def field_wrapper(
         "field": field,
         "field_type": rendered_field_type,
         "border": border,
+        "label_above": label_above,
         "radio_cards_json_script_id": radio_cards_json_script_id,
         "state_key": state_key,
     }

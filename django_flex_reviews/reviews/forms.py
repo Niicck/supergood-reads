@@ -1,7 +1,6 @@
 from typing import Any, List, Optional, Type, Union
 
 from django import forms
-from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
 from django_flex_reviews.media_types.models import AbstractMediaType
@@ -10,7 +9,7 @@ from django_flex_reviews.strategies.base.models import AbstractStrategy
 from django_flex_reviews.utils import Utils
 
 
-class ReviewForm(ModelForm[Review]):
+class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
@@ -72,4 +71,18 @@ class ReviewForm(ModelForm[Review]):
         }
 
     strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
-    media_type_content_type = forms.ChoiceField(label="Media Type", choices=[])
+    media_type_content_type = forms.ChoiceField(
+        label="What do you want to review?", choices=[]
+    )
+
+
+class ReviewMgmtForm(forms.Form):
+    """Adds helper fields that aren't explicitly part of Review Model."""
+
+    create_new_media_type_object = forms.ChoiceField(
+        label="Select existing or create new?",
+        choices=[
+            (False, "Select Existing"),
+            (True, "Create New"),
+        ],
+    )

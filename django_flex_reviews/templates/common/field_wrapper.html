@@ -7,11 +7,21 @@
 {% else %}
     <div class="space-y-6 sm:space-y-5">
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5 {% if border %} sm:border-t sm:border-gray-200 {% endif %}">
-            {{ field.errors }}
-            <label for="{{ field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
-                {{ field.label }}
-            </label>
+            {% if not label_above %}
+                {{ field.errors }}
+                <label for="{{ field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
+                    {{ field.label }}
+                </label>
+            {% else %}
+                <div></div>
+            {% endif %}
             <div class="mt-1 sm:col-span-2 sm:mt-0">
+                {% if label_above %}
+                    {{ field.errors }}
+                    <label for="{{ field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
+                        {{ field.label }}
+                    </label>
+                {% endif %}
                 {% if field_type == "number" %}
                     {{ field|add_class:"mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" }}
                 {% elif field_type == "textarea" %}

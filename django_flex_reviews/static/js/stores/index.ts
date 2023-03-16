@@ -5,6 +5,7 @@ interface State {
   selectedStrategyId: string;
   selectedMediaTypeContentType: string;
   selectedMediaTypeObjectId: string;
+  createNewMediaTypeObject: boolean | undefined;
 }
 
 const useCreateReviewStore = defineStore('createReview', {
@@ -12,6 +13,7 @@ const useCreateReviewStore = defineStore('createReview', {
     selectedStrategyId: '',
     selectedMediaTypeContentType: '',
     selectedMediaTypeObjectId: '',
+    createNewMediaTypeObject: false,
   }),
   actions: {
     initiate() {
@@ -24,9 +26,9 @@ const useCreateReviewStore = defineStore('createReview', {
       this.selectedMediaTypeObjectId = parseJsonScriptFilter(
         'initialSelectedMediaTypeObjectId',
       ) as string;
-    },
-    set(key: keyof State, value: string) {
-      this[key] = value;
+      this.createNewMediaTypeObject = parseJsonScriptFilter(
+        'initialCreateNewMediaTypeObject',
+      ) as boolean;
     },
   },
 });

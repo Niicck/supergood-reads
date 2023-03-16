@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 
 from django_flex_reviews.media_types.forms import BookForm, FilmForm
 from django_flex_reviews.media_types.models import AbstractMediaType, Book, Film
-from django_flex_reviews.reviews.forms import ReviewForm
+from django_flex_reviews.reviews.forms import ReviewForm, ReviewMgmtForm
 from django_flex_reviews.strategies.base.models import AbstractStrategy
 from django_flex_reviews.strategies.ebert.forms import EbertStrategyForm
 from django_flex_reviews.strategies.goodreads.forms import GoodreadsStrategyForm
@@ -44,6 +44,15 @@ class CreateReviewView(TemplateView):
             strategies=self.strategy_form_models,
             media_types=self.media_type_form_models,
         )
+
+        context["review_mgmt_form"] = ReviewMgmtForm(
+            prefix="review_mgmt",
+        )
+        # initial kwarg won't be registered since this field is being rendered in vue,
+        # not a django form_field template
+        context["review_mgmt_form"].fields[
+            "create_new_media_type_object"
+        ].initial = False
 
         context = self.add_forms_to_context(
             context, "strategy_forms", self.strategy_forms

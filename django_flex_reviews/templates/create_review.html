@@ -16,6 +16,7 @@
     {{review_form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
     {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeContentType"}}
     {{review_form.fields.media_type_object_id.initial|json_script:"initialSelectedMediaTypeObjectId"}}
+    {{review_mgmt_form.fields.create_new_media_type_object.initial|json_script:"initialCreateNewMediaTypeObject"}}
 
     <div id="review-form-vue-app">
         <form method="post" class="space-y-8 divide-y divide-gray-200">
@@ -28,18 +29,26 @@
                     {% field_wrapper review_form.completed_at_year border=false %}
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper review_form.media_type_content_type state_key="selectedMediaTypeContentType" field_type="radio_cards" %}
-                    <div>Selected MediaType: [[store.selectedMediaTypeContentType]]</div>
-                    {% for media_type_id, media_type_form in media_type_forms.items %}
-                        <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
-                            <div id="autocomplete-vue-app"></div>
+                    {% field_wrapper review_form.media_type_content_type state_key="selectedMediaTypeContentType" field_type="radio_cards" label_above=True %}
+                    <div v-show="store.selectedMediaTypeContentType">
+                        <div>Selected MediaType: [[store.selectedMediaTypeContentType]]</div>
+                        {% field_wrapper review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" field_type="radio_cards" label_above=True border=False %}
+                        <div v-show="store.createNewMediaTypeObject === false">
+                            <div>what is selected??: [[store.createNewMediaTypeObject]]</div>
                             <div>Selected MediaType ObjectId: [[store.selectedMediaTypeObjectId]]</div>
-                            {% comment %} {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %} {% endcomment %}
-                            {% for field in media_type_form %}
-                                {% field_wrapper field border=false %}
+                            <div id="autocomplete-vue-app"></div>
+                        </div>
+                        <div v-show="store.createNewMediaTypeObject">
+                            {% for media_type_id, media_type_form in media_type_forms.items %}
+                                <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
+                                    {% comment %} {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %} {% endcomment %}
+                                    {% for field in media_type_form %}
+                                        {% field_wrapper field border=false %}
+                                    {% endfor %}
+                                </div>
                             {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
                     {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:store.selectedStrategyId" %}

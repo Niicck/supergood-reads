@@ -1,5 +1,4 @@
 <template>
-  <p>State value is {{ store[stateKey] }}</p>
   <div>
     <RadioGroup v-model="store[stateKey]" name="{{ fieldData.name }}" class="mt-2">
       <RadioGroupLabel class="sr-only"> {{ fieldData.label }} </RadioGroupLabel>
@@ -18,7 +17,7 @@
               checked
                 ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                 : 'ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50',
-              'flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold uppercase sm:flex-1',
+              'flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold capitalize sm:flex-1',
             ]"
           >
             <RadioGroupLabel as="span">{{ choice[1] }}</RadioGroupLabel>

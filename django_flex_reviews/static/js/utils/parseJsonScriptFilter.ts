@@ -1,4 +1,4 @@
-const parseJsonScriptFilter = (value: string): string | object => {
+const parseJsonScriptFilter = (value: string): string | object | boolean => {
   /** Extract contents of "json_script" filter from a django template. */
   if (!value) {
     return '';
