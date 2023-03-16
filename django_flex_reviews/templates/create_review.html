@@ -11,7 +11,6 @@
 {% block content %}
     {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/apps/createReview.ts' %}
-    {% vite_asset 'js/apps/autocomplete.ts' %}
 
     {{review_form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
     {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeContentType"}}
@@ -29,25 +28,32 @@
                     {% field_wrapper review_form.completed_at_year border=false %}
                 </div>
                 <div class="sm:border-t sm:border-gray-200">
+                    <div>Selected MediaType: [[store.selectedMediaTypeContentType]]</div>
+                    <div>Selected MediaType ObjectId: [[store.selectedMediaTypeObjectId]]</div>
                     {% field_wrapper review_form.media_type_content_type state_key="selectedMediaTypeContentType" field_type="radio_cards" label_above=True %}
                     <div v-show="store.selectedMediaTypeContentType">
-                        <div>Selected MediaType: [[store.selectedMediaTypeContentType]]</div>
                         {% field_wrapper review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" field_type="radio_cards" label_above=True border=False %}
-                        <div v-show="store.createNewMediaTypeObject === false">
-                            <div>what is selected??: [[store.createNewMediaTypeObject]]</div>
-                            <div>Selected MediaType ObjectId: [[store.selectedMediaTypeObjectId]]</div>
-                            <div id="autocomplete-vue-app"></div>
-                        </div>
-                        <div v-show="store.createNewMediaTypeObject">
-                            {% for media_type_id, media_type_form in media_type_forms.items %}
-                                <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
-                                    {% comment %} {% field_wrapper review_form.media_type_object_id|attr:"v-model:selectedMediaTypeObjectId" field_type="algolia_autocomplete" border=False %} {% endcomment %}
+                        {% for media_type_id, media_type_form in media_type_forms.items %}
+                            <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
+                                <div v-show="store.createNewMediaTypeObject === false">
+                                    <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5">
+                                        <div class="col-start-2">
+                                            <autocomplete
+                                                state-key="selectedMediaTypeObjectId"
+                                                url={{ media_type_form.autocomplete_url }}
+                                                csrf-token={{csrf_token}}
+                                            >
+                                            </autocomplete>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-show="store.createNewMediaTypeObject === true">
                                     {% for field in media_type_form %}
                                         {% field_wrapper field border=false %}
                                     {% endfor %}
                                 </div>
-                            {% endfor %}
-                        </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="sm:border-t sm:border-gray-200">

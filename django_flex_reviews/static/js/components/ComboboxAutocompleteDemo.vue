@@ -1,18 +1,12 @@
 <template>
-  <input
-    id="replyingto_id"
-    type="hidden"
-    name="replyingto"
-    value="{{ store[stateKey] }}"
-  />
-  <Combobox v-model="selectedResult" by="id">
+  <Combobox v-model="selected" name="assignee">
     <div class="relative mt-1">
       <div
-        class="relative w-full cursor-default overflow-hidden bg-white text-left rounded-md border-gray-300 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
+        class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
       >
         <ComboboxInput
-          class="w-full rounded-md border-gray-300 shadow-sm py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-          :display-value="(result) => (result ? result.title : query)"
+          class="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+          :display-value="(person) => person.name"
           @change="query = $event.target.value"
         />
         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -23,23 +17,24 @@
         leave="transition ease-in duration-100"
         leave-from="opacity-100"
         leave-to="opacity-0"
+        @after-leave="query = ''"
       >
         <ComboboxOptions
           class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
         >
           <div
-            v-if="results.length === 0 && query !== ''"
+            v-if="filteredPeople.length === 0 && query !== ''"
             class="relative cursor-default select-none py-2 px-4 text-gray-700"
           >
             Nothing found.
           </div>
 
           <ComboboxOption
-            v-for="result in results"
+            v-for="person in filteredPeople"
+            :key="person.id"
             v-slot="{ selected, active }"
-            :key="result.id"
             as="template"
-            :value="result"
+            :value="person"
           >
             <li
               class="relative cursor-default select-none py-2 pl-10 pr-4"
@@ -52,7 +47,7 @@
                 class="block truncate"
                 :class="{ 'font-medium': selected, 'font-normal': !selected }"
               >
-                {{ result.display_name }}
+                {{ person.name }}
               </span>
               <span
                 v-if="selected"
@@ -70,9 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import type { PropType } from 'vue';
-import type { State } from '@/static/js/stores';
+import { ref, computed } from 'vue';
 import {
   Combobox,
   ComboboxInput,
@@ -82,57 +75,27 @@ import {
   TransitionRoot,
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import axios from 'axios';
 
-const props = defineProps({
-  stateKey: {
-    type: String as PropType<keyof State>,
-    default: null,
-  },
-  url: {
-    type: String,
-    default: null,
-  },
-  csrfToken: {
-    type: String,
-    default: '',
-  },
-});
+const people = [
+  { id: 1, name: 'Wade Cooper' },
+  { id: 2, name: 'Arlene Mccoy' },
+  { id: 3, name: 'Devon Webb' },
+  { id: 4, name: 'Tom Cook' },
+  { id: 5, name: 'Tanya Fox' },
+  { id: 6, name: 'Hellen Schmidt' },
+];
 
-const store = window.store;
-
+let selected = ref(people[0]);
 let query = ref('');
-let results = ref([]);
-let selectedResult = ref(null);
 
-// Query server for new results whenever the querystring changes.
-watch(query, () => {
-  getResults();
-});
-
-// Update root state with the id of the selected result.
-watch(selectedResult, (newValue) => {
-  store[props.stateKey] = newValue.id;
-});
-
-const getResults = () => {
-  return axios({
-    method: 'get',
-    url: props.url,
-    params: {
-      q: query.value,
-    },
-    timeout: 5000,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': props.csrfToken,
-    },
-  })
-    .then((res) => {
-      results.value = res.data.results;
-    })
-    .catch((error) => {
-      console.log('Error:', error);
-    });
-};
+let filteredPeople = computed(() =>
+  query.value === ''
+    ? people
+    : people.filter((person) =>
+        person.name
+          .toLowerCase()
+          .replace(/\s+/g, '')
+          .includes(query.value.toLowerCase().replace(/\s+/g, '')),
+      ),
+);
 </script>

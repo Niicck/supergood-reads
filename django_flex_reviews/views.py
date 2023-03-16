@@ -1,6 +1,8 @@
 from typing import Any, Dict, List, Type
 
 from django import forms
+from django.db.models import CharField, Value
+from django.db.models.functions import Concat
 from django.http import HttpRequest, JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
@@ -111,13 +113,21 @@ class CreateReviewView(TemplateView):
 
 
 class FilmAutocompleteView(View):
-    limit = 10
+    limit = 20
 
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
         q = query_dict.get("q", "")
-        films = Film.objects.filter(title__icontains=q)[: self.limit]
-        film_values = films.values("id", "title", "release_year")
+        films = Film.objects.filter(title__icontains=q).annotate(
+            display_name=Concat(
+                "title",
+                Value(" ("),
+                "release_year",
+                Value(")"),
+                output_field=CharField(),
+            )
+        )[: self.limit]
+        film_values = films.values("id", "title", "display_name")
 
         return JsonResponse(
             {
@@ -128,13 +138,23 @@ class FilmAutocompleteView(View):
 
 
 class BookAutocompleteView(View):
-    limit = 10
+    limit = 20
 
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
         q = query_dict.get("q", "")
-        books = Book.objects.filter(title__icontains=q)[: self.limit]
-        book_values = books.values("id", "title", "publication_year")
+        books = Book.objects.filter(title__icontains=q).annotate(
+            display_name=Concat(
+                "title",
+                Value(" ("),
+                "author",
+                Value(", "),
+                "publication_year",
+                Value(")"),
+                output_field=CharField(),
+            )
+        )[: self.limit]
+        book_values = books.values("id", "title", "display_name")
 
         return JsonResponse(
             {
