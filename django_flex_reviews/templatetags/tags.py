@@ -1,11 +1,15 @@
 import json
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Union, no_type_check
 
 from django import template
 from django.forms.boundfield import BoundField
-from django.utils.html import _json_script_escapes, format_html
-from django.utils.safestring import mark_safe
+from django.forms.fields import ChoiceField
+from django.utils.html import (  # type: ignore [attr-defined]
+    _json_script_escapes,
+    format_html,
+)
+from django.utils.safestring import SafeText, mark_safe
 
 register = template.Library()
 
@@ -84,10 +88,14 @@ def field_wrapper(
 @register.filter(is_safe=True)
 def field_to_dict(field: BoundField) -> Dict[str, Any]:
     """Convert django field into dict consumable by vue Component props."""
+    if isinstance(field.field, ChoiceField):
+        choices = field.field.choices
+    else:
+        choices = []
     field_data = {
         "name": field.html_name,
         "label": field.label,
-        "choices": field.field.choices,
+        "choices": choices,
     }
     return field_data
 
@@ -105,8 +113,9 @@ Attributes:
 vue_json_script_template = '<div v-show="false"><component v-pre :is="\'script\'" id="{}" type="application/json">{}</component></div>'
 
 
+@no_type_check
 @register.filter(is_safe=True)
-def vue_json_script(value, element_id=None, encoder=None):
+def vue_json_script(value, element_id=None, encoder=None) -> SafeText:
     """
     Modify default json_script filter to work with vue.
 
