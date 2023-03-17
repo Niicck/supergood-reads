@@ -1,9 +1,8 @@
 import json
-from typing import TypeAlias, TypedDict
+from typing import Any, TypeAlias, TypedDict, Union
 from uuid import UUID
 
 import pytest
-from django.http import JsonResponse
 from django.test import Client
 from django.urls import reverse
 
@@ -62,10 +61,10 @@ def book_data() -> FixtureData:
     ]
 
 
-def cmp(actual: JsonResponse, expected: list[FixtureData]):
+def cmp(actual: Any, expected: FixtureData) -> bool:
     """Compare just the "id" and "title" fields between two dictionaries."""
 
-    def filter(d):
+    def filter(d: Union[Any, FixtureDataItem]) -> dict[str, Any]:
         return {k: v for k, v in d.items() if k in ["id", "title"]}
 
     return [filter(d) for d in actual] == [filter(d) for d in expected]

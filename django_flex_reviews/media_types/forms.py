@@ -1,14 +1,15 @@
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from django import forms
+from django.db.models.base import Model
 from django.urls import reverse
 
 from .models import Book, Film
 
-MediaTypeT = TypeVar("MediaTypeT")
+_M = TypeVar("_M", bound=Model)
 
 
-class MediaTypeAutocomplete(forms.ModelForm[Generic[MediaTypeT]]):
+class MediaTypeAutocomplete(forms.ModelForm[_M]):
     """ModelForm that includes option to select an existing model via autocomplete.
 
     Properties:
