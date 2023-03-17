@@ -93,8 +93,9 @@ def field_to_dict(field: BoundField) -> Dict[str, Any]:
     else:
         choices = []
     field_data = {
-        "name": field.html_name,
+        "html_name": field.html_name,
         "label": field.label,
+        "id_for_label": field.id_for_label,
         "choices": choices,
     }
     return field_data
@@ -119,8 +120,9 @@ def vue_json_script(value, element_id=None, encoder=None) -> SafeText:
     """
     Modify default json_script filter to work with vue.
 
-    If you try to use the json_script within a vue application, the script will not be
-    read. You  will see this error:
+    If you try to use the json_script filter within a vue application (i.e. within a
+    child html element of the root component that the vue app is mounted onto), then the
+    outputted <script> will not be read. You will instead see this error:
 
     [Vue warn]: Template compilation error: Tags with side effect (<script> and <style>)
     are ignored in client component templates.

@@ -16,6 +16,7 @@
     {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeContentType"}}
     {{review_form.fields.media_type_object_id.initial|json_script:"initialSelectedMediaTypeObjectId"}}
     {{review_mgmt_form.fields.create_new_media_type_object.initial|json_script:"initialCreateNewMediaTypeObject"}}
+    {{review_form.media_type_object_id|field_to_dict|json_script:"media_type_object_id_field_data"}}
 
     <div id="review-form-vue-app">
         <form method="post" class="space-y-8 divide-y divide-gray-200">
@@ -39,6 +40,7 @@
                                     <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5">
                                         <div class="col-start-2">
                                             <autocomplete
+                                                field-data-json-script-id="media_type_object_id_field_data"
                                                 state-key="selectedMediaTypeObjectId"
                                                 url={{ media_type_form.autocomplete_url }}
                                                 csrf-token={{csrf_token}}

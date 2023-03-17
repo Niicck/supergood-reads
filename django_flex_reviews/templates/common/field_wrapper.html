@@ -30,12 +30,14 @@
                     {{ field|attr:"type:hidden" }}
                     <div id="media-type-autocomplete"></div>
                 {% elif field_type == "radio_cards" %}
-                    {{field|field_to_dict|vue_json_script:radio_cards_json_script_id}}
-                    <radio-cards
-                        json-script-id={{radio_cards_json_script_id}}
-                        state-key={{state_key}}
-                    >
-                    </radio-cards>
+                    {% with field_data_json_script_id="radio_cards_json_script_id_"|add:field.id_for_label %}
+                        {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
+                        <radio-cards
+                            field-data-json-script-id={{field_data_json_script_id}}
+                            state-key={{state_key}}
+                        >
+                        </radio-cards>
+                    {% endwith %}
                 {% else %}
                     {{ field|add_class:"block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
                 {% endif %}

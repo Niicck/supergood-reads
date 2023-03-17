@@ -1,10 +1,5 @@
 <template>
-  <input
-    id="replyingto_id"
-    type="hidden"
-    name="replyingto"
-    value="{{ store[stateKey] }}"
-  />
+  <input type="hidden" name="{{ fieldData.html_name }}" value="{{ store[stateKey] }}" />
   <Combobox v-model="selectedResult" by="id">
     <div class="relative mt-1">
       <div
@@ -70,9 +65,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { PropType } from 'vue';
-import type { State } from '@/static/js/stores';
 import {
   Combobox,
   ComboboxInput,
@@ -83,38 +77,92 @@ import {
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
+import type { State } from '@/static/js/stores';
+import type { FieldData } from '@/static/js/types';
+import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
+
+type Result = {
+  id: string;
+  title: string;
+  display_name: string;
+};
 
 const props = defineProps({
+  /**
+   * The element from the pinia store's State that you want to be bound to the Combobox
+   * selectedResult.id.
+   */
   stateKey: {
     type: String as PropType<keyof State>,
     default: null,
   },
+  /**
+   * The id attribute of the <script> element where the django field's metadata was
+   * was stored as an output of the django json_script filter.
+   */
+  fieldDataJsonScriptId: {
+    type: String,
+    default: null,
+  },
+  /**
+   * The url of the autocomplete endpoint to query for eligible results.
+   */
   url: {
     type: String,
     default: null,
   },
+  /**
+   * The django csrfToken to authenticate queries to props.url.
+   */
   csrfToken: {
     type: String,
     default: '',
   },
 });
 
-const store = window.store;
-
+const fieldData = ref<FieldData>({
+  html_name: '',
+  label: '',
+  id_for_label: '',
+  choices: [],
+});
 let query = ref('');
-let results = ref([]);
-let selectedResult = ref(null);
+let results = ref<Array<Result>>([]);
+let selectedResult = ref<Result | null>(null);
+
+const store = window.store;
 
 // Query server for new results whenever the querystring changes.
 watch(query, () => {
   getResults();
 });
 
-// Update root state with the id of the selected result.
+/**
+ * Update root state with the id of the selected result.
+ * We don't want to save the entire selectedResult in the state, only the id.
+ * That id is also bound to a hidden input field. It will be bound to to the django
+ * form field specified by fieldData.html_name.
+ */
 watch(selectedResult, (newValue) => {
-  store[props.stateKey] = newValue.id;
+  if (newValue) {
+    store[props.stateKey] = newValue.id;
+  } else {
+    store[props.stateKey] = '';
+  }
 });
 
+/**
+ * Retrieve the fieldData value from the json data embedded into a <script> tag by the
+ * json_script django filter.
+ */
+onMounted(() => {
+  fieldData.value = parseJsonScriptFilter(props.fieldDataJsonScriptId) as FieldData;
+});
+
+/**
+ * Query the props.url autocomplete django view endpoint for elements that match the
+ * query value.
+ */
 const getResults = () => {
   return axios({
     method: 'get',

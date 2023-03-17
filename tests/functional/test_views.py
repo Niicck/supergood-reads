@@ -3,6 +3,7 @@ from typing import TypeAlias, TypedDict
 from uuid import UUID
 
 import pytest
+from django.http import JsonResponse
 from django.test import Client
 from django.urls import reverse
 
@@ -61,6 +62,15 @@ def book_data() -> FixtureData:
     ]
 
 
+def cmp(actual: JsonResponse, expected: list[FixtureData]):
+    """Compare just the "id" and "title" fields between two dictionaries."""
+
+    def filter(d):
+        return {k: v for k, v in d.items() if k in ["id", "title"]}
+
+    return [filter(d) for d in actual] == [filter(d) for d in expected]
+
+
 @pytest.mark.django_db
 class TestFilmAutocompleteView:
     def test_without_q(self, client: Client, film_data: FixtureData) -> None:
@@ -74,7 +84,7 @@ class TestFilmAutocompleteView:
         url = reverse("film_autocomplete")
         response = client.get(url)
         assert response.status_code == 200
-        assert json.loads(response.content)["results"] == film_data
+        assert cmp(json.loads(response.content)["results"], film_data)
 
     def test_with_q(self, client: Client, film_data: FixtureData) -> None:
         """Should only return queried film."""
@@ -87,7 +97,7 @@ class TestFilmAutocompleteView:
         url = reverse("film_autocomplete")
         response = client.get(url, {"q": "Charade"})
         assert response.status_code == 200
-        assert json.loads(response.content)["results"] == [film_data[2]]
+        assert cmp(json.loads(response.content)["results"], [film_data[2]])
 
 
 @pytest.mark.django_db
@@ -103,7 +113,7 @@ class TestBookAutocompleteView:
         url = reverse("book_autocomplete")
         response = client.get(url)
         assert response.status_code == 200
-        assert json.loads(response.content)["results"] == book_data
+        assert cmp(json.loads(response.content)["results"], book_data)
 
     def test_with_q(self, client: Client, book_data: FixtureData) -> None:
         """Should only return queried film."""
@@ -116,4 +126,4 @@ class TestBookAutocompleteView:
         url = reverse("book_autocomplete")
         response = client.get(url, {"q": "Anna"})
         assert response.status_code == 200
-        assert json.loads(response.content)["results"] == [book_data[2]]
+        assert cmp(json.loads(response.content)["results"], [book_data[2]])

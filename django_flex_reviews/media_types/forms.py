@@ -20,7 +20,7 @@ class MediaTypeAutocomplete(forms.ModelForm[Generic[MediaTypeT]]):
     autocomplete_url_name: str
 
     @property
-    def autocomplete_url(self):
+    def autocomplete_url(self) -> str:
         return reverse(self.autocomplete_url_name)
 
 

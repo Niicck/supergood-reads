@@ -32,35 +32,43 @@
 import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import type { State } from '@/static/js/stores';
+import type { FieldData } from '@/static/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
 
-type FieldData = {
-  name: string;
-  label: string;
-  choices: Array<Array<string | number | boolean>>;
-};
-
-const fieldData = ref<FieldData>({
-  name: '',
-  label: '',
-  choices: [],
-});
-
 const props = defineProps({
+  /**
+   * The element from the pinia store's State that you want to be bound to the selected
+   * value of the RadioGroup.
+   */
   stateKey: {
     type: String as PropType<keyof State>,
     default: null,
   },
-  jsonScriptId: {
+  /**
+   * The id attribute of the <script> element where the django field's metadata was
+   * was stored as an output of the django json_script filter.
+   */
+  fieldDataJsonScriptId: {
     type: String,
     default: null,
   },
 });
 
+const fieldData = ref<FieldData>({
+  html_name: '',
+  label: '',
+  id_for_label: '',
+  choices: [],
+});
+
 const store = window.store;
 
+/**
+ * Retrieve the fieldData value from the json data embedded into a <script> tag by the
+ * json_script django filter.
+ */
 onMounted(() => {
-  fieldData.value = parseJsonScriptFilter(props.jsonScriptId) as FieldData;
+  fieldData.value = parseJsonScriptFilter(props.fieldDataJsonScriptId) as FieldData;
 });
 </script>

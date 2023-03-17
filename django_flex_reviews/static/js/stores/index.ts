@@ -1,15 +1,16 @@
 import { defineStore } from 'pinia';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
 import { ref, onMounted, watch } from 'vue';
+import type { Ref } from 'vue';
 
 interface State {
-  selectedStrategyId: string;
-  selectedMediaTypeContentType: string;
-  selectedMediaTypeObjectId: string;
-  createNewMediaTypeObject: boolean | undefined;
+  selectedStrategyId: Ref<string>;
+  selectedMediaTypeContentType: Ref<string>;
+  selectedMediaTypeObjectId: Ref<string>;
+  createNewMediaTypeObject: Ref<boolean | undefined>;
 }
 
-const useCreateReviewStore = defineStore('createReview', () => {
+const useCreateReviewStore = defineStore('createReview', (): State => {
   const selectedStrategyId = ref('');
   const selectedMediaTypeContentType = ref('');
   const selectedMediaTypeObjectId = ref('');
