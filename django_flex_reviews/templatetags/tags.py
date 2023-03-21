@@ -24,7 +24,7 @@ CustomFieldTypeOption = Literal[
 ]
 
 
-@register.inclusion_tag("common/field_wrapper.html")
+@register.inclusion_tag("django_flex_reviews/_field_wrapper.html")
 def field_wrapper(
     field: BoundField,
     border: bool = True,

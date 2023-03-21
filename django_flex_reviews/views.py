@@ -19,7 +19,7 @@ from django_flex_reviews.utils.json import UUIDEncoder
 
 
 class CreateReviewView(TemplateView):
-    template_name = "create_review.html"
+    template_name = "django_flex_reviews/create_review.html"
     strategy_forms: List[Type[forms.ModelForm[Any]]] = [
         EbertStrategyForm,
         GoodreadsStrategyForm,

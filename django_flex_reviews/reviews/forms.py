@@ -8,6 +8,21 @@ from django_flex_reviews.reviews.models import Review
 from django_flex_reviews.strategies.base.models import AbstractStrategy
 from django_flex_reviews.utils import Utils
 
+MONTH_CHOICES = (
+    (1, "Jan"),
+    (2, "Feb"),
+    (3, "Mar"),
+    (4, "Apr"),
+    (5, "May"),
+    (6, "Jun"),
+    (7, "Jul"),
+    (8, "Aug"),
+    (9, "Sep"),
+    (10, "Oct"),
+    (11, "Nov"),
+    (12, "Dec"),
+)
+
 
 class ReviewForm(forms.ModelForm[Review]):
     def __init__(
@@ -68,11 +83,25 @@ class ReviewForm(forms.ModelForm[Review]):
         ]
         labels = {
             "text": "Review",
+            "completed_at_year": "Year",
         }
 
     strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
     media_type_content_type = forms.ChoiceField(
         label="What do you want to review?", choices=[]
+    )
+    completed_at_day = forms.ChoiceField(
+        label="Day",
+        required=False,
+        choices=[(None, ""), *((i, i) for i in range(1, 32))],
+    )
+    completed_at_month = forms.ChoiceField(
+        label="Month",
+        required=False,
+        choices=[
+            (None, ""),
+            *MONTH_CHOICES,
+        ],
     )
 
 
