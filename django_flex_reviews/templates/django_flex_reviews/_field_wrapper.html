@@ -8,7 +8,6 @@
     <div class="space-y-6 sm:space-y-5">
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5 {% if border %} sm:border-t sm:border-gray-200 {% endif %}">
             {% if not label_above %}
-                {{ field.errors }}
                 <label for="{{ field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
                     {{ field.label }}
                 </label>
@@ -16,8 +15,8 @@
                 <div></div>
             {% endif %}
             <div class="mt-1 sm:col-span-2 sm:mt-0">
+                {{ field.errors }}
                 {% if label_above %}
-                    {{ field.errors }}
                     <label for="{{ field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
                         {{ field.label }}
                     </label>

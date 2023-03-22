@@ -37,12 +37,12 @@ tsc-check:
 # Run django app
 .PHONY: up
 up:
-	poetry run python manage.py runserver
+	poetry run python manage.py runserver ${DJANGO_RUNSERVER_PORT}
 
 # Run django app with debugger enabled
 .PHONY: debug-up
 debug-up:
-	poetry run python -m debugpy --listen localhost:5678 manage.py runserver
+	poetry run python -m debugpy --listen localhost:5678 manage.py runserver ${DJANGO_RUNSERVER_PORT}
 
 # Run vite static asset compilation
 .PHONY: vite
@@ -73,3 +73,8 @@ pytest:
 .PHONY: debug-pytest
 debug-pytest:
 	poetry run python -m debugpy --listen localhost:5678 --wait-for-client -m pytest
+
+# Run frontend javascript tests with jest.
+.PHONY: jest
+jest:
+	npm run jest

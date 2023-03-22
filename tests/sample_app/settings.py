@@ -99,10 +99,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# Django Extensions
+# django-extensions
 SHELL_PLUS = "ipython"
 
-# Django-vite
+# django-vite
 DJANGO_VITE_ASSETS_PATH = os.path.join(PROJECT_ROOT, env("DJANGO_VITE_ASSETS_PATH"))
 DJANGO_VITE_DEV_MODE = DEBUG
 DJANGO_VITE_DEV_SERVER_PORT = env("DJANGO_VITE_DEV_SERVER_PORT")

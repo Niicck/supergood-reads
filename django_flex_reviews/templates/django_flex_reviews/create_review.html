@@ -46,7 +46,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-show="store.createNewMediaTypeObject === true">
+                                <div v-show="store.createNewMediaTypeObject === true" ref={{media_type_id|get_media_type_form_ref}}>
                                     {% for field in media_type_form %}
                                         {% field_wrapper field border=false %}
                                     {% endfor %}
@@ -103,7 +103,7 @@
                 <div class="sm:border-t sm:border-gray-200">
                     {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:store.selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms.items %}
-                        <div v-show="{{strategy_id}} == store.selectedStrategyId">
+                        <div v-show="{{strategy_id}} == store.selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>
                             {% for field in strategy_form %}
                                 {% field_wrapper field border=false %}
                             {% endfor %}

@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Optional, Type
 
 from django import forms
 from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from django.http import HttpRequest, JsonResponse
+from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
 
@@ -56,34 +57,27 @@ class CreateReviewView(TemplateView):
             "create_new_media_type_object"
         ].initial = False
 
-        context = self.add_forms_to_context(
-            context, "strategy_forms", self.strategy_forms
-        )
-        context = self.add_forms_to_context(
-            context, "media_type_forms", self.media_type_forms
-        )
+        context["strategy_forms"] = self.initialize_forms(self.strategy_forms)
+        context["media_type_forms"] = self.initialize_forms(self.media_type_forms)
 
         return context
 
-    def add_forms_to_context(
+    def initialize_forms(
         self,
-        context: Dict[str, Any],
-        form_group_name: str,
         forms: List[Type[forms.ModelForm[Any]]],
-    ) -> Dict[str, Any]:
+        post_data: Optional[Any] = None,
+    ) -> Dict[int, forms.ModelForm[Any]]:
         """Add a list of forms to the context of the rendered template.
 
         Args:
-            context:
-                the existing context_data object.
-            form_group_name:
-                the key used to access the forms on the context object
             forms:
-                list of forms to add under the form_group_name in the context
+              list of forms to initialize
+            post_data:
+              optional request.POST data to handle form submissions.
 
         The returned context object uses the content_type_id as the dictionary key.
         This is because the ReviewForm uses the model's content_type_id to select
-        which model to use. The ReviewForm connects to strategy and media_type via a
+        which model to use. The Review model relates to Strategy and MediaType via a
         GenericForeignKey, which makes it necessary to specify which model we are
         relating to.
 
@@ -91,25 +85,47 @@ class CreateReviewView(TemplateView):
         can select the correct ModelForm by the content_type selected in the ReviewForm.
 
         Example:
-            self.add_forms_to_context(context, "strategy_forms", self.strategy_forms)
+            self.initialize_forms(self.strategy_forms)
 
             Returns:
-
                 {
-                    "strategy_forms": {
-                        7: EbertStrategyForm(),
-                        8: GoodreadsStrategyForm(),
-                        9: MaximusStrategyForm(),
-                    }
+                    7: EbertStrategyForm(),
+                    8: GoodreadsStrategyForm(),
+                    9: MaximusStrategyForm(),
                 }
         """
-        context[form_group_name] = {}
+        initialized_forms = {}
         for form in forms:
             form_model = form()._meta.model
             model_name = form_model._meta.model_name
             model_content_type_id = Utils.get_content_type_id(form_model)
-            context[form_group_name][model_content_type_id] = form(prefix=model_name)
-        return context
+            if post_data:
+                initialized_form = form(post_data, prefix=model_name)
+            else:
+                initialized_form = form(prefix=model_name)
+            initialized_forms[model_content_type_id] = initialized_form
+        return initialized_forms
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        review_form = ReviewForm(request.POST, prefix="review")
+        review_mgmt_form = ReviewMgmtForm(request.POST, prefix="review_mgmt")
+        strategy_forms = self.initialize_forms(
+            self.strategy_forms, post_data=request.POST
+        )
+        media_type_forms = self.initialize_forms(
+            self.media_type_forms, post_data=request.POST
+        )
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "review_form": review_form,
+                "review_mgmt_form": review_mgmt_form,
+                "strategy_forms": strategy_forms,
+                "media_type_forms": media_type_forms,
+            },
+        )
 
 
 class FilmAutocompleteView(View):

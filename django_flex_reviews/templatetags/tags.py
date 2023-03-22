@@ -143,3 +143,13 @@ def vue_json_script(value, element_id=None, encoder=None) -> SafeText:
         template = '<script type="application/json">{}</script>'
         args = (mark_safe(json_str),)  # noqa: S703,S308
     return format_html(template, *args)
+
+
+@register.filter(is_safe=True)
+def get_media_type_form_ref(media_type_id: int) -> str:
+    return f"media_type_form_{media_type_id}"
+
+
+@register.filter(is_safe=True)
+def get_strategy_form_ref(strategy_id: int) -> str:
+    return f"strategy_form_{strategy_id}"
