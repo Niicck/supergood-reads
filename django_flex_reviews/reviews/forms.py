@@ -1,6 +1,7 @@
 from typing import Any, List, Optional, Type, Union
 
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.forms.fields import ChoiceField
 
 from django_flex_reviews.media_types.models import AbstractMediaType
@@ -25,6 +26,41 @@ MONTH_CHOICES = (
 
 
 class ReviewForm(forms.ModelForm[Review]):
+    class Meta:
+        model = Review
+        fields = [
+            "completed_at_day",
+            "completed_at_month",
+            "completed_at_year",
+            "text",
+            "media_type_content_type",
+            "media_type_object_id",
+            "strategy_content_type",
+        ]
+        labels = {
+            "text": "Review",
+            "completed_at_year": "Year",
+        }
+
+    media_type_content_type = forms.ChoiceField(
+        label="What do you want to review?", choices=[]
+    )
+    strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
+
+    completed_at_day = forms.ChoiceField(
+        label="Day",
+        required=False,
+        choices=[(None, ""), *((i, i) for i in range(1, 32))],
+    )
+    completed_at_month = forms.ChoiceField(
+        label="Month",
+        required=False,
+        choices=[
+            (None, ""),
+            *MONTH_CHOICES,
+        ],
+    )
+
     def __init__(
         self,
         *args: Any,
@@ -42,67 +78,51 @@ class ReviewForm(forms.ModelForm[Review]):
         self.strategies = strategies or []
         self.media_types = media_types or []
         super().__init__(*args, **kwargs)
-        self.add_models_to_content_type_field("strategy_content_type", self.strategies)
-        self.add_models_to_content_type_field(
-            "media_type_content_type", self.media_types
-        )
 
-    def add_models_to_content_type_field(
+        self.add_models_to_choice_field("media_type_content_type", self.media_types)
+        self.add_models_to_choice_field("strategy_content_type", self.strategies)
+
+    def add_models_to_choice_field(
         self,
-        content_type_field_name: str,
+        choice_field_name: str,
         models: Union[List[Type[AbstractStrategy]], List[Type[AbstractMediaType]]],
     ) -> None:
         """Plug in models' content_type_ids into ChoiceField for a ContentType relation.
 
+        The ChoiceField functions like a homegrown ModelChoiceField that is
+        json serializable and can be injected into vue templates.
+
         Args:
-          content_type_field_name:
-            Name of the ChoiceField to add choices to. This should be a ForeignKey to
-            the ContentType table.
+          choice_field_name:
+            Name of a ChoiceField with a ForeignKey to the ContentType table.
           models:
-            List of models that can be selected from the content_type_field
+            List of models whose content_type_ids will be added as choices to "field".
         """
-        content_type_field = self.fields[content_type_field_name]
-        assert isinstance(content_type_field, ChoiceField)
-        content_type_field.choices = []
+        field = self.fields[choice_field_name]
+        assert isinstance(field, ChoiceField)
+
+        field.choices = []
         for model in models:
             model_content_type_id = Utils.get_content_type_id(model)
             model_name = model._meta.verbose_name
             choice = (model_content_type_id, model_name)
-            content_type_field.choices.append(choice)
+            field.choices.append(choice)
 
-    class Meta:
-        model = Review
-        fields = [
-            "completed_at_day",
-            "completed_at_month",
-            "completed_at_year",
-            "text",
-            "strategy_content_type",
-            "media_type_content_type",
-            "media_type_object_id",
-        ]
-        labels = {
-            "text": "Review",
-            "completed_at_year": "Year",
-        }
+    def clean_strategy_content_type(self) -> ContentType:
+        """Convert content_type_id into actual ContentType model."""
+        data = self.cleaned_data["strategy_content_type"]
+        content_type_model = ContentType.objects.get_for_id(data)
+        return content_type_model
 
-    strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
-    media_type_content_type = forms.ChoiceField(
-        label="What do you want to review?", choices=[]
-    )
-    completed_at_day = forms.ChoiceField(
-        label="Day",
-        required=False,
-        choices=[(None, ""), *((i, i) for i in range(1, 32))],
-    )
-    completed_at_month = forms.ChoiceField(
-        label="Month",
-        required=False,
-        choices=[
-            (None, ""),
-            *MONTH_CHOICES,
-        ],
-    )
+    def clean_media_type_content_type(self) -> ContentType:
+        """Convert content_type_id into actual ContentType model."""
+        data = self.cleaned_data["media_type_content_type"]
+        content_type_model = ContentType.objects.get_for_id(data)
+        return content_type_model
+
+    def clean(self) -> Any:
+        cleaned_data = super().clean()
+        return cleaned_data
 
 
 class ReviewMgmtForm(forms.Form):

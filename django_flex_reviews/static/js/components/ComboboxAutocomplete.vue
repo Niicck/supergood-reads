@@ -1,5 +1,5 @@
 <template>
-  <input type="hidden" name="{{ fieldData.html_name }}" value="{{ store[stateKey] }}" />
+  <input v-model="store[stateKey]" type="hidden" :name="fieldData.html_name" />
   <Combobox v-model="selectedResult" by="id">
     <div class="relative mt-1">
       <div

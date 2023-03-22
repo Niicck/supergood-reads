@@ -107,7 +107,12 @@ class CreateReviewView(TemplateView):
         return initialized_forms
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        review_form = ReviewForm(request.POST, prefix="review")
+        review_form = ReviewForm(
+            request.POST,
+            prefix="review",
+            strategies=self.strategy_form_models,
+            media_types=self.media_type_form_models,
+        )
         review_mgmt_form = ReviewMgmtForm(request.POST, prefix="review_mgmt")
         strategy_forms = self.initialize_forms(
             self.strategy_forms, post_data=request.POST
