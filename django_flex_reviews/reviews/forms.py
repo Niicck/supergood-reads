@@ -1,10 +1,10 @@
+from enum import Enum
 from typing import Any, List, Optional, Type, Union
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.forms.fields import ChoiceField
 
-from django_flex_reviews.fields import BoolVueChoiceField
 from django_flex_reviews.media_types.models import AbstractMediaType
 from django_flex_reviews.reviews.models import Review
 from django_flex_reviews.strategies.base.models import AbstractStrategy
@@ -105,20 +105,23 @@ class ReviewForm(forms.ModelForm[Review]):
         field.choices = []
         for model in models:
             model_content_type_id = Utils.get_content_type_id(model)
+            stringified_model_content_type_id = str(model_content_type_id)
             model_name = model._meta.verbose_name
-            choice = (model_content_type_id, model_name)
+            choice = (stringified_model_content_type_id, model_name)
             field.choices.append(choice)
 
     def clean_strategy_content_type(self) -> ContentType:
         """Convert content_type_id into actual ContentType model."""
         data = self.cleaned_data["strategy_content_type"]
-        content_type_model = ContentType.objects.get_for_id(data)
+        content_type_id = int(data)
+        content_type_model = ContentType.objects.get_for_id(content_type_id)
         return content_type_model
 
     def clean_media_type_content_type(self) -> ContentType:
         """Convert content_type_id into actual ContentType model."""
         data = self.cleaned_data["media_type_content_type"]
-        content_type_model = ContentType.objects.get_for_id(data)
+        content_type_id = int(data)
+        content_type_model = ContentType.objects.get_for_id(content_type_id)
         return content_type_model
 
     def clean(self) -> Any:
@@ -126,11 +129,17 @@ class ReviewForm(forms.ModelForm[Review]):
         return cleaned_data
 
 
+class CreateNewMediaOption(Enum):
+    SELECT_EXISTING = "SELECT_EXISTING"
+    CREATE_NEW = "CREATE_NEW"
+
+
 class ReviewMgmtForm(forms.Form):
-    create_new_media_type_object = BoolVueChoiceField(
+    create_new_media_type_object = ChoiceField(
         label="Select existing or create new?",
         choices=[
-            (False, "Select Existing"),
-            (True, "Create New"),
+            (CreateNewMediaOption.SELECT_EXISTING.value, "Select Existing"),
+            (CreateNewMediaOption.CREATE_NEW.value, "Create New"),
         ],
+        initial=CreateNewMediaOption.SELECT_EXISTING.value,
     )

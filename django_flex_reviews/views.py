@@ -47,16 +47,7 @@ class CreateReviewView(TemplateView):
             strategies=self.strategy_form_models,
             media_types=self.media_type_form_models,
         )
-
-        context["review_mgmt_form"] = ReviewMgmtForm(
-            prefix="review_mgmt",
-        )
-        # initial kwarg won't be registered since this field is being rendered in vue,
-        # not a django form_field template
-        context["review_mgmt_form"].fields[
-            "create_new_media_type_object"
-        ].initial = False
-
+        context["review_mgmt_form"] = ReviewMgmtForm(prefix="review_mgmt")
         context["strategy_forms"] = self.initialize_forms(self.strategy_forms)
         context["media_type_forms"] = self.initialize_forms(self.media_type_forms)
 
@@ -66,7 +57,7 @@ class CreateReviewView(TemplateView):
         self,
         forms: List[Type[forms.ModelForm[Any]]],
         post_data: Optional[Any] = None,
-    ) -> Dict[int, forms.ModelForm[Any]]:
+    ) -> Dict[str, forms.ModelForm[Any]]:
         """Add a list of forms to the context of the rendered template.
 
         Args:
@@ -89,9 +80,9 @@ class CreateReviewView(TemplateView):
 
             Returns:
                 {
-                    7: EbertStrategyForm(),
-                    8: GoodreadsStrategyForm(),
-                    9: MaximusStrategyForm(),
+                    "7": EbertStrategyForm(),
+                    "8": GoodreadsStrategyForm(),
+                    "9": MaximusStrategyForm(),
                 }
         """
         initialized_forms = {}
@@ -99,11 +90,12 @@ class CreateReviewView(TemplateView):
             form_model = form()._meta.model
             model_name = form_model._meta.model_name
             model_content_type_id = Utils.get_content_type_id(form_model)
+            stringified_model_content_type_id = str(model_content_type_id)
             if post_data:
                 initialized_form = form(post_data, prefix=model_name)
             else:
                 initialized_form = form(prefix=model_name)
-            initialized_forms[model_content_type_id] = initialized_form
+            initialized_forms[stringified_model_content_type_id] = initialized_form
         return initialized_forms
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:

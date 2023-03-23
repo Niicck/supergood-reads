@@ -248,3 +248,6 @@ tsconfig.tsbuildinfo
 
 # local
 .local
+
+# mac
+.DS_Store

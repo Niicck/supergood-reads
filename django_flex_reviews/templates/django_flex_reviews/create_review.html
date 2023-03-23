@@ -12,10 +12,13 @@
     {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/apps/createReview.ts' %}
 
-    {{review_form.fields.strategy_content_type.initial|json_script:"initialSelectedStrategyId"}}
-    {{review_form.fields.media_type_content_type.initial|json_script:"initialSelectedMediaTypeContentType"}}
-    {{review_form.fields.media_type_object_id.initial|json_script:"initialSelectedMediaTypeObjectId"}}
-    {{review_mgmt_form.fields.create_new_media_type_object.initial|json_script:"initialCreateNewMediaTypeObject"}}
+    {% comment %} Convert initial field values into json for use in vue conponents. {% endcomment %}
+    {{review_form|get_field_value:"strategy_content_type"|json_script:"initialSelectedStrategyId"}}
+    {{review_form|get_field_value:"media_type_content_type"|json_script:"initialSelectedMediaTypeContentType"}}
+    {{review_form|get_field_value:"media_type_object_id"|json_script:"initialSelectedMediaTypeObjectId"}}
+    {{review_mgmt_form|get_field_value:"create_new_media_type_object"|json_script:"initialCreateNewMediaTypeObject"}}
+
+    {% comment %} Convert media_type_object_id field data into json for use in vue components. {% endcomment %}
     {{review_form.media_type_object_id|field_to_dict|json_script:"media_type_object_id_field_data"}}
 
     <div id="review-form-vue-app">
@@ -33,7 +36,7 @@
                         {% field_wrapper review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" field_type="radio_cards" border=False %}
                         {% for media_type_id, media_type_form in media_type_forms.items %}
                             <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
-                                <div v-show="store.createNewMediaTypeObject === false">
+                                <div v-show="!store.shouldCreateNewMediaTypeObject">
                                     <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5">
                                         <div class="col-start-2">
                                             <autocomplete
@@ -46,7 +49,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-show="store.createNewMediaTypeObject === true" ref={{media_type_id|get_media_type_form_ref}}>
+                                <div v-show="store.shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
                                     {% for field in media_type_form %}
                                         {% field_wrapper field border=false %}
                                     {% endfor %}

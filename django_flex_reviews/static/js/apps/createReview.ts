@@ -90,13 +90,13 @@ const RootComponent = defineComponent({
     // Handle "required" attribute toggling for new MediaType Instance forms.
     this.$watch(
       () => [
-        this.store.createNewMediaTypeObject,
+        this.store.shouldCreateNewMediaTypeObject,
         this.store.selectedMediaTypeContentType,
       ],
-      ([createNewMediaTypeObject, selectedMediaTypeContentType]) => {
+      ([shouldCreateNewMediaTypeObject, selectedMediaTypeContentType]) => {
         toggleRequiredFieldsOnForms(
           'media_type_form_',
-          createNewMediaTypeObject as boolean,
+          shouldCreateNewMediaTypeObject as boolean,
           selectedMediaTypeContentType as string,
         );
       },
