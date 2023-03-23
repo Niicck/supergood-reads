@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.forms.fields import ChoiceField
 
+from django_flex_reviews.fields import BoolVueChoiceField
 from django_flex_reviews.media_types.models import AbstractMediaType
 from django_flex_reviews.reviews.models import Review
 from django_flex_reviews.strategies.base.models import AbstractStrategy
@@ -126,9 +127,7 @@ class ReviewForm(forms.ModelForm[Review]):
 
 
 class ReviewMgmtForm(forms.Form):
-    """Adds helper fields that aren't explicitly part of Review Model."""
-
-    create_new_media_type_object = forms.ChoiceField(
+    create_new_media_type_object = BoolVueChoiceField(
         label="Select existing or create new?",
         choices=[
             (False, "Select Existing"),

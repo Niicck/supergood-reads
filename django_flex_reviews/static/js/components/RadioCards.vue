@@ -1,6 +1,7 @@
 <template>
   <div>
-    <RadioGroup v-model="store[stateKey]" :name="fieldData.html_name" class="mt-2">
+    <input v-model="store[stateKey]" type="hidden" :name="fieldData.html_name" />
+    <RadioGroup v-model="store[stateKey]" class="mt-2">
       <RadioGroupLabel class="sr-only"> {{ fieldData.label }} </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
         <RadioGroupOption
