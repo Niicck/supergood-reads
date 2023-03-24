@@ -48,18 +48,22 @@ class ReviewForm(forms.ModelForm[Review]):
     )
     strategy_content_type = forms.ChoiceField(label="Rating Schema", choices=[])
 
-    completed_at_day = forms.ChoiceField(
+    completed_at_day = forms.TypedChoiceField(
         label="Day",
         required=False,
         choices=[(None, ""), *((i, i) for i in range(1, 32))],
+        coerce=int,
+        empty_value=None,
     )
-    completed_at_month = forms.ChoiceField(
+    completed_at_month = forms.TypedChoiceField(
         label="Month",
         required=False,
         choices=[
             (None, ""),
             *MONTH_CHOICES,
         ],
+        coerce=int,
+        empty_value=None,
     )
 
     def __init__(

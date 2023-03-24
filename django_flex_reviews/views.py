@@ -1,7 +1,9 @@
+import logging
 from typing import Any, Dict, List, Optional, Type
 
 from django import forms
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from django.http import HttpRequest, JsonResponse
@@ -18,6 +20,8 @@ from django_flex_reviews.strategies.goodreads.forms import GoodreadsStrategyForm
 from django_flex_reviews.strategies.maximus.forms import MaximusStrategyForm
 from django_flex_reviews.utils import Utils
 from django_flex_reviews.utils.json import UUIDEncoder
+
+logger = logging.getLogger(__name__)
 
 
 class CreateReviewView(TemplateView):
@@ -146,6 +150,13 @@ class CreateReviewView(TemplateView):
             )
             selected_media_type_form = None
 
+        if (
+            not should_create_new_media_type_object
+            and not review_form.cleaned_data.get("media_type_object_id")
+        ):
+            review_form.add_error("media_type_object_id", "This field is required.")
+            any_invalid = True
+
         # Validate Strategy forms
         selected_strategy_content_type = review_form.cleaned_data.get(
             "strategy_content_type"
@@ -166,7 +177,9 @@ class CreateReviewView(TemplateView):
                 self.strategy_forms, post_data=request.POST
             )
             selected_strategy_form = None
+            any_invalid = True
 
+        # If any forms are invalid, render the form again with error messages.
         if any_invalid:
             messages.error(request, "Please fix the errors below.")
             return render(
@@ -179,9 +192,36 @@ class CreateReviewView(TemplateView):
                     "media_type_forms": media_type_forms,
                 },
             )
-        else:
-            messages.success(request, "Added review for [some movie].")
-            return redirect("create_review")
+
+        # Save to database
+        try:
+            with transaction.atomic():
+                assert selected_media_type_form
+                assert selected_strategy_form
+                review = review_form.save(commit=False)
+                assert review.media_type
+                if should_create_new_media_type_object:
+                    media_type = selected_media_type_form.save()
+                    review.media_type_object_id = media_type.id
+                strategy = selected_strategy_form.save()
+                review.strategy_object_id = strategy.id
+                review.save()
+        except Exception:
+            logger.exception("Failed to create Review")
+            messages.error(request, "Server Error.")
+            return render(
+                request,
+                self.template_name,
+                {
+                    "review_form": review_form,
+                    "review_mgmt_form": review_mgmt_form,
+                    "strategy_forms": strategy_forms,
+                    "media_type_forms": media_type_forms,
+                },
+            )
+
+        messages.success(request, f"Added review for {review.media_type.title}.")
+        return redirect("create_review")
 
 
 class FilmAutocompleteView(View):

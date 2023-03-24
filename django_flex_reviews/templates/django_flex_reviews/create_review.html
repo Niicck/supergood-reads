@@ -41,6 +41,7 @@
                                 <div v-show="!store.shouldCreateNewMediaTypeObject">
                                     <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5">
                                         <div class="col-start-2">
+                                            {{ review_form.media_type_object_id.errors }}
                                             <autocomplete
                                                 field-data-json-script-id="media_type_object_id_field_data"
                                                 state-key="selectedMediaTypeObjectId"

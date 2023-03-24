@@ -1,6 +1,8 @@
 import uuid
+from typing import Any
 
 from django.db import models
+from django.utils import timezone
 
 
 class AbstractMediaType(models.Model):
@@ -8,12 +10,22 @@ class AbstractMediaType(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(default="", max_length=256)
+    created_at = models.DateTimeField(null=False)
+    updated_at = models.DateTimeField(default=timezone.now, null=False)
 
     class Meta:
         abstract = True
 
     def __str__(self) -> str:
         return self.title
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.clean()
+        now = timezone.now()
+        if self._state.adding:
+            self.created_at = now
+        self.updated_at = now
+        super().save(*args, **kwargs)
 
 
 class Genre(models.Model):

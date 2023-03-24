@@ -37,7 +37,7 @@ class Review(models.Model):
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
         ContentType,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="strategy_review_set",
         blank=True,
         null=True,
