@@ -38,8 +38,8 @@ export default defineConfig((mode) => {
       outDir: resolve(env.DJANGO_VITE_ASSETS_PATH),
       rollupOptions: {
         input: {
-          autocomplete: resolve('./django_flex_reviews/static/js/apps/autocomplete.ts'),
           createReview: resolve('./django_flex_reviews/static/js/apps/createReview.ts'),
+          messages: resolve('./django_flex_reviews/static/js/apps/messages.ts'),
           tailwind: resolve('./django_flex_reviews/static/css/tailwind.css.js'),
           css: resolve('./django_flex_reviews/static/css/main.css.js'),
         },

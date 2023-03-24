@@ -1,0 +1,14 @@
+{% load django_vite %}
+{% vite_asset 'js/apps/messages.ts' %}
+
+<div id="messages-vue-app">
+    {% if messages %}
+        {% for message in messages %}
+            <simple-notification
+                message="{{message.message}}"
+                level-tag="{{message.level_tag}}"
+            >
+            </simple-notification>
+        {% endfor %}
+    {% endif %}
+</div>

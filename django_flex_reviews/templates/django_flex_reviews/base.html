@@ -14,13 +14,7 @@
 
     <body class="h-full">
         <div class="py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            {% if messages %}
-                <ul class="messages pb-5">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {% include "django_flex_reviews/_messages.html" %}
             <header>
                 <div>
                     <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900">

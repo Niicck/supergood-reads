@@ -29,8 +29,8 @@
                     {% with field_data_json_script_id="radio_cards_json_script_id_"|add:field.id_for_label %}
                         {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
                         <radio-cards
-                            field-data-json-script-id={{field_data_json_script_id}}
-                            state-key={{state_key}}
+                            field-data-json-script-id="{{field_data_json_script_id}}"
+                            state-key="{{state_key}}"
                         >
                         </radio-cards>
                     {% endwith %}
