@@ -196,13 +196,13 @@ class CreateReviewView(TemplateView):
         # Save to database
         try:
             with transaction.atomic():
-                assert selected_media_type_form
-                assert selected_strategy_form
                 review = review_form.save(commit=False)
                 assert review.media_type
                 if should_create_new_media_type_object:
+                    assert selected_media_type_form
                     media_type = selected_media_type_form.save()
                     review.media_type_object_id = media_type.id
+                assert selected_strategy_form
                 strategy = selected_strategy_form.save()
                 review.strategy_object_id = strategy.id
                 review.save()

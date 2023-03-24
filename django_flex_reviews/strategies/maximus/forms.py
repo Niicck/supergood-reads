@@ -12,6 +12,7 @@ class MaximusStrategyForm(forms.ModelForm[MaximusStrategy]):
         ),
         widget=forms.RadioSelect,
         label="Is it good?",
+        initial=True,
     )
 
     class Meta:
