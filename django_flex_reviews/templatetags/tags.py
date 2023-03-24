@@ -189,8 +189,8 @@ def get_field_value(form: Form, field_name: str) -> Any:
     """
     if form.is_bound:
         bound_field = form[field_name]
-        bound_data = bound_field.value()
-        return bound_data
+        bound_value = bound_field.value()
+        return bound_value
     else:
         form_field = form.fields[field_name]
         initial_value = form.get_initial_for_field(form_field, field_name)

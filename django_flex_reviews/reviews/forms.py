@@ -143,3 +143,8 @@ class ReviewMgmtForm(forms.Form):
         ],
         initial=CreateNewMediaOption.SELECT_EXISTING.value,
     )
+
+    def clean_create_new_media_type_object(self) -> bool:
+        data = self.cleaned_data["create_new_media_type_object"]
+        should_create_new = data == CreateNewMediaOption.CREATE_NEW.value
+        return should_create_new

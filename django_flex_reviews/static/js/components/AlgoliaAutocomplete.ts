@@ -17,13 +17,13 @@ const mountAutocomplete = () => {
           sourceId: 'links',
           getItems({ query }) {
             return [
-              { label: 'Star Wars', id: '1' },
-              { label: 'Gone with the Wind', id: '2' },
-              { label: 'Lord of the Rings', id: '3' },
-              { label: 'Steel Magnolias', id: '4' },
+              { label: 'The Seventh Seal', id: '1' },
+              { label: 'Rebel without a Cause', id: '2' },
+              { label: 'Seven Samurai', id: '3' },
+              { label: 'Before Sunset', id: '4' },
               {
                 label:
-                  "Don't be a Menace to South Central while Drinking your Juice in the Hood",
+                  'Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb',
                 id: '5',
               },
             ].filter(({ label }) => label.toLowerCase().includes(query.toLowerCase()));

@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Optional, Type
 
 from django import forms
+from django.contrib import messages
 from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from django.http import HttpRequest, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import TemplateView
 
@@ -57,6 +58,7 @@ class CreateReviewView(TemplateView):
         self,
         forms: List[Type[forms.ModelForm[Any]]],
         post_data: Optional[Any] = None,
+        selected_content_type_id: Optional[int] = None,
     ) -> Dict[str, forms.ModelForm[Any]]:
         """Add a list of forms to the context of the rendered template.
 
@@ -65,6 +67,10 @@ class CreateReviewView(TemplateView):
               list of forms to initialize
             post_data:
               optional request.POST data to handle form submissions.
+            selected_content_type_id:
+              The content_type_id for the model that was selected to be filled out by
+              the client. The form associated with this model is the only form that will
+              have post_data applied to it.
 
         The returned context object uses the content_type_id as the dictionary key.
         This is because the ReviewForm uses the model's content_type_id to select
@@ -91,7 +97,7 @@ class CreateReviewView(TemplateView):
             model_name = form_model._meta.model_name
             model_content_type_id = Utils.get_content_type_id(form_model)
             stringified_model_content_type_id = str(model_content_type_id)
-            if post_data:
+            if post_data and model_content_type_id == selected_content_type_id:
                 initialized_form = form(post_data, prefix=model_name)
             else:
                 initialized_form = form(prefix=model_name)
@@ -99,30 +105,83 @@ class CreateReviewView(TemplateView):
         return initialized_forms
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        any_invalid = False
+
+        # Validate ReviewForm
         review_form = ReviewForm(
             request.POST,
             prefix="review",
             strategies=self.strategy_form_models,
             media_types=self.media_type_form_models,
         )
-        review_mgmt_form = ReviewMgmtForm(request.POST, prefix="review_mgmt")
-        strategy_forms = self.initialize_forms(
-            self.strategy_forms, post_data=request.POST
-        )
-        media_type_forms = self.initialize_forms(
-            self.media_type_forms, post_data=request.POST
-        )
+        if not review_form.is_valid():
+            any_invalid = True
 
-        return render(
-            request,
-            self.template_name,
-            {
-                "review_form": review_form,
-                "review_mgmt_form": review_mgmt_form,
-                "strategy_forms": strategy_forms,
-                "media_type_forms": media_type_forms,
-            },
+        # Validate ReviewMgmtForm
+        review_mgmt_form = ReviewMgmtForm(request.POST, prefix="review_mgmt")
+        if not review_mgmt_form.is_valid():
+            any_invalid = True
+
+        # Validate MediaType forms
+        should_create_new_media_type_object = review_mgmt_form.cleaned_data.get(
+            "create_new_media_type_object"
         )
+        selected_media_type_content_type = review_form.cleaned_data.get(
+            "media_type_content_type"
+        )
+        if should_create_new_media_type_object and selected_media_type_content_type:
+            media_type_forms = self.initialize_forms(
+                self.media_type_forms,
+                post_data=request.POST,
+                selected_content_type_id=selected_media_type_content_type.id,
+            )
+            selected_media_type_form = media_type_forms[
+                str(selected_media_type_content_type.id)
+            ]
+            if not selected_media_type_form.is_valid():
+                any_invalid = True
+        else:
+            media_type_forms = self.initialize_forms(
+                self.media_type_forms, post_data=request.POST
+            )
+            selected_media_type_form = None
+
+        # Validate Strategy forms
+        selected_strategy_content_type = review_form.cleaned_data.get(
+            "strategy_content_type"
+        )
+        if selected_strategy_content_type:
+            strategy_forms = self.initialize_forms(
+                self.strategy_forms,
+                post_data=request.POST,
+                selected_content_type_id=selected_strategy_content_type.id,
+            )
+            selected_strategy_form = strategy_forms[
+                str(selected_strategy_content_type.id)
+            ]
+            if not selected_strategy_form.is_valid():
+                any_invalid = True
+        else:
+            strategy_forms = self.initialize_forms(
+                self.strategy_forms, post_data=request.POST
+            )
+            selected_strategy_form = None
+
+        if any_invalid:
+            messages.error(request, "Please fix the errors below.")
+            return render(
+                request,
+                self.template_name,
+                {
+                    "review_form": review_form,
+                    "review_mgmt_form": review_mgmt_form,
+                    "strategy_forms": strategy_forms,
+                    "media_type_forms": media_type_forms,
+                },
+            )
+        else:
+            messages.success(request, "Added review for [some movie].")
+            return redirect("create_review")
 
 
 class FilmAutocompleteView(View):
