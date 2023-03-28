@@ -1,8 +1,8 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
-from django_flex_reviews.media_types.models import Book
-from django_flex_reviews.utils import Utils
+from supergood_review_site.media_types.models import Book
+from supergood_review_site.utils import Utils
 
 
 @pytest.mark.django_db

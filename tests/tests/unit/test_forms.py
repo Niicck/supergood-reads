@@ -1,9 +1,9 @@
 import pytest
 from django.forms.fields import ChoiceField
 
-from django_flex_reviews.media_types.models import Book, Film
-from django_flex_reviews.reviews.forms import ReviewForm
-from django_flex_reviews.strategies.models import (
+from supergood_review_site.media_types.models import Book, Film
+from supergood_review_site.reviews.forms import ReviewForm
+from supergood_review_site.strategies.models import (
     EbertStrategy,
     GoodreadsStrategy,
     MaximusStrategy,
@@ -22,7 +22,7 @@ class TestReviewForm:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setattr(
-            "django_flex_reviews.utils.Utils.get_content_type_id", lambda _: 1
+            "supergood_review_site.utils.Utils.get_content_type_id", lambda _: 1
         )
         review_form = ReviewForm(
             strategies=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
@@ -30,12 +30,12 @@ class TestReviewForm:
         )
         assert isinstance(review_form.fields["strategy_content_type"], ChoiceField)
         assert review_form.fields["strategy_content_type"].choices == [
-            (1, "Maximus"),
-            (1, "Ebert"),
-            (1, "Goodreads"),
+            ("1", "Maximus"),
+            ("1", "Ebert"),
+            ("1", "Goodreads"),
         ]
         assert isinstance(review_form.fields["media_type_content_type"], ChoiceField)
         assert review_form.fields["media_type_content_type"].choices == [
-            (1, "Book"),
-            (1, "Film"),
+            ("1", "Book"),
+            ("1", "Film"),
         ]

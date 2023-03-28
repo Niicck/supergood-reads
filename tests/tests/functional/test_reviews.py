@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from django_flex_reviews.reviews.models import Review
+from supergood_review_site.reviews.models import Review
 from tests.factories import ReviewFactory
 
 

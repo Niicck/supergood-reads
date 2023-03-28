@@ -5,10 +5,10 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.forms.fields import ChoiceField
 
-from django_flex_reviews.media_types.models import AbstractMediaType
-from django_flex_reviews.reviews.models import Review
-from django_flex_reviews.strategies.base.models import AbstractStrategy
-from django_flex_reviews.utils import Utils
+from supergood_review_site.media_types.models import AbstractMediaType
+from supergood_review_site.reviews.models import Review
+from supergood_review_site.strategies.base.models import AbstractStrategy
+from supergood_review_site.utils import Utils
 
 MONTH_CHOICES = (
     (1, "Jan"),

@@ -82,9 +82,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Local
-    "django_flex_reviews",  # add django_flex_reviews
+    "supergood_review_site",  # add supergood_review_site
     "tests.sample_app",  # add your own local app
     # Third Party
+    "django_extensions",
     "django_vite",  # add django-vite
     "widget_tweaks",  # add django-widget-tweaks
 ]

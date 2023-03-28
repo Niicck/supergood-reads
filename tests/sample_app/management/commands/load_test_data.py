@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
-from django_flex_reviews.media_types.models import Book, Country, Film, Genre
+from supergood_review_site.media_types.models import Book, Country, Film, Genre
 
 
 class Command(BaseCommand):

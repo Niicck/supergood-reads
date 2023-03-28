@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from django_flex_reviews.admin import ReviewAdmin
-from django_flex_reviews.models import Review
+from supergood_review_site.admin import ReviewAdmin
+from supergood_review_site.models import Review
 
 admin.site.register(Review, ReviewAdmin)

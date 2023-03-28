@@ -13,7 +13,7 @@ module.exports = {
      * Templates in django project (BASE_DIR/<any_app_name>/templates).
      * Adjust the following line to match your project structure.
      */
-    'django_flex_reviews/**/templates/**/*.html',
+    'supergood_review_site/**/templates/**/*.html',
 
     /**
      * JS: If you use Tailwind CSS in JavaScript, uncomment the following lines and make sure
@@ -22,13 +22,13 @@ module.exports = {
     /* JS 1: Ignore any JavaScript in node_modules folder. */
     '!**/node_modules',
     /* JS 2: Process all JavaScript files in the project. */
-    'django_flex_reviews/**/*.{js,jsx,ts,tsx,vue}',
+    'supergood_review_site/**/*.{js,jsx,ts,tsx,vue}',
 
     /**
      * Python: If you use Tailwind CSS classes in Python, uncomment the following line
      * and make sure the pattern below matches your project structure.
      */
-    'django_flex_reviews/**/*.py',
+    'supergood_review_site/**/*.py',
   ],
   theme: {
     extend: {},

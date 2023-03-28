@@ -11,21 +11,21 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import TemplateView
 
-from django_flex_reviews.media_types.forms import BookForm, FilmForm
-from django_flex_reviews.media_types.models import AbstractMediaType, Book, Film
-from django_flex_reviews.reviews.forms import ReviewForm, ReviewMgmtForm
-from django_flex_reviews.strategies.base.models import AbstractStrategy
-from django_flex_reviews.strategies.ebert.forms import EbertStrategyForm
-from django_flex_reviews.strategies.goodreads.forms import GoodreadsStrategyForm
-from django_flex_reviews.strategies.maximus.forms import MaximusStrategyForm
-from django_flex_reviews.utils import Utils
-from django_flex_reviews.utils.json import UUIDEncoder
+from supergood_review_site.media_types.forms import BookForm, FilmForm
+from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
+from supergood_review_site.reviews.forms import ReviewForm, ReviewMgmtForm
+from supergood_review_site.strategies.base.models import AbstractStrategy
+from supergood_review_site.strategies.ebert.forms import EbertStrategyForm
+from supergood_review_site.strategies.goodreads.forms import GoodreadsStrategyForm
+from supergood_review_site.strategies.maximus.forms import MaximusStrategyForm
+from supergood_review_site.utils import Utils
+from supergood_review_site.utils.json import UUIDEncoder
 
 logger = logging.getLogger(__name__)
 
 
 class CreateReviewView(TemplateView):
-    template_name = "django_flex_reviews/create_review.html"
+    template_name = "supergood_review_site/create_review.html"
     strategy_forms: List[Type[forms.ModelForm[Any]]] = [
         EbertStrategyForm,
         GoodreadsStrategyForm,

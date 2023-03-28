@@ -8,7 +8,7 @@ import factory.fuzzy
 from django.conf import settings
 from faker import Faker
 
-from django_flex_reviews import models
+from supergood_review_site import models
 
 fake = Faker()
 

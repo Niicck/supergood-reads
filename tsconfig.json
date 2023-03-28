@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["django_flex_reviews/*"]
+      "@/*": ["supergood_review_site/*"]
     }
   },
   "exclude": ["node_modules", "**/*.spec.ts"]

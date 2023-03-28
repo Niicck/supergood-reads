@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from django_flex_reviews.strategies.base.models import AbstractStrategy
+from supergood_review_site.strategies.base.models import AbstractStrategy
 
 
 def letterboxd_star_validator(value: Decimal) -> None:

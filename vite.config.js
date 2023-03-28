@@ -19,11 +19,11 @@ export default defineConfig((mode) => {
     plugins: [vue()],
     resolve: {
       alias: {
-        '@': resolve('./django_flex_reviews'),
+        '@': resolve('./supergood_review_site'),
         'vue': 'vue/dist/vue.esm-bundler.js',
       },
     },
-    root: resolve('./django_flex_reviews/static'),
+    root: resolve('./supergood_review_site/static'),
     base: '/static/',
     css: {
       postcss: postcssConfig,
@@ -38,10 +38,12 @@ export default defineConfig((mode) => {
       outDir: resolve(env.DJANGO_VITE_ASSETS_PATH),
       rollupOptions: {
         input: {
-          createReview: resolve('./django_flex_reviews/static/js/apps/createReview.ts'),
-          messages: resolve('./django_flex_reviews/static/js/apps/messages.ts'),
-          tailwind: resolve('./django_flex_reviews/static/css/tailwind.css.js'),
-          css: resolve('./django_flex_reviews/static/css/main.css.js'),
+          createReview: resolve(
+            './supergood_review_site/static/js/apps/createReview.ts',
+          ),
+          messages: resolve('./supergood_review_site/static/js/apps/messages.ts'),
+          tailwind: resolve('./supergood_review_site/static/css/tailwind.css.js'),
+          css: resolve('./supergood_review_site/static/css/main.css.js'),
         },
         output: {
           chunkFileNames: undefined,

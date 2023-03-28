@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from django_flex_reviews.strategies.base.models import AbstractStrategy
+from supergood_review_site.strategies.base.models import AbstractStrategy
 
 
 class GoodreadsStrategy(AbstractStrategy):

@@ -52,12 +52,12 @@ vite:
 # Start django python shell
 .PHONY: shell
 shell:
-	poetry run python manage.py shell
+	poetry run python manage.py shell_plus
 
 # Start debugable python shell.
 .PHONY: debug-shell
 debug-shell:
-	poetry run python -m debugpy --listen localhost:5678 manage.py shell
+	poetry run python -m debugpy --listen localhost:5678 manage.py shell_plus
 
 # Create a superuser for your django app
 .PHONY: superuser
