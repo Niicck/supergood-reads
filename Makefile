@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 .PHONY: install
 install:
-	poetry --with dev
+	poetry install --with dev
 
 # Start venv
 .PHONY: venv
