@@ -1,4 +1,5 @@
 import csv
+import logging
 from pathlib import Path
 
 from django.conf import settings
@@ -6,6 +7,8 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
 from supergood_review_site.media_types.models import Book, Country, Film, Genre
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -28,8 +31,8 @@ class Command(BaseCommand):
     help = "Load fixture data"
     batch_size = 1000
 
-    def handle(self, verbose: bool = False) -> None:
-        self.verbose = verbose
+    def handle(self, *args, **options) -> None:
+        self.verbosity = options.get("verbosity")
         self.load_films("bfi_2022")
         self.load_films("bfi_2022_directors")
         self.load_films("imdb_top_1000")
@@ -46,12 +49,12 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def load_films(self, filename: str) -> None:
-        print(f"~~~~ Loading {filename} films")
+        logger.info(f"~~~~ Loading {filename} films")
         with open(self.get_csv_file(filename), newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if self.verbose:
-                    print(f"     {row['title']}")
+                if self.verbosity >= 2:
+                    logger.info(f"     {row['title']}")
 
                 genre_instances = []
                 country_instances = []
@@ -85,12 +88,12 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def load_books(self, filename: str) -> None:
-        print(f"~~~~ Loading {filename} books")
+        logger.info(f"~~~~ Loading {filename} books")
         with open(self.get_csv_file(filename), newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if self.verbose:
-                    print(f"     {row['title']}")
+                if self.verbosity >= 2:
+                    logger.info(f"     {row['title']}")
 
                 genre_instances = []
 
@@ -115,4 +118,4 @@ class Command(BaseCommand):
                 book.genres.add(*genre_instances)
 
     def success(self) -> None:
-        print("Fixtures loaded sucessfully")
+        logger.info("Fixtures loaded sucessfully")
