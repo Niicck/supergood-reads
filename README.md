@@ -74,7 +74,7 @@ Now that your dependencies have been installed, you're ready to run the app.
 If you want to make contributions to the project, you need to run one additional installation step.
 
 1. Install nox
-   - `pip install --user --upgrade nox`
+   - `pip install --upgrade nox`
    - [Nox](https://nox.thea.codes/en/stable/index.html) is used to manage the execution of this test suite. Nox is useful for testing reuseable external libraries that require testing across multiple versions of python or django.
 2. Install pre-commit
    - https://pre-commit.com/#install to install the pre-commit program itself.
