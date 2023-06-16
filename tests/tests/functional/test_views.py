@@ -6,6 +6,9 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 
+from supergood_review_site.models import Book, Film, GoodreadsStrategy, Review
+from supergood_review_site.reviews.forms import CreateNewMediaOption
+from supergood_review_site.utils import Utils
 from tests.factories import BookFactory, FilmFactory
 
 
@@ -126,3 +129,85 @@ class TestBookAutocompleteView:
         response = client.get(url, {"q": "Anna"})
         assert response.status_code == 200
         assert cmp(json.loads(response.content)["results"], [book_data[2]])
+
+
+@pytest.mark.django_db
+class TestCreateReviewView:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.url = reverse("create_review")
+        self.book_content_type = Utils.get_content_type_id(Book)
+        self.film_content_type = Utils.get_content_type_id(Film)
+
+    @pytest.fixture
+    def create_review_data(self) -> dict:
+        """dict(request.POST.items()) from CreateReviewView.post"""
+        return {
+            "review-media_type_content_type": "",
+            "review_mgmt-create_new_media_type_object": CreateNewMediaOption.SELECT_EXISTING.value,
+            "review-media_type_object_id": "",
+            "book-title": "",
+            "book-author": "",
+            "book-publication_year": "",
+            "book-pages": "",
+            "film-title": "",
+            "film-director": "",
+            "film-release_year": "",
+            "review-completed_at_day": "",
+            "review-completed_at_month": "",
+            "review-completed_at_year": "",
+            "review-strategy_content_type": Utils.get_content_type_id(
+                GoodreadsStrategy
+            ),
+            "ebertstrategy-rating": "",
+            "goodreadsstrategy-stars": "5",
+            "maximusstrategy-recommended": "",
+            "review-text": "It was good.",
+        }
+
+    def test_existing_book(self, client: Client, create_review_data: dict):
+        book = BookFactory.create()
+        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["review-media_type_object_id"] = book.id
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 302
+        review = Review.objects.first()
+        assert review.media_type == book
+        assert review.strategy.stars == 5
+        assert review.text == "It was good."
+
+    def test_existing_film(self, client: Client, create_review_data: dict):
+        film = FilmFactory.create()
+        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["review-media_type_object_id"] = film.id
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 302
+        review = Review.objects.first()
+        assert review.media_type == film
+        assert review.strategy.stars == 5
+        assert review.text == "It was good."
+
+    def test_create_new_book(self, client: Client, create_review_data: dict):
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 302
+        assert Review.objects.count() == 1
+        assert Review.objects.count() == 1
+
+    def test_create_new_film(self, client: Client, create_review_data: dict):
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 302
+        assert Review.objects.count() == 1
+
+    def test_missing_book(self, client: Client, create_review_data: dict):
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
+        # Assert we did right error message :)
+        raise NotImplementedError
+
+    def test_missing_film(self, client: Client, create_review_data: dict):
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
+        # Assert we did right error message :)
+        raise NotImplementedError

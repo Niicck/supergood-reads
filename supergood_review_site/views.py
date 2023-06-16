@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional, Type
 
 from django import forms
+from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import CharField, Value
@@ -109,6 +110,10 @@ class CreateReviewView(TemplateView):
         return initialized_forms
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        if settings.DEBUG:
+            request_data = dict(request.POST.items())
+            logger.info(request_data)
+
         any_invalid = False
 
         # Validate ReviewForm
@@ -191,6 +196,7 @@ class CreateReviewView(TemplateView):
                     "strategy_forms": strategy_forms,
                     "media_type_forms": media_type_forms,
                 },
+                status=400,
             )
 
         # Save to database
@@ -218,6 +224,7 @@ class CreateReviewView(TemplateView):
                     "strategy_forms": strategy_forms,
                     "media_type_forms": media_type_forms,
                 },
+                status=500,
             )
 
         messages.success(request, f"Added review for {review.media_type.title}.")
