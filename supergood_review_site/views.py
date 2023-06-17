@@ -203,7 +203,6 @@ class CreateReviewView(TemplateView):
         try:
             with transaction.atomic():
                 review = review_form.save(commit=False)
-                assert review.media_type
                 if should_create_new_media_type_object:
                     assert selected_media_type_form
                     media_type = selected_media_type_form.save()

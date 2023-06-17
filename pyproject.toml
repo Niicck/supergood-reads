@@ -48,6 +48,7 @@ debugpy = "^1.6.5"
 pytest = "^7.2.0"
 pytest-django = "^4.5"
 factory-boy = "^3.2.1"
+beautifulsoup4 = "^4.12.2"
 
 [tool.poetry.group.coverage.dependencies]
 coverage = "^7.1.0"

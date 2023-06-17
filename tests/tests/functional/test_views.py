@@ -3,6 +3,7 @@ from typing import Any, TypeAlias, TypedDict, Union
 from uuid import UUID
 
 import pytest
+from bs4 import BeautifulSoup
 from django.test import Client
 from django.urls import reverse
 
@@ -144,7 +145,7 @@ class TestCreateReviewView:
         """dict(request.POST.items()) from CreateReviewView.post"""
         return {
             "review-media_type_content_type": "",
-            "review_mgmt-create_new_media_type_object": CreateNewMediaOption.SELECT_EXISTING.value,
+            "review_mgmt-create_new_media_type_object": "",
             "review-media_type_object_id": "",
             "book-title": "",
             "book-author": "",
@@ -167,6 +168,9 @@ class TestCreateReviewView:
 
     def test_existing_book(self, client: Client, create_review_data: dict):
         book = BookFactory.create()
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.book_content_type
         create_review_data["review-media_type_object_id"] = book.id
         response = client.post(self.url, create_review_data)
@@ -178,6 +182,9 @@ class TestCreateReviewView:
 
     def test_existing_film(self, client: Client, create_review_data: dict):
         film = FilmFactory.create()
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.film_content_type
         create_review_data["review-media_type_object_id"] = film.id
         response = client.post(self.url, create_review_data)
@@ -188,26 +195,115 @@ class TestCreateReviewView:
         assert review.text == "It was good."
 
     def test_create_new_book(self, client: Client, create_review_data: dict):
+        book = BookFactory.build()  # not saved to database
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["book-title"] = book.title
+        create_review_data["book-author"] = book.author
+        create_review_data["book-publication_year"] = book.publication_year
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
-        assert Review.objects.count() == 1
-        assert Review.objects.count() == 1
+        review = Review.objects.first()
+        assert review.media_type.title == book.title
 
     def test_create_new_film(self, client: Client, create_review_data: dict):
+        film = FilmFactory.build()  # not saved to database
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["film-title"] = film.title
+        create_review_data["film-director"] = film.director
+        create_review_data["film-release_year"] = film.release_year
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
-        assert Review.objects.count() == 1
+        review = Review.objects.first()
+        assert review.media_type.title == film.title
 
-    def test_missing_book(self, client: Client, create_review_data: dict):
+    def test_missing_selected_book(self, client: Client, create_review_data: dict):
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.SELECT_EXISTING.value
+        create_review_data["review-media_type_content_type"] = self.book_content_type
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Assert we did right error message :)
-        raise NotImplementedError
+        # Check that book selection has error message above it.
+        soup = BeautifulSoup(response.content, "html.parser")
+        assert (
+            soup.find("autocomplete", attrs={"url": "/app/book-autocomplete/"})
+            .parent.find("ul", attrs={"class": "errorlist"})
+            .find("li")
+            .text
+        ) == "This field is required."
 
-    def test_missing_film(self, client: Client, create_review_data: dict):
+    def test_missing_selected_film(self, client: Client, create_review_data: dict):
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.SELECT_EXISTING.value
+        create_review_data["review-media_type_content_type"] = self.film_content_type
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Assert we did right error message :)
-        raise NotImplementedError
+        # Check that book selection has error message above it.
+        soup = BeautifulSoup(response.content, "html.parser")
+        assert (
+            soup.find("autocomplete", attrs={"url": "/app/film-autocomplete/"})
+            .parent.find("ul", attrs={"class": "errorlist"})
+            .find("li")
+            .text
+        ) == "This field is required."
+
+    def test_missing_new_book(self, client: Client, create_review_data: dict):
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["book-title"] = ""
+        create_review_data["book-author"] = ""
+        create_review_data["book-publication_year"] = ""
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
+
+    def test_missing_new_film(self, client: Client, create_review_data: dict):
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["film-title"] = ""
+        create_review_data["film-director"] = ""
+        create_review_data["film-release_year"] = ""
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
+
+    def test_new_book_with_wrong_fields(self, client: Client, create_review_data: dict):
+        # Submit data for new Film, even though Book was the selected content_type
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.book_content_type
+        film = FilmFactory.build()  # not saved to database
+        create_review_data["film-title"] = film.title
+        create_review_data["film-director"] = film.director
+        create_review_data["film-release_year"] = film.release_year
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
+
+    def test_new_film_with_wrong_fields(self, client: Client, create_review_data: dict):
+        # Submit data for new Book, even though Film was the selected content_type
+        create_review_data[
+            "review_mgmt-create_new_media_type_object"
+        ] = CreateNewMediaOption.CREATE_NEW.value
+        create_review_data["review-media_type_content_type"] = self.film_content_type
+        book = BookFactory.build()  # not saved to database
+        create_review_data["book-title"] = book.title
+        create_review_data["book-author"] = book.author
+        create_review_data["book-publication_year"] = book.publication_year
+        response = client.post(self.url, create_review_data)
+        assert response.status_code == 400
+        assert Review.objects.count() == 0
