@@ -225,8 +225,8 @@ class CreateReviewView(TemplateView):
                 },
                 status=500,
             )
-
-        messages.success(request, f"Added review for {review.media_type.title}.")
+        if review.media_type:
+            messages.success(request, f"Added review for {review.media_type.title}.")
         return redirect("create_review")
 
 

@@ -1,6 +1,7 @@
 import csv
 import logging
 from pathlib import Path
+from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -31,8 +32,8 @@ class Command(BaseCommand):
     help = "Load fixture data"
     batch_size = 1000
 
-    def handle(self, *args, **options) -> None:
-        self.verbosity = options.get("verbosity")
+    def handle(self, *args: Any, **options: Any) -> None:
+        self.verbosity = options.get("verbosity", 0)
         self.load_films("bfi_2022")
         self.load_films("bfi_2022_directors")
         self.load_films("imdb_top_1000")

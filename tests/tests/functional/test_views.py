@@ -3,7 +3,7 @@ from typing import Any, TypeAlias, TypedDict, Union
 from uuid import UUID
 
 import pytest
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from django.test import Client
 from django.urls import reverse
 
@@ -21,6 +21,8 @@ class FixtureDataItem(TypedDict, total=False):
 
 
 FixtureData: TypeAlias = list[FixtureDataItem]
+
+CreateReviewData: TypeAlias = dict[str, Any]
 
 
 @pytest.fixture
@@ -135,13 +137,13 @@ class TestBookAutocompleteView:
 @pytest.mark.django_db
 class TestCreateReviewView:
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self) -> None:
         self.url = reverse("create_review")
         self.book_content_type = Utils.get_content_type_id(Book)
         self.film_content_type = Utils.get_content_type_id(Film)
 
     @pytest.fixture
-    def create_review_data(self) -> dict:
+    def create_review_data(self) -> CreateReviewData:
         """dict(request.POST.items()) from CreateReviewView.post"""
         return {
             "review-media_type_content_type": "",
@@ -166,7 +168,9 @@ class TestCreateReviewView:
             "review-text": "It was good.",
         }
 
-    def test_existing_book(self, client: Client, create_review_data: dict):
+    def test_existing_book(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         book = BookFactory.create()
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -176,11 +180,15 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
         review = Review.objects.first()
+        assert review
         assert review.media_type == book
+        assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
 
-    def test_existing_film(self, client: Client, create_review_data: dict):
+    def test_existing_film(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         film = FilmFactory.create()
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -190,11 +198,15 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
         review = Review.objects.first()
+        assert review
         assert review.media_type == film
+        assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
 
-    def test_create_new_book(self, client: Client, create_review_data: dict):
+    def test_create_new_book(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         book = BookFactory.build()  # not saved to database
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -206,9 +218,13 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
         review = Review.objects.first()
+        assert review
+        assert review.media_type
         assert review.media_type.title == book.title
 
-    def test_create_new_film(self, client: Client, create_review_data: dict):
+    def test_create_new_film(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         film = FilmFactory.build()  # not saved to database
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -220,9 +236,13 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 302
         review = Review.objects.first()
+        assert review
+        assert review.media_type
         assert review.media_type.title == film.title
 
-    def test_missing_selected_book(self, client: Client, create_review_data: dict):
+    def test_missing_selected_book(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
@@ -230,16 +250,21 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Check that book selection has error message above it.
+        # Check that book autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
         assert (
-            soup.find("autocomplete", attrs={"url": "/app/book-autocomplete/"})
-            .parent.find("ul", attrs={"class": "errorlist"})
-            .find("li")
-            .text
-        ) == "This field is required."
+            autocomplete_tag := soup.find(
+                "autocomplete", attrs={"url": "/app/book-autocomplete/"}
+            )
+        )
+        assert (parent_tag := autocomplete_tag.parent)
+        assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
+        assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
+        assert error_list_item_tag.text == "This field is required."
 
-    def test_missing_selected_film(self, client: Client, create_review_data: dict):
+    def test_missing_selected_film(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
@@ -247,16 +272,21 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Check that book selection has error message above it.
+        # Check that film autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
         assert (
-            soup.find("autocomplete", attrs={"url": "/app/film-autocomplete/"})
-            .parent.find("ul", attrs={"class": "errorlist"})
-            .find("li")
-            .text
-        ) == "This field is required."
+            autocomplete_tag := soup.find(
+                "autocomplete", attrs={"url": "/app/film-autocomplete/"}
+            )
+        )
+        assert (parent_tag := autocomplete_tag.parent)
+        assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
+        assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
+        assert error_list_item_tag.text == "This field is required."
 
-    def test_missing_new_book(self, client: Client, create_review_data: dict):
+    def test_missing_new_book(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
@@ -268,7 +298,9 @@ class TestCreateReviewView:
         assert response.status_code == 400
         assert Review.objects.count() == 0
 
-    def test_missing_new_film(self, client: Client, create_review_data: dict):
+    def test_missing_new_film(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
@@ -280,7 +312,9 @@ class TestCreateReviewView:
         assert response.status_code == 400
         assert Review.objects.count() == 0
 
-    def test_new_book_with_wrong_fields(self, client: Client, create_review_data: dict):
+    def test_new_book_with_wrong_fields(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         # Submit data for new Film, even though Book was the selected content_type
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -294,7 +328,9 @@ class TestCreateReviewView:
         assert response.status_code == 400
         assert Review.objects.count() == 0
 
-    def test_new_film_with_wrong_fields(self, client: Client, create_review_data: dict):
+    def test_new_film_with_wrong_fields(
+        self, client: Client, create_review_data: CreateReviewData
+    ) -> None:
         # Submit data for new Book, even though Film was the selected content_type
         create_review_data[
             "review_mgmt-create_new_media_type_object"
