@@ -42,6 +42,7 @@ export default defineConfig((mode) => {
             './supergood_review_site/static/js/apps/createReview.ts',
           ),
           messages: resolve('./supergood_review_site/static/js/apps/messages.ts'),
+          navBar: resolve('./supergood_review_site/static/js/apps/navBar.ts'),
           tailwind: resolve('./supergood_review_site/static/css/tailwind.css.js'),
           css: resolve('./supergood_review_site/static/css/main.css.js'),
         },

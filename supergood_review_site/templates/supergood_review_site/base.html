@@ -13,23 +13,26 @@
     </head>
 
     <body class="h-full">
-        <div class="py-10 mx-auto max-w-7xl sm:px-6 lg:px-8">
-            {% include "supergood_review_site/_messages.html" %}
-            <header>
-                <div>
-                    <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                        {% block header %}
-                        {% endblock header %}
-                    </h1>
-                </div>
-            </header>
-            <main>
-                <div>
-                    {% block content %}
-                    {% endblock content %}
-                </div>
-            </main>
-        </div>
-    </body>
+        <div class="min-h-full">
+            {% include "supergood_review_site/_nav_bar.html" %}
+            <div class="py-10">
+                {% include "supergood_review_site/_messages.html" %}
+                <header>
+                    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900">
+                            {% block header %}
+                            {% endblock header %}
+                        </h1>
+                    </div>
+                </header>
+                <main>
+                    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                        {% block content %}
+                        {% endblock content %}
+                    </div>
+                </main>
+                <div/>
+            </div>
+        </body>
 
-</html>
+    </html>
