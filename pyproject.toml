@@ -32,10 +32,10 @@ django = ">=3.2"
 django-stubs-ext = ">=0.7.0"
 django-vite = "^2.0.2"
 django-widget-tweaks = "^1.4.12"
-
-# Dependencies required to run app locally.
 django-querysetsequence = "^0.17"
+
 [tool.poetry.group.dev.dependencies]
+# Dependencies required to run app locally.
 django-environ = "^0.9.0"
 beautifulsoup4 = "^4.11.2"
 pydantic = "^1.10.5"

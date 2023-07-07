@@ -283,13 +283,13 @@ class BookAutocompleteView(View):
         )
 
 
-class MyMediaView(ListView):
+class MyMediaView(ListView[AbstractMediaType]):
     model = AbstractMediaType
     paginate_by = 20
     context_object_name = "media_list"
     template_name = "supergood_review_site/my_media.html"
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySetSequence:
         """
         Return queryset combining all child content_types of AbstractMediaType.
         Ex: by default, this will return both Books and Films, ordered by "updated_at"
