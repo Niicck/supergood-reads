@@ -1,5 +1,5 @@
 {% extends "supergood_review_site/base.html" %}
-{% load tags %}
+{% load partials %}
 
 {% block header %}
     My Media
@@ -22,11 +22,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
                     {% for item in media_list %}
-                        {% if item|is_book %}
-                            {% include "supergood_review_site/_book_row.html" with book=item%}
-                        {% elif item|is_film %}
-                            {% include "supergood_review_site/_film_row.html" with film=item %}
-                        {% endif %}
+                        {% media_row item=item %}
                     {% endfor %}
                 </tbody>
             </table>
