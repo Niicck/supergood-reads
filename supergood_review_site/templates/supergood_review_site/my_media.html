@@ -1,12 +1,14 @@
 {% extends "supergood_review_site/base.html" %}
 {% load partials %}
+{% load django_vite %}
 
 {% block header %}
     My Media
 {% endblock header %}
 
 {% block content %}
-    <div class="px-4 sm:px-0">
+    {% vite_asset 'js/apps/myMedia.ts' %}
+    <div class="px-4 sm:px-0" id="my-media-app">
         <div class="-mx-4 mt-8 sm:-mx-0">
             <table class="min-w-full divide-y divide-gray-300">
                 <thead>

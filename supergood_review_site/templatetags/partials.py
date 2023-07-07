@@ -1,10 +1,12 @@
-from typing import Optional, TypedDict
+from typing import Any, Optional, TypedDict
 from uuid import UUID
 
 from django import template
+from django.forms import ModelForm
 from django.template import Context
 from django.urls import reverse
 
+from supergood_review_site.media_types.forms import MyMediaBookForm, MyMediaFilmForm
 from supergood_review_site.media_types.models import Book, Film
 from supergood_review_site.types import TMedia
 
@@ -45,6 +47,7 @@ class MyMediaRowContext(TypedDict, total=False):
     author: str
     year: Optional[int]
     media_type: str
+    form: ModelForm[Any]
 
 
 @register.inclusion_tag("supergood_review_site/_my_media_row.html")
@@ -59,6 +62,7 @@ def media_row(item: TMedia) -> MyMediaRowContext:
             author=item.author,
             year=item.publication_year,
             media_type=str(Book._meta.verbose_name),
+            form=MyMediaBookForm(instance=item),
         )
     elif isinstance(item, Film):
         return MyMediaRowContext(
@@ -67,6 +71,7 @@ def media_row(item: TMedia) -> MyMediaRowContext:
             author=item.director,
             year=item.release_year,
             media_type=str(Film._meta.verbose_name),
+            form=MyMediaFilmForm(instance=item),
         )
     else:
         raise NotImplementedError(

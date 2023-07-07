@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Type, Union, no_type_check
+from typing import Any, Dict, Literal, Optional, Union, no_type_check
 
 from django import template
 from django.forms import Form
@@ -11,8 +11,6 @@ from django.utils.html import (  # type: ignore [attr-defined]
     format_html,
 )
 from django.utils.safestring import SafeText, mark_safe
-
-from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
 
 register = template.Library()
 
@@ -197,13 +195,3 @@ def get_field_value(form: Form, field_name: str) -> Any:
         form_field = form.fields[field_name]
         initial_value = form.get_initial_for_field(form_field, field_name)
         return initial_value
-
-
-@register.filter(is_safe=True)
-def is_book(item: Type[AbstractMediaType]) -> bool:
-    return isinstance(item, Book)
-
-
-@register.filter(is_safe=True)
-def is_film(item: Type[AbstractMediaType]) -> bool:
-    return isinstance(item, Film)

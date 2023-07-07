@@ -1,17 +1,17 @@
-<tr>
-    <td class="w-full max-w-0 py-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
-        {{ title }}
-        <dl class="font-normal lg:hidden">
-            <dt class="sr-only">Author</dt>
-            <dd class="mt-1 truncate text-gray-700">{{ author }}</dd>
-            <dt class="sr-only sm:hidden">Year</dt>
-            <dd class="mt-1 truncate text-gray-500 sm:hidden">{{ year }}</dd>
-        </dl>
-    </td>
-    <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{{ author }}</td>
-    <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ year }}</td>
-    <td class="px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ media_type }}</td>
-    <td class="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-        <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit<span class="sr-only">, {{ title }}</span></a>
-    </td>
+{% comment %}
+    You can't have the vue component <my-media-row/> be the direct child of a <table/>
+    element. This won't work with the browser's HTML parsing.
+
+    To work around that, we can use a <tr/> element with the "is" attribute to replace
+    the <tr/> with our <my-media-row/> component after the django template's HTML has
+    been parsed by the browser.
+
+    See: https://vuejs.org/guide/essentials/component-basics.html#element-placement-restrictions
+{% endcomment %}
+<tr is="vue:my-media-row"
+    initial-title="{{title}}"
+    initial-author="{{author}}"
+    initial-year={{year}}
+    media-type={{media_type}}
+>
 </tr>

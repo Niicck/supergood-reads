@@ -141,7 +141,7 @@
   </Disclosure>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import {
   Disclosure,
   DisclosureButton,

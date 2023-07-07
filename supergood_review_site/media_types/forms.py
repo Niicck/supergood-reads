@@ -48,3 +48,15 @@ class FilmForm(MediaTypeAutocomplete[Film]):
             "director",
             "release_year",
         ]
+
+
+class MyMediaBookForm(forms.ModelForm[Book]):
+    class Meta:
+        model = Book
+        fields = ["title", "author", "publication_year"]
+
+
+class MyMediaFilmForm(forms.ModelForm[Film]):
+    class Meta:
+        model = Film
+        fields = ["title", "director", "release_year"]
