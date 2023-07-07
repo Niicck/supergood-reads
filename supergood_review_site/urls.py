@@ -14,4 +14,9 @@ urlpatterns = [
         views.BookAutocompleteView.as_view(),
         name="book_autocomplete",
     ),
+    path(
+        "my-media/",
+        views.MyMediaView.as_view(),
+        name="my_media",
+    ),
 ]

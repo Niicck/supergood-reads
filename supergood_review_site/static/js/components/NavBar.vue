@@ -160,8 +160,8 @@ const user = {
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
 };
 const navigation = [
-  { name: 'Create Review', href: '#', current: true },
-  { name: 'My Media', href: '#', current: false },
+  { name: 'Create Review', href: 'http://localhost:8000/app/review/', current: true },
+  { name: 'My Media', href: 'http://localhost:8000/app/my-media', current: false },
   { name: 'My Reviews', href: '#', current: false },
 ];
 const userNavigation = [{ name: 'Sign out', href: '#' }];

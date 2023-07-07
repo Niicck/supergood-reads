@@ -62,8 +62,9 @@ class Country(models.Model):
 
 class Film(AbstractMediaType):
     """
-    A handwritten or printed work of fiction or nonfiction, usually on sheets of paper
-    fastened or bound together within covers.
+    A sequence of consecutive still images recorded in a series to be viewed on a screen
+    in such rapid succession as to give the illusion of natural movement; motion
+    picture.
     """
 
     director = models.CharField(default="", max_length=256)

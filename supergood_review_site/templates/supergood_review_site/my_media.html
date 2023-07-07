@@ -1,0 +1,35 @@
+{% extends "supergood_review_site/base.html" %}
+{% load tags %}
+
+{% block header %}
+    My Media
+{% endblock header %}
+
+{% block content %}
+    <div class="px-4 sm:px-0">
+        <div class="-mx-4 mt-8 sm:-mx-0">
+            <table class="min-w-full divide-y divide-gray-300">
+                <thead>
+                    <tr>
+                        <th scope="col" class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Title</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">Author</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Year</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Type</th>
+                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                            <span class="sr-only">Edit</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    {% for item in media_list %}
+                        {% if item|is_book %}
+                            {% include "supergood_review_site/_book_row.html" with book=item%}
+                        {% elif item|is_film %}
+                            {% include "supergood_review_site/_film_row.html" with film=item %}
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock content %}

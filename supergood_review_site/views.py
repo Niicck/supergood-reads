@@ -10,7 +10,8 @@ from django.db.models.functions import Concat
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import ListView, TemplateView
+from queryset_sequence import QuerySetSequence
 
 from supergood_review_site.media_types.forms import BookForm, FilmForm
 from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
@@ -280,3 +281,23 @@ class BookAutocompleteView(View):
             },
             encoder=UUIDEncoder,
         )
+
+
+class MyMediaView(ListView):
+    model = AbstractMediaType
+    paginate_by = 20
+    context_object_name = "media_list"
+    template_name = "supergood_review_site/my_media.html"
+
+    def get_queryset(self):
+        """
+        Return queryset combining all child content_types of AbstractMediaType.
+        Ex: by default, this will return both Books and Films, ordered by "updated_at"
+        in descending order.
+        """
+        media_types = AbstractMediaType.__subclasses__()
+        combined_qs = QuerySetSequence(
+            *[media_type.objects.all() for media_type in media_types],
+            model=AbstractMediaType,
+        )
+        return combined_qs.order_by("-updated_at")
