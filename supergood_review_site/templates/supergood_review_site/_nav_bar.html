@@ -1,6 +1,8 @@
 {% load django_vite %}
 {% vite_asset 'js/apps/navBar.ts' %}
 
+{{ nav_bar_links|json_script:"nav_bar_links" }}
+
 <div id="nav-bar-vue-app">
     <nav-bar></nav-bar>
 </div>

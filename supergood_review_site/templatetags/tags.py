@@ -6,6 +6,7 @@ from django import template
 from django.forms import Form
 from django.forms.boundfield import BoundField
 from django.forms.fields import ChoiceField
+from django.urls import reverse
 from django.utils.html import (  # type: ignore [attr-defined]
     _json_script_escapes,
     format_html,
@@ -207,3 +208,28 @@ def is_book(item: Type[AbstractMediaType]) -> str:
 @register.filter(is_safe=True)
 def is_film(item: Type[AbstractMediaType]) -> str:
     return isinstance(item, Film)
+
+
+@register.inclusion_tag("supergood_review_site/_nav_bar.html", takes_context=True)
+def nav_bar(context):
+    """
+    Returns:
+      navigation: a list of links to render in the Nav Bar. These are written to a
+      json_script within the django template and then parsed by vue.js template.
+    """
+    current_url = context["request"].get_full_path()
+    return {
+        "nav_bar_links": [
+            {
+                "name": "Create Review",
+                "href": reverse("create_review"),
+                "current": reverse("create_review") == current_url,
+            },
+            {
+                "name": "My Media",
+                "href": reverse("my_media"),
+                "current": reverse("my_media") == current_url,
+            },
+            {"name": "My Reviews", "href": "#", "current": False},
+        ]
+    }

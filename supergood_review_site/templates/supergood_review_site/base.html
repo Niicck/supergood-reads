@@ -1,4 +1,5 @@
 {% load django_vite %}
+{% load tags %}
 
 <!DOCTYPE html>
 <html lang="en" class="h-full">
@@ -14,7 +15,7 @@
 
     <body class="h-full">
         <div class="min-h-full">
-            {% include "supergood_review_site/_nav_bar.html" %}
+            {% nav_bar %}
             <div class="py-10">
                 {% include "supergood_review_site/_messages.html" %}
                 <header>
