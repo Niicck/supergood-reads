@@ -11,7 +11,7 @@
         <slot name="title-field"></slot>
       </div>
       <!-- On smaller screens, collapse data into first column -->
-      <dl class="font-normal lg:hidden">
+      <dl class="font-normal space-y-2 lg:hidden">
         <!-- Creator (small screens) -->
         <div v-show="!editMode">
           <dt class="sr-only">Author</dt>
@@ -21,12 +21,14 @@
           <slot name="creator-field"></slot>
         </div>
         <!-- Year (small screens) -->
-        <div v-show="!editMode">
-          <dt class="sr-only sm:hidden">Year</dt>
-          <dd class="mt-1 truncate text-gray-500 sm:hidden">{{ year }}</dd>
-        </div>
-        <div v-show="editMode">
-          <slot name="year-field"></slot>
+        <div class="sm:hidden">
+          <div v-show="!editMode">
+            <dt class="sr-only">Year</dt>
+            <dd class="mt-1 truncate text-gray-500">{{ year }}</dd>
+          </div>
+          <div v-show="editMode">
+            <slot name="year-field"></slot>
+          </div>
         </div>
       </dl>
     </td>
@@ -48,17 +50,35 @@
         <slot name="year-field"></slot>
       </div>
     </td>
-    <!-- MediaType -->
+    <!-- Media Type -->
     <td class="px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ mediaType }}</td>
-    <td class="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+    <!-- Edit Button -->
+    <td class="py-4 sm:pl-3 text-right text-sm font-medium sm:pr-0">
       <button
         type="button"
-        class="text-indigo-600 hover:text-indigo-900 align-top"
+        class="text-indigo-600 hover:text-indigo-900 align-top w-12"
         @click="editMode = !editMode"
       >
-        Edit
+        <span v-show="editMode"> Cancel </span>
+        <span v-show="!editMode"> Edit </span>
         <span class="sr-only">, {{ title }}</span>
       </button>
+    </td>
+  </tr>
+  <tr v-show="editMode" class="border-none">
+    <td class="flex justify-start pb-5 space-x-3">
+      <!-- Submit Button -->
+      <input
+        type="submit"
+        class="cursor-pointer inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        value="Submit"
+      />
+      <!-- Delete Button -->
+      <input
+        type="submit"
+        class="cursor-pointer inline-flex justify-center rounded-md bg-red-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+        value="Delete"
+      />
     </td>
   </tr>
 </template>

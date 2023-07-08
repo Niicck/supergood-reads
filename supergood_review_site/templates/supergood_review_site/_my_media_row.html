@@ -26,7 +26,7 @@
             {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.author %}
         </template>
         <template #year-field>
-            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.publication_year|add_class:"w-20" %}
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.publication_year %}
         </template>
     </tr>
 {% elif item|is_film %}
@@ -43,7 +43,7 @@
             {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.director %}
         </template>
         <template #year-field>
-            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.release_year|add_class:"w-20" %}
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.release_year %}
         </template>
     </tr>
 {% endif %}
