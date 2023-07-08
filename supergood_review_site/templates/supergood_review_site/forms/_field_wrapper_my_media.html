@@ -1,0 +1,9 @@
+{% load widget_tweaks %}
+
+<div class="w-full text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
+    {{ field.errors }}
+    <label for="{{ field.id_for_label }}" class="sr-only">
+        {{ field.label }}
+    </label>
+    {{ field|add_class:"w-full text-sm font-medium text-gray-900 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" }}
+</div>

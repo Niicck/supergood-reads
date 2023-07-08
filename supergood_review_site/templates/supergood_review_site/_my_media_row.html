@@ -1,3 +1,6 @@
+{% load widget_tweaks %}
+{% load tags %}
+
 {% comment %}
     You can't have the vue component <my-media-row/> be the direct child of a <table/>
     element. This won't work with the browser's HTML parsing.
@@ -8,10 +11,39 @@
 
     See: https://vuejs.org/guide/essentials/component-basics.html#element-placement-restrictions
 {% endcomment %}
-<tr is="vue:my-media-row"
-    initial-title="{{title}}"
-    initial-author="{{author}}"
-    initial-year={{year}}
-    media-type={{media_type}}
->
-</tr>
+
+{% if item|is_book %}
+    <tr is="vue:my-media-row"
+        initial-title="{{item.title}}"
+        initial-creator="{{item.author}}"
+        initial-year="{{item.publication_year}}"
+        media-type="Book"
+    >
+        <template #title-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.title %}
+        </template>
+        <template #creator-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.author %}
+        </template>
+        <template #year-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.publication_year|add_class:"w-20" %}
+        </template>
+    </tr>
+{% elif item|is_film %}
+    <tr is="vue:my-media-row"
+        initial-title="{{item.title}}"
+        initial-creator="{{item.director}}"
+        initial-year="{{item.release_year}}"
+        media-type="Film"
+    >
+        <template #title-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.title %}
+        </template>
+        <template #creator-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.director %}
+        </template>
+        <template #year-field>
+            {% include "supergood_review_site/forms/_field_wrapper_my_media.html" with field=form.release_year|add_class:"w-20" %}
+        </template>
+    </tr>
+{% endif %}

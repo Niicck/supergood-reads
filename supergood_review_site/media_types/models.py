@@ -43,7 +43,7 @@ class Book(AbstractMediaType):
 
     author = models.CharField(default="", max_length=256)
     pages = models.IntegerField(blank=True, null=True)
-    publication_year = models.IntegerField(blank=True, null=True)
+    publication_year = models.IntegerField(blank=True, null=True, max_length=4)
     genres = models.ManyToManyField(Genre)
 
     def __str__(self) -> str:
@@ -68,7 +68,7 @@ class Film(AbstractMediaType):
     """
 
     director = models.CharField(default="", max_length=256)
-    release_year = models.IntegerField(blank=True, null=True)
+    release_year = models.IntegerField(blank=True, null=True, max_length=4)
     genres = models.ManyToManyField(Genre)
     countries = models.ManyToManyField(Country)
 

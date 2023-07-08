@@ -7,8 +7,7 @@ from django.template import Context
 from django.urls import reverse
 
 from supergood_review_site.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_review_site.media_types.models import Book, Film
-from supergood_review_site.types import TMedia
+from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
 
 register = template.Library()
 
@@ -42,6 +41,7 @@ def nav_bar(context: Context) -> Context:
 
 
 class MyMediaRowContext(TypedDict, total=False):
+    item: AbstractMediaType
     id: UUID
     title: str
     author: str
@@ -51,12 +51,13 @@ class MyMediaRowContext(TypedDict, total=False):
 
 
 @register.inclusion_tag("supergood_review_site/_my_media_row.html")
-def media_row(item: TMedia) -> MyMediaRowContext:
+def media_row(item: AbstractMediaType) -> MyMediaRowContext:
     """
     Renders a row on the "My Media" page.
     """
     if isinstance(item, Book):
         return MyMediaRowContext(
+            item=item,
             id=item.id,
             title=item.title,
             author=item.author,
@@ -66,6 +67,7 @@ def media_row(item: TMedia) -> MyMediaRowContext:
         )
     elif isinstance(item, Film):
         return MyMediaRowContext(
+            item=item,
             id=item.id,
             title=item.title,
             author=item.director,

@@ -12,6 +12,8 @@ from django.utils.html import (  # type: ignore [attr-defined]
 )
 from django.utils.safestring import SafeText, mark_safe
 
+from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
+
 register = template.Library()
 
 
@@ -195,3 +197,13 @@ def get_field_value(form: Form, field_name: str) -> Any:
         form_field = form.fields[field_name]
         initial_value = form.get_initial_for_field(form_field, field_name)
         return initial_value
+
+
+@register.filter(is_safe=True)
+def is_book(item: AbstractMediaType) -> bool:
+    return isinstance(item, Book)
+
+
+@register.filter(is_safe=True)
+def is_film(item: AbstractMediaType) -> bool:
+    return isinstance(item, Film)
