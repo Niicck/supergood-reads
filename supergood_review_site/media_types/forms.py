@@ -25,7 +25,7 @@ class MediaTypeAutocomplete(forms.ModelForm[_M]):
         return reverse(self.autocomplete_url_name)
 
 
-class BookForm(MediaTypeAutocomplete[Book]):
+class BookAutocompleteForm(MediaTypeAutocomplete[Book]):
     autocomplete_url_name = "book_autocomplete"
 
     class Meta:
@@ -38,7 +38,7 @@ class BookForm(MediaTypeAutocomplete[Book]):
         ]
 
 
-class FilmForm(MediaTypeAutocomplete[Film]):
+class FilmAutocompleteForm(MediaTypeAutocomplete[Film]):
     autocomplete_url_name = "film_autocomplete"
 
     class Meta:

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Protocol, Type
 
 from django import forms
 from django.conf import settings
@@ -7,13 +7,21 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import CharField, Value
 from django.db.models.functions import Concat
-from django.http import HttpRequest, JsonResponse
+from django.forms import ModelForm
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
+from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
-from supergood_review_site.media_types.forms import BookForm, FilmForm
+from supergood_review_site.media_types.forms import (
+    BookAutocompleteForm,
+    FilmAutocompleteForm,
+    MyMediaBookForm,
+    MyMediaFilmForm,
+)
 from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
 from supergood_review_site.reviews.forms import ReviewForm, ReviewMgmtForm
 from supergood_review_site.strategies.base.models import AbstractStrategy
@@ -34,8 +42,8 @@ class CreateReviewView(TemplateView):
         MaximusStrategyForm,
     ]
     media_type_forms: List[Type[forms.ModelForm[Any]]] = [
-        BookForm,
-        FilmForm,
+        BookAutocompleteForm,
+        FilmAutocompleteForm,
     ]
 
     @property
@@ -301,3 +309,89 @@ class MyMediaView(ListView[AbstractMediaType]):
             model=AbstractMediaType,
         )
         return combined_qs.order_by("-updated_at")
+
+
+class FormViewMixinProtocol(Protocol):
+    @property
+    def object(self) -> Any:
+        ...
+
+    @property
+    def request(self) -> Any:
+        ...
+
+    def form_invalid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
+        ...
+
+    def form_valid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
+        ...
+
+
+class JsonableResponseMixin:
+    """
+    Mixin to add JSON support to a form.
+    Must be used with an object-based FormView (e.g. CreateView, UpdateView)
+    """
+
+    def form_invalid(self, form: ModelForm[Any]) -> JsonResponse:
+        return JsonResponse(form.errors, status=400)
+
+    def form_valid(self, form: ModelForm[Any]) -> JsonResponse:
+        self.object = form.save()
+        data = {
+            "pk": self.object.pk,
+            **{field: getattr(self.object, field) for field in form.fields},
+        }
+        return JsonResponse(data)
+
+
+class DeleteMyMediaMixin:
+    def get_success_url(self: FormViewMixinProtocol) -> str:
+        return reverse("my_media")
+
+    def form_invalid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        messages.error(self.request, "Please fix the errors below.")
+        return super().form_invalid(form)  # type: ignore[safe-super]
+
+    def form_valid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        """
+        Calls the delete() method on the fetched object and then
+        returns pk.
+        """
+        title = self.object.title
+        messages.success(self.request, f"Succesfully deleted {title}.")
+        return super().form_valid(form)  # type: ignore[safe-super]
+
+
+class UpdateMyMediaBook(JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]):
+    """Update Book via ajax request."""
+
+    object: Book
+    model = Book
+    form_class = MyMediaBookForm
+
+
+class UpdateMyMediaFilm(JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]):
+    """Update Film via ajax request."""
+
+    object: Film
+    model = Film
+    form_class = MyMediaFilmForm
+
+
+class DeleteMyMediaBook(DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]):
+    """Delete Book, add message, refresh MyMedia page."""
+
+    object: Book
+    model = Book
+
+
+class DeleteMyMediaFilm(DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]):
+    """Delete Film, add message, refresh MyMedia page."""
+
+    object: Film
+    model = Film
