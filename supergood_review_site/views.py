@@ -334,15 +334,15 @@ class JsonableResponseMixin:
     """
 
     def form_invalid(self, form: ModelForm[Any]) -> JsonResponse:
-        return JsonResponse(form.errors, status=400)
+        return JsonResponse({"errors": form.errors}, status=400)
 
     def form_valid(self, form: ModelForm[Any]) -> JsonResponse:
         self.object = form.save()
         data = {
-            "pk": self.object.pk,
+            "id": self.object.pk,
             **{field: getattr(self.object, field) for field in form.fields},
         }
-        return JsonResponse(data)
+        return JsonResponse({"data": data})
 
 
 class DeleteMyMediaMixin:
@@ -367,7 +367,7 @@ class DeleteMyMediaMixin:
         return super().form_valid(form)  # type: ignore[safe-super]
 
 
-class UpdateMyMediaBook(JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]):
+class UpdateMyMediaBookView(JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]):
     """Update Book via ajax request."""
 
     object: Book
@@ -375,7 +375,7 @@ class UpdateMyMediaBook(JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]
     form_class = MyMediaBookForm
 
 
-class UpdateMyMediaFilm(JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]):
+class UpdateMyMediaFilmView(JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]):
     """Update Film via ajax request."""
 
     object: Film
@@ -383,14 +383,14 @@ class UpdateMyMediaFilm(JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]
     form_class = MyMediaFilmForm
 
 
-class DeleteMyMediaBook(DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]):
+class DeleteMyMediaBookView(DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]):
     """Delete Book, add message, refresh MyMedia page."""
 
     object: Book
     model = Book
 
 
-class DeleteMyMediaFilm(DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]):
+class DeleteMyMediaFilmView(DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]):
     """Delete Film, add message, refresh MyMedia page."""
 
     object: Film

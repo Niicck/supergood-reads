@@ -132,7 +132,7 @@ class BookFactory(factory.django.DjangoModelFactory):
     id = factory.LazyFunction(uuid.uuid4)
     title = factory.LazyFunction(fake.unique.sentence)
     author = factory.LazyFunction(fake.name)
-    publication_year = factory.LazyFunction(fake.year)
+    publication_year = factory.LazyFunction(lambda: int(fake.year()))
 
     class Meta:
         model = models.Book
@@ -157,7 +157,7 @@ class FilmFactory(factory.django.DjangoModelFactory):
     id = factory.LazyFunction(uuid.uuid4)
     title = factory.LazyFunction(fake.unique.sentence)
     director = factory.LazyFunction(fake.name)
-    release_year = factory.LazyFunction(fake.year)
+    release_year = factory.LazyFunction(lambda: int(fake.year()))
 
     class Meta:
         model = models.Film

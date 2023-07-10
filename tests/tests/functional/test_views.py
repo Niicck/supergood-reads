@@ -1,6 +1,6 @@
 import json
 from typing import Any, TypeAlias, TypedDict, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from bs4 import BeautifulSoup, Tag
@@ -343,3 +343,125 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
+
+
+@pytest.mark.django_db
+class TestUpdateMyMediaBookView:
+    def get_url(self, book_id: UUID) -> str:
+        return reverse("my_media_book_update", args=[book_id])
+
+    def test_update_title(self, client: Client) -> None:
+        book = BookFactory()
+        url = self.get_url(book.id)
+        new_title = "This is a new title"
+        data = {
+            "title": new_title,
+            "author": book.author,
+            "publication_year": book.publication_year,
+        }
+        res = client.post(url, data)
+        assert res.status_code == 200
+        assert res.json()["data"] == {
+            "id": str(book.id),
+            **data,
+        }
+        book.refresh_from_db()
+        assert book.title == new_title
+
+    def test_missing_required_field(self, client: Client) -> None:
+        book = BookFactory()
+        url = self.get_url(book.id)
+        new_title = "This is a new title"
+        data = {
+            "title": new_title,
+        }
+        res = client.post(url, data)
+        assert res.status_code == 400
+        assert res.json()["errors"]["author"][0] == "This field is required."
+        book.refresh_from_db()
+        assert book.title != new_title
+
+    def test_wrong_uuid(self, client: Client) -> None:
+        url = self.get_url(uuid4())
+        res = client.post(url)
+        assert res.status_code == 404
+
+
+@pytest.mark.django_db
+class TestUpdateMyMediaFilmView:
+    def get_url(self, film_id: UUID) -> str:
+        return reverse("my_media_film_update", args=[film_id])
+
+    def test_update_title(self, client: Client) -> None:
+        film = FilmFactory()
+        url = self.get_url(film.id)
+        new_title = "This is a new title"
+        data = {
+            "title": new_title,
+            "director": film.director,
+            "release_year": film.release_year,
+        }
+        res = client.post(url, data)
+        assert res.status_code == 200
+        assert res.json()["data"] == {
+            "id": str(film.id),
+            **data,
+        }
+        film.refresh_from_db()
+        assert film.title == new_title
+
+    def test_missing_required_field(self, client: Client) -> None:
+        film = FilmFactory()
+        url = self.get_url(film.id)
+        new_title = "This is a new title"
+        data = {
+            "title": new_title,
+        }
+        res = client.post(url, data)
+        assert res.status_code == 400
+        assert res.json()["errors"]["director"][0] == "This field is required."
+        film.refresh_from_db()
+        assert film.title != new_title
+
+    def test_wrong_uuid(self, client: Client) -> None:
+        url = self.get_url(uuid4())
+        res = client.post(url)
+        assert res.status_code == 404
+
+
+@pytest.mark.django_db
+class TestDeleteMyMediaBookView:
+    def get_url(self, book_id: UUID) -> str:
+        return reverse("my_media_book_delete", args=[book_id])
+
+    def test_delete(self, client: Client) -> None:
+        book = BookFactory()
+        url = self.get_url(book.id)
+        res = client.post(url)
+        assert res.status_code == 302
+        with pytest.raises(Book.DoesNotExist):
+            book.refresh_from_db()
+
+    def test_wrong_uuid(self, client: Client) -> None:
+        url = self.get_url(uuid4())
+        res = client.post(url)
+        assert res.status_code == 404
+
+
+@pytest.mark.django_db
+class TestDeleteMyMediaFilmView:
+    def get_url(self, film_id: UUID) -> str:
+        return reverse("my_media_film_delete", args=[film_id])
+
+    def test_delete(self, client: Client) -> None:
+        film = FilmFactory()
+        url = self.get_url(film.id)
+        res = client.post(url)
+        assert res.status_code == 302
+        with pytest.raises(Film.DoesNotExist):
+            film.refresh_from_db()
+
+    def test_wrong_uuid(self, client: Client) -> None:
+        url = self.get_url(uuid4())
+        res = client.post(url)
+        assert res.status_code == 404

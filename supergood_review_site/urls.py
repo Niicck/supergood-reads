@@ -21,22 +21,22 @@ urlpatterns = [
     ),
     path(
         "my-media/book/<uuid:pk>/",
-        views.UpdateMyMediaBook.as_view(),
+        views.UpdateMyMediaBookView.as_view(),
         name="my_media_book_update",
     ),
     path(
-        "my-media/book/<uuid:pk>/delete/",
-        views.DeleteMyMediaBook.as_view(),
-        name="my_media_book_delete",
-    ),
-    path(
         "my-media/film/<uuid:pk>/",
-        views.UpdateMyMediaFilm.as_view(),
+        views.UpdateMyMediaFilmView.as_view(),
         name="my_media_film_update",
     ),
     path(
+        "my-media/book/<uuid:pk>/delete/",
+        views.DeleteMyMediaBookView.as_view(),
+        name="my_media_book_delete",
+    ),
+    path(
         "my-media/film/<uuid:pk>/delete/",
-        views.DeleteMyMediaFilm.as_view(),
+        views.DeleteMyMediaFilmView.as_view(),
         name="my_media_film_delete",
     ),
 ]
