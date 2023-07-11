@@ -63,7 +63,7 @@ def media_row(item: AbstractMediaType) -> MyMediaRowContext:
             author=item.author,
             year=item.publication_year,
             media_type=str(Book._meta.verbose_name),
-            form=MyMediaBookForm(instance=item),
+            form=MyMediaBookForm(),
         )
     elif isinstance(item, Film):
         return MyMediaRowContext(

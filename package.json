@@ -27,14 +27,14 @@
     "autoprefixer": "^10.4.13",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
-    "jest": "^29.5.0",
+    "jest": "^29.6.1",
     "jest-puppeteer": "^8.0.5",
     "postcss": "^8.4.21",
     "postcss-import": "^15.1.0",
     "postcss-simple-vars": "^7.0.1",
     "puppeteer": "^19.7.5",
     "tailwindcss": "^3.2.7",
-    "ts-jest": "^29.0.5",
+    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
@@ -60,6 +60,9 @@
       "browser": true,
       "node": true,
       "es6": true
+    },
+    "rules": {
+      "vue/script-setup-uses-vars": "error"
     }
   },
   "stylelint": {

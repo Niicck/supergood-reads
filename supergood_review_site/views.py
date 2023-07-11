@@ -329,7 +329,7 @@ class FormViewMixinProtocol(Protocol):
 
 class JsonableResponseMixin:
     """
-    Mixin to add JSON support to a form.
+    Mixin to add JSON response support to a form.
     Must be used with an object-based FormView (e.g. CreateView, UpdateView)
     """
 
