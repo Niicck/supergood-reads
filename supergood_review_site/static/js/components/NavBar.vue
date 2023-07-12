@@ -3,21 +3,10 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="flex h-16 justify-between">
         <div class="flex">
-          <div class="flex flex-shrink-0 items-center">
-            <img
-              class="block h-8 w-auto lg:hidden"
-              src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-              alt="Your Company"
-            />
-            <img
-              class="hidden h-8 w-auto lg:block"
-              src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-              alt="Your Company"
-            />
-          </div>
+          <a class="supergood-logo flex items-center px-2" href="#"> supergood.site </a>
           <div class="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
             <a
-              v-for="item in navigation"
+              v-for="item in navBarLinks"
               :key="item.name"
               :href="item.href"
               :class="[
@@ -32,14 +21,6 @@
           </div>
         </div>
         <div class="hidden sm:ml-6 sm:flex sm:items-center">
-          <button
-            type="button"
-            class="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <span class="sr-only">View notifications</span>
-            <BellIcon class="h-6 w-6" aria-hidden="true" />
-          </button>
-
           <!-- Profile dropdown -->
           <Menu as="div" class="relative ml-3">
             <div>
@@ -47,7 +28,7 @@
                 class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 <span class="sr-only">Open user menu</span>
-                <img class="h-8 w-8 rounded-full" :src="user.imageUrl" alt="" />
+                <UserIcon class="h-8 w-8" aria-hidden="true" />
               </MenuButton>
             </div>
             <transition
@@ -95,36 +76,29 @@
     <DisclosurePanel class="sm:hidden">
       <div class="space-y-1 pb-3 pt-2">
         <DisclosureButton
-          v-for="item in navigation"
-          :key="item.name"
+          v-for="navBarLink in navBarLinks"
+          :key="navBarLink.name"
           as="a"
-          :href="item.href"
+          :href="navBarLink.href"
           :class="[
-            item.current
+            navBarLink.current
               ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
               : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800',
             'block border-l-4 py-2 pl-3 pr-4 text-base font-medium',
           ]"
-          :aria-current="item.current ? 'page' : undefined"
-          >{{ item.name }}</DisclosureButton
+          :aria-current="navBarLink.current ? 'page' : undefined"
+          >{{ navBarLink.name }}</DisclosureButton
         >
       </div>
       <div class="border-t border-gray-200 pb-3 pt-4">
         <div class="flex items-center px-4">
           <div class="flex-shrink-0">
-            <img class="h-10 w-10 rounded-full" :src="user.imageUrl" alt="" />
+            <UserIcon class="h-10 w-10" aria-hidden="true" />
           </div>
           <div class="ml-3">
             <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
           </div>
-          <button
-            type="button"
-            class="ml-auto flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <span class="sr-only">View notifications</span>
-            <BellIcon class="h-6 w-6" aria-hidden="true" />
-          </button>
         </div>
         <div class="mt-3 space-y-1">
           <DisclosureButton
@@ -151,15 +125,14 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/vue';
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { Bars3Icon, UserIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
+import type { NavBarLink } from '@/static/js/types';
 
 const user = {
-  name: 'Tom Cook',
-  email: 'tom@example.com',
-  imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  name: 'Niicck',
+  email: 'niicck@example.com',
 };
-const navigation = parseJsonScriptFilter('nav_bar_links');
+const navBarLinks = parseJsonScriptFilter('nav_bar_links') as NavBarLink[];
 const userNavigation = [{ name: 'Sign out', href: '#' }];
 </script>

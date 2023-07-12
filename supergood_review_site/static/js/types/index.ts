@@ -8,4 +8,10 @@ type FieldData = {
   choices: Array<Array<string | number | boolean>>;
 };
 
-export type { FieldData };
+type NavBarLink = {
+  href: string;
+  name: string;
+  current: boolean;
+};
+
+export type { FieldData, NavBarLink };
