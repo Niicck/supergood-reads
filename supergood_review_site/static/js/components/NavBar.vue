@@ -1,9 +1,29 @@
 <template>
-  <Disclosure v-slot="{ open }" as="nav" class="border-b border-gray-200 bg-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <Disclosure
+    v-slot="{ open }"
+    as="nav"
+    class="border-b border-gray-200 bg-gradient-to-tr from-amber-50 to-orange-50"
+  >
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 align-text-bottom">
       <div class="flex h-16 justify-between">
         <div class="flex">
-          <a class="supergood-logo flex items-center px-2" href="#"> supergood.site </a>
+          <a class="supergood-logo flex items-center px-2 pt-1 rounded-md" href="#">
+            supergood<span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2.5"
+                class="w-6 h-6 stroke-amber-400"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                />
+              </svg> </span
+            >site
+          </a>
           <div class="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
             <a
               v-for="item in navBarLinks"
@@ -28,7 +48,10 @@
                 class="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 <span class="sr-only">Open user menu</span>
-                <UserIcon class="h-8 w-8" aria-hidden="true" />
+                <UserIcon
+                  class="h-8 w-8 p-1 bg-amber-400 rounded-full"
+                  aria-hidden="true"
+                />
               </MenuButton>
             </div>
             <transition
@@ -63,7 +86,7 @@
         <div class="-mr-2 flex items-center sm:hidden">
           <!-- Mobile menu button -->
           <DisclosureButton
-            class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="inline-flex items-center justify-center rounded-md bg-amber-400 p-2 hover:bg-amber-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             <span class="sr-only">Open main menu</span>
             <Bars3Icon v-if="!open" class="block h-6 w-6" aria-hidden="true" />

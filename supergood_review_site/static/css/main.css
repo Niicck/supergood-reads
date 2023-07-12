@@ -2,3 +2,32 @@
 .errorlist {
   @apply mb-2 text-sm text-red-600;
 }
+
+@font-face {
+  font-family: LinguisticsPro;
+  src: url('/fonts/linguistics-pro/LinguisticsPro-Regular.otf') format('opentype');
+}
+
+@font-face {
+  font-weight: bold;
+  font-family: LinguisticsPro;
+  src: url('/fonts/linguistics-pro/LinguisticsPro-Bold.otf') format('opentype');
+}
+
+@font-face {
+  font-weight: bold;
+  font-family: LinguisticsPro;
+  font-style: italic;
+  src: url('/fonts/linguistics-pro/LinguisticsPro-BoldItalic.otf') format('opentype');
+}
+
+@font-face {
+  font-weight: normal;
+  font-family: LinguisticsPro;
+  font-style: italic;
+  src: url('/fonts/linguistics-pro/LinguisticsPro-Italic.otf') format('opentype');
+}
+
+.supergood-logo {
+  font-family: LinguisticsPro, sans-serif;
+}
