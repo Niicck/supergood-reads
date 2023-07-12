@@ -3,7 +3,7 @@
 {% with v_slot_name_attr="#"|add:v_slot_name %}
     <template {{v_slot_name_attr}}="{value, onChanged, fieldErrors}">
         <div class="w-full text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0">
-            <ul class="errorlist font-normal">
+            <ul v-if="fieldErrors" class="errorlist font-normal">
                 <li v-for="error in fieldErrors">
                     [[ error ]]
                 </li>

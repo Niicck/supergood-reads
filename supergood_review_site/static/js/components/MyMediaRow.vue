@@ -1,5 +1,5 @@
 <template>
-  <tr class="align-top">
+  <tr class="align-text-top">
     <td
       class="w-full max-w-0 py-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0"
     >
