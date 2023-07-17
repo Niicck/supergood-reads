@@ -20,6 +20,11 @@ urlpatterns = [
         name="my_media",
     ),
     path(
+        "my-reviews/",
+        views.MyReviewsView.as_view(),
+        name="my_reviews",
+    ),
+    path(
         "my-media/book/<uuid:pk>/",
         views.UpdateMyMediaBookView.as_view(),
         name="my_media_book_update",

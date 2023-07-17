@@ -1,5 +1,4 @@
-from typing import Any, Optional, TypedDict
-from uuid import UUID
+from typing import Any, TypedDict
 
 from django import template
 from django.forms import ModelForm
@@ -34,7 +33,11 @@ def nav_bar(context: Context) -> Context:
                     "href": reverse("my_media"),
                     "current": reverse("my_media") == current_url,
                 },
-                {"name": "My Reviews", "href": "#", "current": False},
+                {
+                    "name": "My Reviews",
+                    "href": reverse("my_reviews"),
+                    "current": reverse("my_reviews") == current_url,
+                },
             ]
         }
     )
@@ -42,11 +45,6 @@ def nav_bar(context: Context) -> Context:
 
 class MyMediaRowContext(TypedDict, total=False):
     item: AbstractMediaType
-    id: UUID
-    title: str
-    author: str
-    year: Optional[int]
-    media_type: str
     form: ModelForm[Any]
 
 
@@ -55,27 +53,16 @@ def media_row(item: AbstractMediaType) -> MyMediaRowContext:
     """
     Renders a row on the "My Media" page.
     """
+    form_class: type[ModelForm[Any]]
     if isinstance(item, Book):
-        return MyMediaRowContext(
-            item=item,
-            id=item.id,
-            title=item.title,
-            author=item.author,
-            year=item.publication_year,
-            media_type=str(Book._meta.verbose_name),
-            form=MyMediaBookForm(),
-        )
+        form_class = MyMediaBookForm
     elif isinstance(item, Film):
-        return MyMediaRowContext(
-            item=item,
-            id=item.id,
-            title=item.title,
-            author=item.director,
-            year=item.release_year,
-            media_type=str(Film._meta.verbose_name),
-            form=MyMediaFilmForm(instance=item),
-        )
+        form_class = MyMediaFilmForm
     else:
         raise NotImplementedError(
             f"{type(item)} is not supported by media_row inclusion_tag"
         )
+    return MyMediaRowContext(
+        item=item,
+        form=form_class(),
+    )

@@ -5,7 +5,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import CharField, Value
+from django.db.models import CharField, QuerySet, Value
 from django.db.models.functions import Concat
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
@@ -24,6 +24,7 @@ from supergood_review_site.media_types.forms import (
 )
 from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
 from supergood_review_site.reviews.forms import ReviewForm, ReviewMgmtForm
+from supergood_review_site.reviews.models import Review
 from supergood_review_site.strategies.base.models import AbstractStrategy
 from supergood_review_site.strategies.ebert.forms import EbertStrategyForm
 from supergood_review_site.strategies.goodreads.forms import GoodreadsStrategyForm
@@ -309,6 +310,21 @@ class MyMediaView(ListView[AbstractMediaType]):
             model=AbstractMediaType,
         )
         return combined_qs.order_by("-updated_at")
+
+
+class MyReviewsView(ListView[Review]):
+    model = Review
+    paginate_by = 20
+    context_object_name = "review_list"
+    template_name = "supergood_review_site/my_reviews.html"
+
+    def get_queryset(self) -> QuerySet[Review]:
+        review_qs = (
+            Review.objects.with_generic_relations()
+            .all()
+            .order_by("-completed_at_year", "-completed_at_month", "-completed_at_day")
+        )
+        return review_qs
 
 
 class FormViewMixinProtocol(Protocol):

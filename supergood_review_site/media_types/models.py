@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -18,6 +19,10 @@ class AbstractMediaType(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    @property
+    def media_type(self) -> str:
+        return str(self._meta.verbose_name)
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()
@@ -43,7 +48,9 @@ class Book(AbstractMediaType):
 
     author = models.CharField(default="", max_length=256)
     pages = models.IntegerField(blank=True, null=True)
-    publication_year = models.IntegerField(blank=True, null=True, max_length=4)
+    publication_year = models.IntegerField(
+        blank=True, null=True, validators=[MaxValueValidator(9999)]
+    )
     genres = models.ManyToManyField(Genre)
 
     def __str__(self) -> str:
@@ -68,7 +75,9 @@ class Film(AbstractMediaType):
     """
 
     director = models.CharField(default="", max_length=256)
-    release_year = models.IntegerField(blank=True, null=True, max_length=4)
+    release_year = models.IntegerField(
+        blank=True, null=True, validators=[MaxValueValidator(9999)]
+    )
     genres = models.ManyToManyField(Genre)
     countries = models.ManyToManyField(Country)
 

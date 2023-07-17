@@ -152,3 +152,15 @@ class ReviewMgmtForm(forms.Form):
         data = self.cleaned_data["create_new_media_type_object"]
         should_create_new: bool = data == CreateNewMediaOption.CREATE_NEW.value
         return should_create_new
+
+
+class UpdateMyReviewForm(forms.ModelForm[Review]):
+    class Meta:
+        model = Review
+        fields = [
+            "completed_at_day",
+            "completed_at_month",
+            "completed_at_year",
+            # TODO: strategy
+            "text",
+        ]

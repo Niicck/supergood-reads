@@ -1,30 +1,30 @@
 {% extends "supergood_review_site/base.html" %}
 {% load partials %}
 {% load django_vite %}
+{% load my_reviews_row %}
 
 {% block header %}
-    My Media
+    My Reviews
 {% endblock header %}
 
 {% block content %}
-    {% vite_asset 'js/apps/myMedia.ts' %}
-    <div class="px-4 sm:px-0" id="my-media-app">
+    {% vite_asset 'js/apps/myReviews.ts' %}
+    <div class="px-4 sm:px-0" id="my-reviews-app">
         <div class="-mx-4 mt-8 sm:-mx-0">
             <table class="table-fixed min-w-full divide-y divide-gray-300">
                 <thead>
                     <tr>
                         <th scope="col" class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Title</th>
-                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell w-80">Creator</th>
-                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-28">Year</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-12">Type</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell w-80">Date</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-28">Score</th>
                         <th scope="col" class="py-3.5 sm:pl-2 sm:pr-0 w-12">
                             <span class="sr-only">Edit</span>
                         </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
-                    {% for item in media_list %}
-                        {% media_row item=item %}
+                    {% for review in review_list %}
+                        {% my_reviews_row review=review %}
                     {% endfor %}
                 </tbody>
             </table>

@@ -3,13 +3,13 @@
 {% load django_vite %}
 {% load widget_tweaks %}
 {% load tags %}
+{% load date_picker %}
 
 {% block header %}
     Create Review
 {% endblock header %}
 
 {% block content %}
-    {% vite_asset 'css/main.css.js' %}
     {% vite_asset 'js/apps/createReview.ts' %}
 
     {% comment %} Convert initial field values into json for use in vue conponents. {% endcomment %}
@@ -63,47 +63,7 @@
                 </div>
 
                 {% comment %} Handle completed_at date {% endcomment %}
-                <fieldset>
-                    <div class="space-y-6 sm:space-y-5 sm:border-t sm:border-gray-200">
-                        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5 sm:border-t sm:border-gray-200">
-                            <legend class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">When did you finish it?</legend>
-                            {% with day_field=review_form.completed_at_day %}
-                                {% with month_field=review_form.completed_at_month %}
-                                    {% with year_field=review_form.completed_at_year %}
-                                        <div class="mt-1 sm:col-span-2 sm:mt-0">
-                                            <div>
-                                                {{ day_field.errors }}
-                                                {{ month_field.errors }}
-                                                {{ year_field.errors }}
-                                            </div>
-                                            <div class="mt-1 sm:mt-0 flex flex-wrap gap-4">
-                                                <div>
-                                                    <label for="{{ day_field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
-                                                        {{ day_field.label }}
-                                                    </label>
-                                                    {{ day_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"}}
-                                                </div>
-                                                <div>
-                                                    <label for="{{ month_field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
-                                                        {{ month_field.label }}
-                                                    </label>
-                                                    {{ month_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
-                                                </div>
-                                                <div>
-                                                    <label for="{{ year_field.id_for_label }}" class="block font-medium text-gray-700 sm:mt-px sm:pt-2 sm:text-sm">
-                                                        {{ year_field.label }}
-                                                    </label>
-                                                    {{ year_field|add_class:"block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
-                                                </div>
-                                            </div>
-                                            <p class="mt-2 text-sm text-gray-500">It's okay to enter an estimated date (just a month and year; or only a year).</p>
-                                        </div>
-                                    {% endwith %}
-                                {% endwith %}
-                            {% endwith %}
-                        </div>
-                    </div>
-                </fieldset>
+                {% date_picker day_field=review_form.completed_at_day month_field=review_form.completed_at_month year_field=review_form.completed_at_year %}
 
                 {% comment %} Handle Rating Strategy {% endcomment %}
                 <div class="sm:border-t sm:border-gray-200">

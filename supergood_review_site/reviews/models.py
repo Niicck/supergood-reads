@@ -8,7 +8,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
+
+
+class ReviewManager(models.Manager["Review"]):
+    def with_generic_relations(self) -> QuerySet["Review"]:
+        return self.prefetch_related("strategy", "media_type")
 
 
 class Review(models.Model):
@@ -37,12 +43,12 @@ class Review(models.Model):
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
         ContentType,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="strategy_review_set",
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
-    strategy_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
+    strategy_object_id = models.UUIDField(blank=False, null=False)
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
     # Allow reviews of any Media type
@@ -50,11 +56,13 @@ class Review(models.Model):
         ContentType,
         on_delete=models.PROTECT,
         related_name="media_type_review_set",
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
-    media_type_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
+    media_type_object_id = models.UUIDField(blank=False, null=False)
     media_type = GenericForeignKey("media_type_content_type", "media_type_object_id")
+
+    objects = ReviewManager()
 
     class Meta:
         ordering = (
@@ -84,7 +92,8 @@ class Review(models.Model):
             return str(self.completed_at_year)
         elif not self.completed_at_day:
             return datetime.strptime(
-                str(self.completed_at_month) + " " + str(self.completed_at_year), "%Y"
+                str(self.completed_at_month) + " " + str(self.completed_at_year),
+                "%m %Y",
             ).strftime("%b %Y")
         else:
             return datetime.strptime(

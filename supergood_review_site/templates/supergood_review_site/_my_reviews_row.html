@@ -1,0 +1,15 @@
+{% load widget_tweaks %}
+{% load tags %}
+{% load date_picker %}
+
+{{ initial_data|vue_json_script:json_script_id }}
+<tr is="vue:my-reviews-row"
+    json-script-id="{{json_script_id}}"
+    csrf-token={{csrf_token}}
+    update-url={% url 'my_media_book_update' review.id %}
+>
+    <template #date-picker>
+        {% date_picker day_field=form.completed_at_day month_field=form.completed_at_month year_field=form.completed_at_year label_above=true border=false %}
+    </template>
+    {% include "supergood_review_site/forms/_my_reviews_field_wrapper.html" with field=form.text v_slot_name="text-field"%}
+</tr>

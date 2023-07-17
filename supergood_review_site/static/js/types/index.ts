@@ -14,4 +14,12 @@ type NavBarLink = {
   current: boolean;
 };
 
-export type { FieldData, NavBarLink };
+type MyReviewRowInitialData = {
+  initialTitle: string;
+  initialMediaType: string;
+  initialCompletedAt: string;
+  initialRating: string;
+  initialText: string;
+};
+
+export type { FieldData, NavBarLink, MyReviewRowInitialData };
