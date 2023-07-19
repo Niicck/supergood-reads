@@ -1,11 +1,11 @@
 import logging
-from typing import Any, Dict, List, Optional, Protocol, Type
+from typing import Any, Dict, List, Optional, Protocol, Type, cast
 
-from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import CharField, QuerySet, Value
+from django.db.models import CharField, Model, QuerySet, Value
 from django.db.models.functions import Concat
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
@@ -37,207 +37,437 @@ logger = logging.getLogger(__name__)
 
 class CreateReviewView(TemplateView):
     template_name = "supergood_review_site/create_review.html"
-    strategy_forms: List[Type[forms.ModelForm[Any]]] = [
+    strategy_form_classes: List[Type[ModelForm[Any]]] = [
         EbertStrategyForm,
         GoodreadsStrategyForm,
         MaximusStrategyForm,
     ]
-    media_type_forms: List[Type[forms.ModelForm[Any]]] = [
+    media_type_form_classes: List[Type[ModelForm[Any]]] = [
         BookAutocompleteForm,
         FilmAutocompleteForm,
     ]
 
-    @property
-    def strategy_form_models(self) -> List[Type[AbstractStrategy]]:
-        return [form()._meta.model for form in self.strategy_forms]
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
-    @property
-    def media_type_form_models(self) -> List[Type[AbstractMediaType]]:
-        return [form()._meta.model for form in self.media_type_forms]
+        # Validate that strategy_form_classes are Strategies
+        for form_class in self.strategy_form_classes:
+            if not issubclass(form_class._meta.model, AbstractStrategy):
+                raise ValueError(
+                    f"{form_class.__name__} is not a valid Strategy form class."
+                )
+
+        # Validate that strategy_form_classes are Strategies
+        for form_class in self.media_type_form_classes:
+            if not issubclass(form_class._meta.model, AbstractMediaType):
+                raise ValueError(
+                    f"{form_class.__name__} is not a valid MediaType form class."
+                )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        strategy_choices = FormModelExtractor(self.strategy_form_classes).run()
+        media_type_choices = FormModelExtractor(self.media_type_form_classes).run()
 
         context["review_form"] = ReviewForm(
             prefix="review",
-            strategies=self.strategy_form_models,
-            media_types=self.media_type_form_models,
+            strategy_choices=strategy_choices,
+            media_type_choices=media_type_choices,
         )
         context["review_mgmt_form"] = ReviewMgmtForm(prefix="review_mgmt")
-        context["strategy_forms"] = self.initialize_forms(self.strategy_forms)
-        context["media_type_forms"] = self.initialize_forms(self.media_type_forms)
+        context["strategy_forms"] = InstantiateGenericModelFormsHandler(
+            self.strategy_form_classes
+        ).run()
+        context["media_type_forms"] = InstantiateGenericModelFormsHandler(
+            self.media_type_form_classes
+        ).run()
 
         return context
-
-    def initialize_forms(
-        self,
-        forms: List[Type[forms.ModelForm[Any]]],
-        post_data: Optional[Any] = None,
-        selected_content_type_id: Optional[int] = None,
-    ) -> Dict[str, forms.ModelForm[Any]]:
-        """Add a list of forms to the context of the rendered template.
-
-        Args:
-            forms:
-              list of forms to initialize
-            post_data:
-              optional request.POST data to handle form submissions.
-            selected_content_type_id:
-              The content_type_id for the model that was selected to be filled out by
-              the client. The form associated with this model is the only form that will
-              have post_data applied to it.
-
-        The returned context object uses the content_type_id as the dictionary key.
-        This is because the ReviewForm uses the model's content_type_id to select
-        which model to use. The Review model relates to Strategy and MediaType via a
-        GenericForeignKey, which makes it necessary to specify which model we are
-        relating to.
-
-        By identifying our ModelForms by their model's content_type_id, our template
-        can select the correct ModelForm by the content_type selected in the ReviewForm.
-
-        Example:
-            self.initialize_forms(self.strategy_forms)
-
-            Returns:
-                {
-                    "7": EbertStrategyForm(),
-                    "8": GoodreadsStrategyForm(),
-                    "9": MaximusStrategyForm(),
-                }
-        """
-        initialized_forms = {}
-        for form in forms:
-            form_model = form()._meta.model
-            model_name = form_model._meta.model_name
-            model_content_type_id = Utils.get_content_type_id(form_model)
-            stringified_model_content_type_id = str(model_content_type_id)
-            if post_data and model_content_type_id == selected_content_type_id:
-                initialized_form = form(post_data, prefix=model_name)
-            else:
-                initialized_form = form(prefix=model_name)
-            initialized_forms[stringified_model_content_type_id] = initialized_form
-        return initialized_forms
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         if settings.DEBUG:
             request_data = dict(request.POST.items())
             logger.info(request_data)
 
-        any_invalid = False
-
-        # Validate ReviewForm
-        review_form = ReviewForm(
-            request.POST,
-            prefix="review",
-            strategies=self.strategy_form_models,
-            media_types=self.media_type_form_models,
+        handler = ProcessReviewHandler(
+            request, self.strategy_form_classes, self.media_type_form_classes
         )
-        if not review_form.is_valid():
-            any_invalid = True
-
-        # Validate ReviewMgmtForm
-        review_mgmt_form = ReviewMgmtForm(request.POST, prefix="review_mgmt")
-        if not review_mgmt_form.is_valid():
-            any_invalid = True
-
-        # Validate MediaType forms
-        should_create_new_media_type_object = review_mgmt_form.cleaned_data.get(
-            "create_new_media_type_object"
-        )
-        selected_media_type_content_type = review_form.cleaned_data.get(
-            "media_type_content_type"
-        )
-        if should_create_new_media_type_object and selected_media_type_content_type:
-            media_type_forms = self.initialize_forms(
-                self.media_type_forms,
-                post_data=request.POST,
-                selected_content_type_id=selected_media_type_content_type.id,
-            )
-            selected_media_type_form = media_type_forms[
-                str(selected_media_type_content_type.id)
-            ]
-            if not selected_media_type_form.is_valid():
-                any_invalid = True
-        else:
-            media_type_forms = self.initialize_forms(
-                self.media_type_forms, post_data=request.POST
-            )
-            selected_media_type_form = None
-
-        if (
-            not should_create_new_media_type_object
-            and not review_form.cleaned_data.get("media_type_object_id")
-        ):
-            review_form.add_error("media_type_object_id", "This field is required.")
-            any_invalid = True
-
-        # Validate Strategy forms
-        selected_strategy_content_type = review_form.cleaned_data.get(
-            "strategy_content_type"
-        )
-        if selected_strategy_content_type:
-            strategy_forms = self.initialize_forms(
-                self.strategy_forms,
-                post_data=request.POST,
-                selected_content_type_id=selected_strategy_content_type.id,
-            )
-            selected_strategy_form = strategy_forms[
-                str(selected_strategy_content_type.id)
-            ]
-            if not selected_strategy_form.is_valid():
-                any_invalid = True
-        else:
-            strategy_forms = self.initialize_forms(
-                self.strategy_forms, post_data=request.POST
-            )
-            selected_strategy_form = None
-            any_invalid = True
+        handler.run()
 
         # If any forms are invalid, render the form again with error messages.
-        if any_invalid:
+        if handler.any_invalid:
             messages.error(request, "Please fix the errors below.")
             return render(
                 request,
                 self.template_name,
                 {
-                    "review_form": review_form,
-                    "review_mgmt_form": review_mgmt_form,
-                    "strategy_forms": strategy_forms,
-                    "media_type_forms": media_type_forms,
+                    "review_form": handler.review_form,
+                    "review_mgmt_form": handler.review_mgmt_form,
+                    "strategy_forms": handler.strategy_forms,
+                    "media_type_forms": handler.media_type_forms,
                 },
                 status=400,
             )
 
-        # Save to database
+        # If no forms are invalid, save Review to database
         try:
-            with transaction.atomic():
-                review = review_form.save(commit=False)
-                if should_create_new_media_type_object:
-                    assert selected_media_type_form
-                    media_type = selected_media_type_form.save()
-                    review.media_type_object_id = media_type.id
-                assert selected_strategy_form
-                strategy = selected_strategy_form.save()
-                review.strategy_object_id = strategy.id
-                review.save()
+            handler.commit()
         except Exception:
+            # If review fails to save, render the form again with error messages
             logger.exception("Failed to create Review")
             messages.error(request, "Server Error.")
             return render(
                 request,
                 self.template_name,
                 {
-                    "review_form": review_form,
-                    "review_mgmt_form": review_mgmt_form,
-                    "strategy_forms": strategy_forms,
-                    "media_type_forms": media_type_forms,
+                    "review_form": handler.review_form,
+                    "review_mgmt_form": handler.review_mgmt_form,
+                    "strategy_forms": handler.strategy_forms,
+                    "media_type_forms": handler.media_type_forms,
                 },
                 status=500,
             )
-        if review.media_type:
-            messages.success(request, f"Added review for {review.media_type.title}.")
-        return redirect("create_review")
+
+        # Return successful response
+        if handler.review.media_type:
+            messages.success(
+                request, f"Added review for {handler.review.media_type.title}."
+            )
+        return redirect("my_reviews")
+
+
+class FormModelExtractor:
+    """Extract the Models from a list of ModelForms.
+
+    Example:
+        FormModelExtractor([BookAutocompleteForm, FilmAutocompleteForm]).run()
+
+        Returns:
+            [Book, Film]
+    """
+
+    def __init__(self, forms: List[Type[ModelForm[Any]]]) -> None:
+        self.forms = forms
+
+    def run(self) -> List[Type[Model]]:
+        self.extract_models_from_forms()
+        return self.form_models
+
+    def extract_models_from_forms(self) -> None:
+        self.form_models = [self._extract_model(form) for form in self.forms]
+
+    def _extract_model(self, form: Type[ModelForm[Any]]) -> Type[Model]:
+        model = form._meta.model
+        cast(Type[Model], model)
+        return model
+
+
+FormsByContentType = Dict[str, ModelForm[Any]]
+
+
+class InstantiateGenericModelFormsHandler:
+    """Instantiate ModelForms for generic relations and associate them with their content_type_id.
+
+    Args:
+        forms:
+            list of forms to instantiate.
+        post_data:
+            optional request.POST data to handle form submissions.
+        review_instance:
+            pre-existing Review instance that is being updated.
+        selected_content_type_id:
+            The content_type_id for the model that was selected to be filled out by
+            the client. The form associated with this model is the only form that will
+            have post_data applied to it.
+
+    Example 1:
+        InstantiateGenericModelFormsHandler(strategy_forms).run()
+
+        Returns:
+            {
+                "7": EbertStrategyForm(),
+                "8": GoodreadsStrategyForm(),
+                "9": MaximusStrategyForm(),
+            }
+    Example 2:
+        InstantiateGenericModelFormsHandler(
+            strategy_forms,
+            post_data,
+            selected_content_type_id="7"
+        ).run()
+
+        Returns:
+            {
+                "7": EbertStrategyForm(post_data),
+                "8": GoodreadsStrategyForm(),
+                "9": MaximusStrategyForm(),
+            }
+    """
+
+    forms_by_content_type: FormsByContentType
+
+    def __init__(
+        self,
+        forms: List[Type[ModelForm[Any]]],
+        post_data: Optional[Any] = None,
+        review_instance: Optional[Review] = None,
+        selected_content_type_id: Optional[int] = None,
+    ) -> None:
+        self.forms = forms
+        self.post_data = post_data
+        self.review_instance = review_instance
+        self.selected_content_type_id = selected_content_type_id
+
+    def run(self) -> FormsByContentType:
+        self.instantiate_forms_by_content_type()
+        return self.forms_by_content_type
+
+    def instantiate_forms_by_content_type(self) -> None:
+        self.forms_by_content_type = {}
+        for form in self.forms:
+            form_model = form()._meta.model
+            model_name = form_model._meta.model_name
+            model_content_type_id = Utils.get_content_type_id(form_model)
+            stringified_model_content_type_id = str(model_content_type_id)
+
+            # Initialize with post_data if current form was selected
+            if (
+                self.post_data
+                and model_content_type_id == self.selected_content_type_id
+            ):
+                # TODO: handle existence of review_instance
+                instantiated_form = form(self.post_data, prefix=model_name)
+            else:
+                instantiated_form = form(prefix=model_name)
+            self.forms_by_content_type[
+                stringified_model_content_type_id
+            ] = instantiated_form
+
+
+class ProcessReviewHandler:
+    """Process a POST request to create a new Review and any necessary foreign Models.
+
+    Example:
+        handler = ProcessReviewHandler(
+            post_request,
+            [EbertStrategy, GoodreadsStrategy, MaximusStrategy],
+            [BookAutocompleteForm, FilmAutocompleteForm],
+        )
+        handler.run()
+        if not handler.any_invalid:
+            handler.commit()
+
+    If all is successful, then no Exceptions will be raised and `handler.review` will
+    contain the newly saved Review object.
+
+    If any Exceptions occur, then the handler's forms can be re-rendered in the
+    Template View and any mistakes can be corrected by the User:
+        render(
+            request,
+            template_name,
+            {
+                "review_form": handler.review_form,
+                "review_mgmt_form": handler.review_mgmt_form,
+                "strategy_forms": handler.strategy_forms,
+                "media_type_forms": handler.media_type_forms,
+            },
+        )
+
+    Attributes:
+        request: POST request data for creating a new Review.
+        strategy_form_classes: eligible Strategy Form Classes for the Review.
+        media_type_form_classes: eligible MediaType Form Classes for the Review.
+        any_invalid: True if any required Form is not valid.
+        review_form: instantiated ReviewForm bound with POST request data.
+        review_mgmt_form: instantiated ReviewMgmtForm bound with POST request data.
+        create_new_media_type_object: indicates whether the User chose to create a new
+          media_type object (rather than selecting an existing one).
+        media_type_forms: instantiated MediaType Forms bound with POST request data.
+        selected_media_type_form: Form for the MediaType instance to be created for this Review.
+        strategy_forms: instantiated Strategy Forms bound with POST request data.
+        selected_strategy_form: Form for the Strategy instance to be created for this Review.
+        review: the Review object that was created
+    """
+
+    review_form: ReviewForm
+    review_mgmt_form: ReviewMgmtForm
+    create_new_media_type_object: bool
+    media_type_forms: FormsByContentType
+    selected_media_type_form: Optional[ModelForm[Any]]
+    strategy_forms: FormsByContentType
+    selected_strategy_form: Optional[ModelForm[Any]]
+    review: Review
+
+    def __init__(
+        self,
+        request: HttpRequest,
+        strategy_form_classes: List[Type[ModelForm[Any]]],
+        media_type_form_classes: List[Type[ModelForm[Any]]],
+    ) -> None:
+        self.request = request
+        self.strategy_form_classes = strategy_form_classes
+        self.media_type_form_classes = media_type_form_classes
+        self.any_invalid = False
+
+    def run(self) -> None:
+        self.validate_review_form()
+        self.validate_review_mgmt_form()
+        self.validate_media_type_form()
+        self.validate_strategy_form()
+
+    @transaction.atomic()
+    def commit(self) -> None:
+        self.save_review()
+
+    def validate_review_form(self) -> None:
+        """
+        Validate that base ReviewForm is valid, without worrying about Strategies or
+        MediaTypes yet.
+
+        Assigns:
+            review_form
+        """
+        strategy_choices = FormModelExtractor(self.strategy_form_classes).run()
+        media_type_choices = FormModelExtractor(self.media_type_form_classes).run()
+        self.review_form = ReviewForm(
+            self.request.POST,
+            prefix="review",
+            strategy_choices=strategy_choices,
+            media_type_choices=media_type_choices,
+        )
+        if not self.review_form.is_valid():
+            self.any_invalid = True
+
+    def validate_review_mgmt_form(self) -> None:
+        """
+        Validate ReviewMgmtForm, which contains metadata to help process the
+        relationship between Review and its Generic Foreign Models.
+
+        Assigns:
+            review_mgmt_form
+        """
+        self.review_mgmt_form = ReviewMgmtForm(self.request.POST, prefix="review_mgmt")
+        if not self.review_mgmt_form.is_valid():
+            self.any_invalid = True
+
+    def validate_media_type_form(self) -> None:
+        """
+        If User decided to create a new media_type object, then we need to validate the
+        Form associated with that MediaType.
+
+        Assigns:
+            create_new_media_type_object
+            media_type_forms
+            selected_media_type_form
+        """
+        selected_media_type_content_type = self.review_form.cleaned_data.get(
+            "media_type_content_type"
+        )
+
+        self.create_new_media_type_object: bool = (
+            self.review_mgmt_form.cleaned_data.get("create_new_media_type_object")
+            or False
+        )
+
+        media_form_to_bind: Optional[int] = None
+        self.selected_media_type_form: Optional[ModelForm[AbstractMediaType]] = None
+
+        # If User decided to create a new MediaType object, then we must bind
+        # that ModelForm with request.POST data.
+        if self.create_new_media_type_object and selected_media_type_content_type:
+            cast(ContentType, selected_media_type_content_type)
+            media_form_to_bind = selected_media_type_content_type.id
+
+        # Instantiate all media_type_forms.
+        # Even if we are not creating a new MediaType object, we still want to
+        # instantiate these Forms anyway, in case we run into an error and need to
+        # re-render our template and forms.
+        self.media_type_forms = InstantiateGenericModelFormsHandler(
+            self.media_type_form_classes,
+            post_data=self.request.POST,
+            selected_content_type_id=media_form_to_bind,
+        ).run()
+
+        # If User chose to create a new MediaType object (rather than selecting an
+        # existing one) then validate that selected MediaType Form.
+        if self.create_new_media_type_object and media_form_to_bind:
+            self.selected_media_type_form = self.media_type_forms[
+                str(media_form_to_bind)
+            ]
+            assert self.selected_media_type_form
+            if not self.selected_media_type_form.is_valid():
+                self.any_invalid = True
+
+        # If User instead chose to select an existing MediaType object (rather than
+        # creating a new one) then it should exist on the ReviewForm's
+        # media_type_object_id field.
+        if (
+            not self.create_new_media_type_object
+            and not self.review_form.cleaned_data.get("media_type_object_id")
+        ):
+            self.review_form.add_error(
+                "media_type_object_id", "This field is required."
+            )
+            self.any_invalid = True
+            return
+
+    def validate_strategy_form(self) -> None:
+        """
+        Validate the Strategy Form used to score the Review.
+
+        Assigns:
+            strategy_forms
+            selected_strategy_form
+        """
+        selected_strategy_content_type = self.review_form.cleaned_data.get(
+            "strategy_content_type"
+        )
+
+        strategy_form_to_bind: Optional[int] = None
+        self.selected_strategy_form: Optional[ModelForm[AbstractStrategy]] = None
+
+        if selected_strategy_content_type:
+            cast(ContentType, selected_strategy_content_type)
+            strategy_form_to_bind = selected_strategy_content_type.id
+
+        # Instantiate all strategy_forms.
+        self.strategy_forms = InstantiateGenericModelFormsHandler(
+            self.strategy_form_classes,
+            post_data=self.request.POST,
+            selected_content_type_id=strategy_form_to_bind,
+        ).run()
+
+        # If User did not select a Strategy, then the request is invalid.
+        if not strategy_form_to_bind:
+            self.any_invalid = True
+            return
+
+        # Validate selected_strategy_form
+        self.selected_strategy_form = self.strategy_forms[str(strategy_form_to_bind)]
+        assert self.selected_strategy_form
+        if not self.selected_strategy_form.is_valid():
+            self.any_invalid = True
+
+    def save_review(self) -> None:
+        """Save the Review and any associated Foriegn Models"""
+        if self.any_invalid:
+            raise Exception("Failed to save Review. At least one form is invalid.")
+
+        self.review = self.review_form.save(commit=False)
+
+        # Save MediaType
+        if self.create_new_media_type_object:
+            assert self.selected_media_type_form
+            media_type = self.selected_media_type_form.save()
+            self.review.media_type_object_id = media_type.id
+
+        # Save Strategy
+        assert self.selected_strategy_form
+        strategy = self.selected_strategy_form.save()
+        self.review.strategy_object_id = strategy.id
+
+        # Save Review
+        self.review.save()
 
 
 class FilmAutocompleteView(View):

@@ -3,7 +3,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("review/", views.CreateReviewView.as_view(), name="create_review"),
+    path("reviews/", views.CreateReviewView.as_view(), name="create_review"),
+    path("reviews/<uuid:pk>", views.CreateReviewView.as_view(), name="update_review"),
     path(
         "film-autocomplete/",
         views.FilmAutocompleteView.as_view(),

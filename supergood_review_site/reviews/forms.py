@@ -1,13 +1,12 @@
 from enum import Enum
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Optional, Type
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Model
 from django.forms.fields import ChoiceField
 
-from supergood_review_site.media_types.models import AbstractMediaType
 from supergood_review_site.reviews.models import Review
-from supergood_review_site.strategies.base.models import AbstractStrategy
 from supergood_review_site.utils import Utils
 
 MONTH_CHOICES = (
@@ -27,6 +26,9 @@ MONTH_CHOICES = (
 
 
 class ReviewForm(forms.ModelForm[Review]):
+    strategy_choices: Optional[List[Type[Model]]]
+    media_type_choices: Optional[List[Type[Model]]]
+
     class Meta:
         model = Review
         fields = [
@@ -69,39 +71,60 @@ class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
-        strategies: Optional[List[Type[AbstractStrategy]]] = None,
-        media_types: Optional[List[Type[AbstractMediaType]]] = None,
+        strategy_choices: List[Type[Model]],
+        media_type_choices: List[Type[Model]],
         **kwargs: Any
     ) -> None:
         """
         Kwargs:
-          strategies:
-            list of strategy models to be used in strategy_content_type dropdown field
-          media_types:
+          strategy_choices:
+            list of strategies to be used in strategy_content_type dropdown field
+          media_type_choices:
             list of media_type models to be used in media_type_content_type dropdown field
         """
-        self.strategies = strategies or []
-        self.media_types = media_types or []
         super().__init__(*args, **kwargs)
 
-        self.add_models_to_choice_field("media_type_content_type", self.media_types)
-        self.add_models_to_choice_field("strategy_content_type", self.strategies)
+        self.strategy_choices = strategy_choices
+        self.media_type_choices = media_type_choices
 
-    def add_models_to_choice_field(
+        self.populate_generic_foreign_key_choice_field(
+            "strategy_content_type", self.strategy_choices
+        )
+        self.populate_generic_foreign_key_choice_field(
+            "media_type_content_type", self.media_type_choices
+        )
+
+    def populate_generic_foreign_key_choice_field(
         self,
         choice_field_name: str,
-        models: Union[List[Type[AbstractStrategy]], List[Type[AbstractMediaType]]],
+        models: List[Type[Model]],
     ) -> None:
-        """Plug in models' content_type_ids into ChoiceField for a ContentType relation.
+        """Add models as choices to a ChoiceField for a GenericForeignKey.
 
-        The ChoiceField functions like a homegrown ModelChoiceField that is
-        json serializable and can be injected into vue templates.
+        This allows users to select the ContentType model they want to use for a
+        GenericForeignKey.
+
+        This ChoiceField functions very similarly to a ModelChoiceField, except that it
+        is json serializable and can easily be injected into vue templates.
+
+        Example:
+            self.add_models_to_choice_field(
+                "strategy_content_type",
+                [EbertStrategy, GoodreadsStrategy, MaximusStrategy]
+            )
+
+            Will add:
+              ("7", "Ebert"),
+              ("8", "Goodreads"),
+              ("9", "Maximus")
+            To:
+              self.strategy_content_type ChoiceField
 
         Args:
           choice_field_name:
-            Name of a ChoiceField with a ForeignKey to the ContentType table.
+            Name of a ChoiceField for a ForeignKey to the ContentType table.
           models:
-            List of models whose content_type_ids will be added as choices to "field".
+            List of models whose content_type_ids will be added as choices.
         """
         field = self.fields[choice_field_name]
         assert isinstance(field, ChoiceField)

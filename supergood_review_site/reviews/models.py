@@ -45,10 +45,10 @@ class Review(models.Model):
         ContentType,
         on_delete=models.CASCADE,
         related_name="strategy_review_set",
-        blank=False,
-        null=False,
+        blank=True,
+        null=True,
     )
-    strategy_object_id = models.UUIDField(blank=False, null=False)
+    strategy_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
     # Allow reviews of any Media type
@@ -56,10 +56,10 @@ class Review(models.Model):
         ContentType,
         on_delete=models.PROTECT,
         related_name="media_type_review_set",
-        blank=False,
-        null=False,
+        blank=True,
+        null=True,
     )
-    media_type_object_id = models.UUIDField(blank=False, null=False)
+    media_type_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     media_type = GenericForeignKey("media_type_content_type", "media_type_object_id")
 
     objects = ReviewManager()

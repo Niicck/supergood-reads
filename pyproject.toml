@@ -29,10 +29,10 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4"
 django = ">=3.2"
-django-stubs-ext = "^4.2.2"
-django-vite = "^2.0.2"
-django-widget-tweaks = "^1.4.12"
-django-querysetsequence = "^0.17"
+django-stubs-ext = ">=4.2.2"
+django-vite = ">=2.0.2"
+django-widget-tweaks = ">=1.4.12"
+django-querysetsequence = ">=0.17"
 
 [tool.poetry.group.dev.dependencies]
 # Dependencies required to run app locally.
@@ -57,6 +57,7 @@ coverage = "^7.1.0"
 [tool.poetry.group.mypy.dependencies]
 mypy = "^1.4.1"
 types-beautifulsoup4 = "^4.12.0.5"
+django-stubs = {extras = ["compatible-mypy"], version = "^4.2.3"}
 
 [tool.poetry.group.safety.dependencies]
 # pinned until conflict with packaging is fixed
