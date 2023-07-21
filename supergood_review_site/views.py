@@ -7,6 +7,7 @@ from django.db.models import CharField, QuerySet, Value
 from django.db.models.functions import Concat
 from django.forms import ModelForm
 from django.http import (
+    Http404,
     HttpRequest,
     HttpResponse,
     HttpResponsePermanentRedirect,
@@ -17,6 +18,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
+from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
@@ -31,11 +33,12 @@ logger = logging.getLogger(__name__)
 
 class CreateReviewView(TemplateView):
     template_name = "supergood_review_site/create_review.html"
+    object: Review | None = None
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        review_form_group = ReviewFormGroup()
+        review_form_group = ReviewFormGroup(instance=self.object)
         context["review_form"] = review_form_group.review_form
         context["review_mgmt_form"] = review_form_group.review_mgmt_form
         context["strategy_forms"] = review_form_group.strategy_forms.by_content_type_id
@@ -50,24 +53,24 @@ class CreateReviewView(TemplateView):
             request_data = dict(request.POST.items())
             logger.info(request_data)
 
-        review_form_group = ReviewFormGroup(data=request.POST)
+        review_form_group = ReviewFormGroup(data=request.POST, instance=self.object)
 
         if not review_form_group.is_valid():
             messages.error(request, "Please fix the errors below.")
-            return self.on_failure(request, review_form_group, status_code=400)
+            return self.on_form_error(request, review_form_group, status_code=400)
 
         try:
             review = review_form_group.save()
         except Exception:
             logger.exception("Failed to create Review")
             messages.error(request, "Server Error.")
-            return self.on_failure(request, review_form_group, status_code=500)
+            return self.on_form_error(request, review_form_group, status_code=500)
 
         assert isinstance(review.media_type, AbstractMediaType)
         messages.success(request, f"Added review for {review.media_type.title}.")
-        return self.on_success()
+        return self.redirect_to_reviews()
 
-    def on_failure(
+    def on_form_error(
         self,
         request: HttpRequest,
         review_form_group: ReviewFormGroup,
@@ -85,8 +88,28 @@ class CreateReviewView(TemplateView):
             status=status_code,
         )
 
-    def on_success(self) -> HttpResponseRedirect | HttpResponsePermanentRedirect:
+    def redirect_to_reviews(
+        self,
+    ) -> HttpResponseRedirect | HttpResponsePermanentRedirect:
         return redirect("reviews")
+
+
+class UpdateReviewView(CreateReviewView, SingleObjectMixin):
+    template_name = "supergood_review_site/update_review.html"
+    model = Review
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Http404:
+            messages.error(self.request, "Invalid Request.")
+            return self.redirect_to_reviews()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        # TODO: check for editing permissions
+        return obj
 
 
 class FilmAutocompleteView(View):

@@ -89,8 +89,8 @@ class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
-        strategy_choices: List[Type[Model]],
-        media_type_choices: List[Type[Model]],
+        strategy_choices: List[Type[Model]] = None,
+        media_type_choices: List[Type[Model]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -102,8 +102,8 @@ class ReviewForm(forms.ModelForm[Review]):
         """
         super().__init__(*args, **kwargs)
 
-        self.strategy_choices = strategy_choices
-        self.media_type_choices = media_type_choices
+        self.strategy_choices = strategy_choices or []
+        self.media_type_choices = media_type_choices or []
 
         self.populate_generic_foreign_key_choice_field(
             "strategy_content_type", self.strategy_choices

@@ -6,7 +6,7 @@
 <tr is="vue:my-reviews-row"
     json-script-id="{{json_script_id}}"
     csrf-token={{csrf_token}}
-    update-url={% url 'update_book' review.id %}
+    update-url={% url 'update_review' review.id %}
 >
     <template #date-picker>
         {% date_picker day_field=form.completed_at_day month_field=form.completed_at_month year_field=form.completed_at_year label_above=true border=false %}

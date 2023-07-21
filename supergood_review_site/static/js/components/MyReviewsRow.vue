@@ -50,15 +50,13 @@
     </td>
     <!-- Edit Button -->
     <td class="py-4 sm:pl-3 text-right text-sm font-medium sm:pr-0">
-      <button
+      <a
         type="button"
         class="text-indigo-600 hover:text-indigo-900 align-top w-12"
-        @click="editMode = !editMode"
+        :href="props.updateUrl"
       >
-        <span v-show="editMode"> Cancel </span>
-        <span v-show="!editMode"> Edit </span>
-        <span class="sr-only">, {{ title }}</span>
-      </button>
+        Edit <span class="sr-only">, Review of {{ title }}</span>
+      </a>
     </td>
   </tr>
 
