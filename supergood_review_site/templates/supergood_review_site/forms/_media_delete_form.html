@@ -1,5 +1,5 @@
 <template #delete-form>
-    <form method="post" action={% url 'my_media_book_delete' item.id %}>
+    <form method="post" action={% url 'delete_book' item.id %}>
         {% csrf_token %}
         <button
             type="submit"

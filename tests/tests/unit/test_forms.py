@@ -26,7 +26,7 @@ class TestReviewForm:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setattr(
-            "supergood_review_site.utils.Utils.get_content_type_id",
+            "supergood_review_site.utils.ContentTypeUtils.get_content_type_id",
             self._fake_get_content_type_id,
         )
         review_form = ReviewForm(

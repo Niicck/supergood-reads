@@ -1,7 +1,7 @@
 {% extends "supergood_review_site/base.html" %}
 {% load partials %}
 {% load django_vite %}
-{% load my_reviews_row %}
+{% load reviews_row %}
 
 {% block header %}
     My Reviews
@@ -24,7 +24,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
                     {% for review in review_list %}
-                        {% my_reviews_row review=review %}
+                        {% reviews_row review=review %}
                     {% endfor %}
                 </tbody>
             </table>

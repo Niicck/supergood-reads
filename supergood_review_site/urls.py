@@ -3,7 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("reviews/", views.CreateReviewView.as_view(), name="create_review"),
+    path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path("reviews/<uuid:pk>", views.CreateReviewView.as_view(), name="update_review"),
     path(
         "film-autocomplete/",
@@ -16,33 +16,33 @@ urlpatterns = [
         name="book_autocomplete",
     ),
     path(
-        "my-media/",
+        "media/",
         views.MyMediaView.as_view(),
-        name="my_media",
+        name="media",
     ),
     path(
-        "my-reviews/",
+        "reviews/",
         views.MyReviewsView.as_view(),
-        name="my_reviews",
+        name="reviews",
     ),
     path(
-        "my-media/book/<uuid:pk>/",
+        "media/book/<uuid:pk>/",
         views.UpdateMyMediaBookView.as_view(),
-        name="my_media_book_update",
+        name="update_book",
     ),
     path(
-        "my-media/film/<uuid:pk>/",
+        "media/film/<uuid:pk>/",
         views.UpdateMyMediaFilmView.as_view(),
-        name="my_media_film_update",
+        name="update_film",
     ),
     path(
         "my-media/book/<uuid:pk>/delete/",
         views.DeleteMyMediaBookView.as_view(),
-        name="my_media_book_delete",
+        name="delete_book",
     ),
     path(
         "my-media/film/<uuid:pk>/delete/",
         views.DeleteMyMediaFilmView.as_view(),
-        name="my_media_film_delete",
+        name="delete_film",
     ),
 ]

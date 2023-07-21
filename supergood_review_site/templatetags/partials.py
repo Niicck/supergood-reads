@@ -30,13 +30,13 @@ def nav_bar(context: Context) -> Context:
                 },
                 {
                     "name": "My Media",
-                    "href": reverse("my_media"),
-                    "current": reverse("my_media") == current_url,
+                    "href": reverse("media"),
+                    "current": reverse("media") == current_url,
                 },
                 {
                     "name": "My Reviews",
-                    "href": reverse("my_reviews"),
-                    "current": reverse("my_reviews") == current_url,
+                    "href": reverse("reviews"),
+                    "current": reverse("reviews") == current_url,
                 },
             ]
         }
@@ -48,7 +48,7 @@ class MyMediaRowContext(TypedDict, total=False):
     form: ModelForm[Any]
 
 
-@register.inclusion_tag("supergood_review_site/_my_media_row.html")
+@register.inclusion_tag("supergood_review_site/_media_row.html")
 def media_row(item: AbstractMediaType) -> MyMediaRowContext:
     """
     Renders a row on the "My Media" page.

@@ -1,16 +1,17 @@
-from typing import Any, cast
+from typing import Any, Type
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Model
 
 
-class Utils:
+class ContentTypeUtils:
     @classmethod
     def get_content_type_id(cls, model: Any) -> int:
-        """Get the content_type id for a model.
-
-        Due to covariance issues, mypy doesn't recognize specific Model subclasses as
-        Models. To work around this, we explicitly cast our model as a Model.
-        """
-        cast(Model, model)
+        """Get the content_type id for a model."""
         return ContentType.objects.get_for_model(model).id
+
+    @classmethod
+    def get_model(cls, content_type_id: int) -> Type[Model]:
+        model = ContentType.objects.get_for_id(content_type_id).model_class()
+        assert model
+        return model

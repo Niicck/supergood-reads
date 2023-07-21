@@ -6,9 +6,11 @@ from typing import Any, Literal, Optional, Union
 import factory
 import factory.fuzzy
 from django.conf import settings
+from django.forms import Form
 from faker import Faker
 
 from supergood_review_site import models
+from supergood_review_site.reviews.forms import ReviewFormGroup
 
 fake = Faker()
 
@@ -59,6 +61,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     created_at = factory.LazyFunction(datetime.now)
     updated_at = factory.LazyFunction(datetime.now)
+    text = factory.LazyFunction(fake.unique.sentence)
 
     @classmethod
     def _adjust_completed_at(cls, **kwargs: Any) -> Any:
@@ -110,22 +113,76 @@ class ReviewFactory(factory.django.DjangoModelFactory):
         ] = FactoryParam.UNSET_COMPLETED_AT
 
 
-class GenreFactory(factory.django.DjangoModelFactory):
-    genre = factory.fuzzy.FuzzyChoice(
-        ["Drama", "Comedy", "Horror", "Documentary", "Action"]
-    )
+class FormDataFactory:
+    def __init__(self, form: Form):
+        self.form = form
+        self.data = self.build_data()
 
-    class Meta:
-        model = models.Genre
-        django_get_or_create = ("genre",)
+    def build_data(self) -> dict[str, str]:
+        data = {}
+        instance = getattr(self.form, "instance", None)
+        for key in self.form.fields.keys():
+            if self.form.prefix:
+                data_key = f"{self.form.prefix}-{key}"
+            else:
+                data_key = key
+
+            is_model_field = key in self.form.Meta.fields
+            if is_model_field and instance:
+                value = getattr(instance, key, "")
+            else:
+                value = ""
+            data.update({data_key: value})
+        return data
 
 
-class CountryFactory(factory.django.DjangoModelFactory):
-    name = factory.LazyFunction(fake.country)
+class ReviewFormFactory:
+    def __init__(
+        self, review: Optional[models.Review] = None, blank=False, save=False
+    ) -> None:
+        if review:
+            self.review: Optional[models.Review] = review
+        elif blank:
+            self.review = None
+        else:
+            self.review = ReviewFactory.build()
+            book = BookFactory.build()
+            strategy = EbertStrategyFactory.build()
+            self.review.media_type = book
+            self.review.strategy = strategy
+            if save:
+                book.save()
+                strategy.save()
+                self.review.save()
+        self.review_form_group = ReviewFormGroup(instance=self.review)
+        self.data = self.build_data()
 
-    class Meta:
-        model = models.Country
-        django_get_or_create = ("name",)
+    def build_data(self) -> dict[str, str]:
+        data = {}
+
+        review_form = self.review_form_group.review_form
+        review_form_data = FormDataFactory(review_form).data
+        data.update(review_form_data)
+
+        review_mgmt_form = self.review_form_group.review_mgmt_form
+        review_mgmt_form_data = FormDataFactory(review_mgmt_form).data
+        data.update(review_mgmt_form_data)
+
+        media_type_forms = (
+            self.review_form_group.media_type_forms.by_content_type_id.values()
+        )
+        for form in media_type_forms:
+            form_data = FormDataFactory(form).data
+            data.update(form_data)
+
+        strategy_forms = (
+            self.review_form_group.strategy_forms.by_content_type_id.values()
+        )
+        for form in strategy_forms:
+            form_data = FormDataFactory(form).data
+            data.update(form_data)
+
+        return data
 
 
 class BookFactory(factory.django.DjangoModelFactory):
@@ -191,3 +248,43 @@ class FilmFactory(factory.django.DjangoModelFactory):
             self.countries.add(*extracted)
         else:
             self.countries.add(CountryFactory())
+
+
+class GenreFactory(factory.django.DjangoModelFactory):
+    genre = factory.fuzzy.FuzzyChoice(
+        ["Drama", "Comedy", "Horror", "Documentary", "Action"]
+    )
+
+    class Meta:
+        model = models.Genre
+        django_get_or_create = ("genre",)
+
+
+class CountryFactory(factory.django.DjangoModelFactory):
+    name = factory.LazyFunction(fake.country)
+
+    class Meta:
+        model = models.Country
+        django_get_or_create = ("name",)
+
+
+class EbertStrategyFactory(factory.django.DjangoModelFactory):
+    stars = factory.fuzzy.FuzzyInteger(0, 4)
+    great_film = False
+
+    class Meta:
+        model = models.EbertStrategy
+
+
+class GoodreadsStrategyFactory(factory.django.DjangoModelFactory):
+    stars = factory.fuzzy.FuzzyInteger(0, 5)
+
+    class Meta:
+        model = models.GoodreadsStrategy
+
+
+class MaximusStrategyFactory(factory.django.DjangoModelFactory):
+    recommended = factory.fuzzy.FuzzyChoice([True, False, None])
+
+    class Meta:
+        model = models.MaximusStrategy

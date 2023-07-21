@@ -9,7 +9,7 @@ from django.urls import reverse
 
 from supergood_review_site.models import Book, Film, GoodreadsStrategy, Review
 from supergood_review_site.reviews.forms import CreateNewMediaOption
-from supergood_review_site.utils import Utils
+from supergood_review_site.utils import ContentTypeUtils
 from tests.factories import BookFactory, FilmFactory
 
 
@@ -139,8 +139,8 @@ class TestCreateReviewView:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.url = reverse("create_review")
-        self.book_content_type = Utils.get_content_type_id(Book)
-        self.film_content_type = Utils.get_content_type_id(Film)
+        self.book_content_type = ContentTypeUtils.get_content_type_id(Book)
+        self.film_content_type = ContentTypeUtils.get_content_type_id(Film)
 
     @pytest.fixture
     def create_review_data(self) -> CreateReviewData:
@@ -159,7 +159,7 @@ class TestCreateReviewView:
             "review-completed_at_day": "",
             "review-completed_at_month": "",
             "review-completed_at_year": "",
-            "review-strategy_content_type": Utils.get_content_type_id(
+            "review-strategy_content_type": ContentTypeUtils.get_content_type_id(
                 GoodreadsStrategy
             ),
             "ebertstrategy-rating": "",
@@ -348,7 +348,7 @@ class TestCreateReviewView:
 @pytest.mark.django_db
 class TestUpdateMyMediaBookView:
     def get_url(self, book_id: UUID) -> str:
-        return reverse("my_media_book_update", args=[book_id])
+        return reverse("update_book", args=[book_id])
 
     def test_update_title(self, client: Client) -> None:
         book = BookFactory()
@@ -390,7 +390,7 @@ class TestUpdateMyMediaBookView:
 @pytest.mark.django_db
 class TestUpdateMyMediaFilmView:
     def get_url(self, film_id: UUID) -> str:
-        return reverse("my_media_film_update", args=[film_id])
+        return reverse("update_film", args=[film_id])
 
     def test_update_title(self, client: Client) -> None:
         film = FilmFactory()
@@ -432,7 +432,7 @@ class TestUpdateMyMediaFilmView:
 @pytest.mark.django_db
 class TestDeleteMyMediaBookView:
     def get_url(self, book_id: UUID) -> str:
-        return reverse("my_media_book_delete", args=[book_id])
+        return reverse("delete_book", args=[book_id])
 
     def test_delete(self, client: Client) -> None:
         book = BookFactory()
@@ -451,7 +451,7 @@ class TestDeleteMyMediaBookView:
 @pytest.mark.django_db
 class TestDeleteMyMediaFilmView:
     def get_url(self, film_id: UUID) -> str:
-        return reverse("my_media_film_delete", args=[film_id])
+        return reverse("delete_film", args=[film_id])
 
     def test_delete(self, client: Client) -> None:
         film = FilmFactory()

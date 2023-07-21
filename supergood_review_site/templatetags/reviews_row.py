@@ -9,8 +9,8 @@ from supergood_review_site.reviews.models import Review
 register = template.Library()
 
 
-@register.inclusion_tag("supergood_review_site/_my_reviews_row.html")
-def my_reviews_row(
+@register.inclusion_tag("supergood_review_site/_reviews_row.html")
+def reviews_row(
     review: Review,
 ) -> Dict[str, Any]:
     if review.media_type:
