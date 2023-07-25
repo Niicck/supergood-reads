@@ -182,3 +182,8 @@ def is_book(item: AbstractMediaType) -> bool:
 @register.filter(is_safe=True)
 def is_film(item: AbstractMediaType) -> bool:
     return isinstance(item, Film)
+
+
+@register.filter(is_safe=True)
+def to_str(value: Any) -> str:
+    return str(value)
