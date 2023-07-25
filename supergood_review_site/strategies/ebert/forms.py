@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django import forms
 
@@ -25,29 +25,39 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
             (None, "No Star Rating"),
         ),
         label="Rating",
+        required=False,
     )
 
     class Meta:
         model = EbertStrategy
         fields = ["rating"]
 
-    def clean(self) -> Optional[Dict[str, Any]]:
-        """Convert rating choice into EbertStrategy model fields."""
-        final_cleaned_data: Dict[str, Any] = {
-            "stars": None,
-            "great_film": False,
-        }
-        cleaned_data = super().clean()
-        if not cleaned_data:
-            return cleaned_data
-        rating = cleaned_data.get("rating")
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._set_initial_value(*args, **kwargs)
 
-        if rating is None:
+    def _set_initial_value(self, *args: Any, **kwargs: Any) -> None:
+        instance = kwargs.get("instance")
+        if instance:
+            if instance.great_film:
+                self.fields["rating"].initial = GREAT_FILM
+            elif instance.stars is None:
+                self.fields["rating"].initial = None
+            else:
+                self.fields["rating"].initial = str(instance.stars)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        rating = self.cleaned_data.get("rating")
+        if not rating:
             pass
         elif rating is GREAT_FILM:
-            final_cleaned_data["stars"] = Decimal(4)
-            final_cleaned_data["great_film"] = True
+            instance.stars = Decimal(4)
+            instance.great_film = True
         else:
-            final_cleaned_data["stars"] = Decimal(rating)
+            instance.stars = Decimal(rating)
 
-        return final_cleaned_data
+        if commit:
+            instance.save()
+        return instance

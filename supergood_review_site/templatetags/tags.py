@@ -13,6 +13,7 @@ from django.utils.html import (  # type: ignore [attr-defined]
 from django.utils.safestring import SafeText, mark_safe
 
 from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
+from supergood_review_site.utils import forms as form_utils
 
 register = template.Library()
 
@@ -169,34 +170,8 @@ def get_strategy_form_ref(strategy_id: int) -> str:
 
 
 @register.filter(is_safe=True)
-def get_field_value(form: Form, field_name: str) -> Any:
-    """Get the initial value of a form field.
-
-    Typically, the initial values of a form field are set during django template
-    rendering for that form field. However when using vue, there are two situations
-    where we need to access the initial value of a form field before rendering takes
-    place.
-
-    1) Some form fields are rendered in vue components and not by django
-    templates, so their form.field.initial values will never be set by django. We have
-    to assign them manually using this filter.
-
-    2) Some form field values are bound to vue state values. The vue state needs
-    to be initialized with the initial values of these form fields even before field
-    rendering takes place.
-
-    Returns:
-      If form is pre-populated with data, then use the data that was provided.
-      Else, if form is unbound, use the "initial" kwarg value, if it was provided.
-    """
-    if form.is_bound:
-        bound_field = form[field_name]
-        bound_value = bound_field.value()
-        return bound_value
-    else:
-        form_field = form.fields[field_name]
-        initial_value = form.get_initial_for_field(form_field, field_name)
-        return initial_value
+def get_initial_field_value(form: Form, field_name: str) -> Any:
+    return form_utils.get_initial_field_value(form, field_name)
 
 
 @register.filter(is_safe=True)

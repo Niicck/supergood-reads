@@ -20,6 +20,7 @@ from supergood_review_site.strategies.ebert.forms import EbertStrategyForm
 from supergood_review_site.strategies.goodreads.forms import GoodreadsStrategyForm
 from supergood_review_site.strategies.maximus.forms import MaximusStrategyForm
 from supergood_review_site.utils import ContentTypeUtils
+from supergood_review_site.utils.forms import get_initial_field_value
 
 MONTH_CHOICES = (
     (1, "Jan"),
@@ -112,28 +113,6 @@ class ReviewForm(forms.ModelForm[Review]):
             "media_type_content_type", self.media_type_choices
         )
 
-    @property
-    def strategy_content_type_id(self) -> Optional[int]:
-        if hasattr(self, "cleaned_data"):
-            selected_strategy_content_type = self.cleaned_data.get(
-                "strategy_content_type"
-            )
-            if selected_strategy_content_type:
-                assert isinstance(selected_strategy_content_type, ContentType)
-                return selected_strategy_content_type.id
-        return None
-
-    @property
-    def media_type_content_type_id(self) -> Optional[int]:
-        if hasattr(self, "cleaned_data"):
-            selected_media_type_content_type = self.cleaned_data.get(
-                "media_type_content_type"
-            )
-            if selected_media_type_content_type:
-                assert isinstance(selected_media_type_content_type, ContentType)
-                return selected_media_type_content_type.id
-        return None
-
     def populate_generic_foreign_key_choice_field(
         self,
         choice_field_name: str,
@@ -207,10 +186,6 @@ class ReviewForm(forms.ModelForm[Review]):
             raise ValidationError(f"{content_type_id} is not a valid {parent_name}.")
         return content_type
 
-    def clean(self) -> Any:
-        cleaned_data = super().clean()
-        return cleaned_data
-
 
 class CreateNewMediaOption(Enum):
     SELECT_EXISTING = "SELECT_EXISTING"
@@ -242,10 +217,11 @@ class GenericRelationFormGroup:
 
     Args:
         form_classes: list of form classes to instantiate.
-        data: optional request.POST data to handle form submissions.
-        review_instance: pre-existing Review instance that is being updated.
         selected_form_id: The content_type_id for the model whose form was selected to
           be filled out by the client.
+        data: optional request.POST data to handle form submissions.
+        instance: pre-existing instance that is being updated.
+
     """
 
     def __init__(
@@ -253,12 +229,12 @@ class GenericRelationFormGroup:
         form_classes: List[Type[ModelForm[Any]]],
         selected_form_id: Optional[int] = None,
         data: Optional[Any] = None,
-        review_instance: Optional[Review] = None,
+        instance: Optional[Model] = None,
     ) -> None:
         self.form_classes = form_classes
         self.selected_form_id = selected_form_id
         self.data = data
-        self.review_instance = review_instance
+        self.instance = instance
         self.by_content_type_id = self.instantiate_forms_by_content_type_id()
         self.selected_form = self.get_selected_form()
 
@@ -278,18 +254,37 @@ class GenericRelationFormGroup:
             }
         """
         forms_by_content_type_id = {}
+
+        if self.instance:
+            instance_content_type_id = ContentTypeUtils.get_content_type_id(
+                self.instance
+            )
+        else:
+            instance_content_type_id = None
+
         for form_class in self.form_classes:
             form_model = form_class()._meta.model
             model_name = form_model._meta.model_name
             model_content_type_id = ContentTypeUtils.get_content_type_id(form_model)
 
-            # Initialize with data if current form was selected
-            if self.data and model_content_type_id == self.selected_form_id:
-                # TODO: handle existence of review_instance
-                instantiated_form = form_class(self.data, prefix=model_name)
+            # Plug in instance or data into selected_form
+            if (
+                self.instance or self.data
+            ) and model_content_type_id == self.selected_form_id:
+                if instance_content_type_id and (
+                    instance_content_type_id == self.selected_form_id
+                ):
+                    instance = self.instance
+                else:
+                    instance = None
+                instantiated_form = form_class(
+                    self.data, instance=instance, prefix=model_name
+                )
             else:
                 instantiated_form = form_class(prefix=model_name)
+
             forms_by_content_type_id[str(model_content_type_id)] = instantiated_form
+
         return forms_by_content_type_id
 
     def get_selected_form(self) -> Optional[ModelForm[Any]]:
@@ -367,26 +362,41 @@ class ReviewFormGroup:
             strategy_choices=self.strategy_model_classes,
             media_type_choices=self.media_type_model_classes,
         )
-        # Set review_form's cleaned_data so GenericRelationFormGroups can get
-        # selected content_type_ids.
-        self.review_form.is_valid()
+
+        selected_strategy_id = self._get_content_type_id("strategy_content_type")
+        selected_media_type_id = self._get_content_type_id("media_type_content_type")
 
         self.review_mgmt_form = ReviewMgmtForm(
             prefix="review_mgmt",
             data=self.data,
         )
 
+        strategy_instance = self.instance and self.instance.strategy
         self.strategy_forms = GenericRelationFormGroup(
             self.strategy_form_classes,
-            selected_form_id=self.review_form.strategy_content_type_id,
+            selected_form_id=selected_strategy_id,
             data=self.data,
+            instance=strategy_instance,
         )
 
+        media_type_instance = self.instance and self.instance.media_type
         self.media_type_forms = GenericRelationFormGroup(
             self.media_type_form_classes,
-            selected_form_id=self.review_form.media_type_content_type_id,
+            selected_form_id=selected_media_type_id,
             data=self.data,
+            instance=media_type_instance,
         )
+
+    def _get_content_type_id(self, field_name: str) -> int | None:
+        """
+        Retrieve the content type ID associated with the specified form field.
+        """
+        selected_content_type_id: str | int | None = get_initial_field_value(
+            self.review_form, field_name
+        )
+        if isinstance(selected_content_type_id, str):
+            selected_content_type_id = int(selected_content_type_id)
+        return selected_content_type_id
 
     def is_valid(self) -> bool:
         self.valid = True

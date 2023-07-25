@@ -13,10 +13,10 @@
     {% vite_asset 'js/apps/createReview.ts' %}
 
     {% comment %} Convert initial field values into json for use in vue conponents. {% endcomment %}
-    {{review_form|get_field_value:"strategy_content_type"|json_script:"initialSelectedStrategyId"}}
-    {{review_form|get_field_value:"media_type_content_type"|json_script:"initialSelectedMediaTypeContentType"}}
-    {{review_form|get_field_value:"media_type_object_id"|json_script:"initialSelectedMediaTypeObjectId"}}
-    {{review_mgmt_form|get_field_value:"create_new_media_type_object"|json_script:"initialCreateNewMediaTypeObject"}}
+    {{review_form|get_initial_field_value:"strategy_content_type"|json_script:"initialSelectedStrategyId"}}
+    {{review_form|get_initial_field_value:"media_type_content_type"|json_script:"initialSelectedMediaTypeContentType"}}
+    {{review_form|get_initial_field_value:"media_type_object_id"|json_script:"initialSelectedMediaTypeObjectId"}}
+    {{review_mgmt_form|get_initial_field_value:"create_new_media_type_object"|json_script:"initialCreateNewMediaTypeObject"}}
 
     {% comment %} Convert media_type_object_id field data into json for use in vue components. {% endcomment %}
     {{review_form.media_type_object_id|field_to_dict|json_script:"media_type_object_id_field_data"}}

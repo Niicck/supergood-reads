@@ -28,7 +28,7 @@ class TestReviewForm:
             ),
         }
 
-    def test_strategy_content_type_id_valid(self, form_data: Dict[str, Any]) -> None:
+    def test_valid_strategy_content_type(self, form_data: Dict[str, Any]) -> None:
         valid_content_type_id = ContentTypeUtils.get_content_type_id(MaximusStrategy)
         form_data["strategy_content_type"] = valid_content_type_id
         form = ReviewForm(
@@ -36,47 +36,9 @@ class TestReviewForm:
             strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
             media_type_choices=[Book, Film],
         )
-        form.is_valid()
-        assert form.strategy_content_type_id is valid_content_type_id
+        assert form.is_valid()
 
-    def test_strategy_content_type_id_no_data(self) -> None:
-        form = ReviewForm(
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        assert form.strategy_content_type_id is None
-
-    def test_strategy_content_type_id_empty(self, form_data: Dict[str, Any]) -> None:
-        form_data["strategy_content_type"] = ""
-        form = ReviewForm(
-            form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        form.is_valid()
-        assert form.errors["strategy_content_type"][0] == "This field is required."
-        assert form.strategy_content_type_id is None
-
-    def test_strategy_content_type_id_unavailable(
-        self, form_data: Dict[str, Any]
-    ) -> None:
-        unavailable_content_type_id = ContentTypeUtils.get_content_type_id(Book)
-        form_data["strategy_content_type"] = unavailable_content_type_id
-        form = ReviewForm(
-            form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        form.is_valid()
-        assert (
-            form.errors["strategy_content_type"][0]
-            == f"Select a valid choice. {unavailable_content_type_id} is not one of the available choices."
-        )
-        assert form.strategy_content_type_id is None
-
-    def test_strategy_content_type_id_bad_choice(
-        self, form_data: Dict[str, Any]
-    ) -> None:
+    def test_invalid_strategy_content_type(self, form_data: Dict[str, Any]) -> None:
         invalid_content_type_id = ContentTypeUtils.get_content_type_id(Book)
         form_data["strategy_content_type"] = invalid_content_type_id
         form = ReviewForm(
@@ -84,14 +46,13 @@ class TestReviewForm:
             strategy_choices=[Book],
             media_type_choices=[Book, Film],
         )
-        form.is_valid()
+        assert not form.is_valid()
         assert (
             form.errors["strategy_content_type"][0]
             == f"{invalid_content_type_id} is not a valid AbstractStrategy."
         )
-        assert form.strategy_content_type_id is None
 
-    def test_media_type_content_type_id_valid(self, form_data: Dict[str, Any]) -> None:
+    def test_valid_media_type_content_type(self, form_data: Dict[str, Any]) -> None:
         valid_content_type_id = ContentTypeUtils.get_content_type_id(Book)
         form_data["media_type_content_type"] = valid_content_type_id
         form = ReviewForm(
@@ -99,49 +60,9 @@ class TestReviewForm:
             strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
             media_type_choices=[Book, Film],
         )
-        form.is_valid()
-        assert form.media_type_content_type_id is valid_content_type_id
+        assert form.is_valid()
 
-    def test_media_type_content_type_id_no_data(self) -> None:
-        form = ReviewForm(
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        assert form.media_type_content_type_id is None
-
-    def test_media_type_content_type_id_empty(self, form_data: Dict[str, Any]) -> None:
-        form_data["media_type_content_type"] = ""
-        form = ReviewForm(
-            form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        form.is_valid()
-        assert form.errors["media_type_content_type"][0] == "This field is required."
-        assert form.media_type_content_type_id is None
-
-    def test_media_type_content_type_id_unavailable(
-        self, form_data: Dict[str, Any]
-    ) -> None:
-        unavailable_content_type_id = ContentTypeUtils.get_content_type_id(
-            EbertStrategy
-        )
-        form_data["media_type_content_type"] = unavailable_content_type_id
-        form = ReviewForm(
-            form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[Book, Film],
-        )
-        form.is_valid()
-        assert (
-            form.errors["media_type_content_type"][0]
-            == f"Select a valid choice. {unavailable_content_type_id} is not one of the available choices."
-        )
-        assert form.media_type_content_type_id is None
-
-    def test_media_type_content_type_id_bad_choice(
-        self, form_data: Dict[str, Any]
-    ) -> None:
+    def test_invalid_media_type_content_type(self, form_data: Dict[str, Any]) -> None:
         invalid_content_type_id = ContentTypeUtils.get_content_type_id(EbertStrategy)
         form_data["media_type_content_type"] = invalid_content_type_id
         form = ReviewForm(
@@ -149,9 +70,14 @@ class TestReviewForm:
             strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
             media_type_choices=[EbertStrategy],
         )
-        form.is_valid()
+        assert not form.is_valid()
         assert (
             form.errors["media_type_content_type"][0]
             == f"{invalid_content_type_id} is not a valid AbstractMediaType."
         )
-        assert form.media_type_content_type_id is None
+
+
+@pytest.mark.django_db
+class TestReviewFormGroup:
+    def test_update_review(self) -> None:
+        raise NotImplementedError
