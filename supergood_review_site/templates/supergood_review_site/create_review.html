@@ -13,8 +13,8 @@
     {% vite_asset 'js/apps/createReview.ts' %}
 
     {% comment %} Convert initial field values into json for use in vue conponents. {% endcomment %}
-    {{review_form|get_initial_field_value:"strategy_content_type"|to_str|json_script:"initialSelectedStrategyId"}}
-    {{review_form|get_initial_field_value:"media_type_content_type"|to_str|json_script:"initialSelectedMediaTypeContentType"}}
+    {{review_form|get_initial_field_value:"strategy_content_type"|int_to_str|json_script:"initialSelectedStrategyId"}}
+    {{review_form|get_initial_field_value:"media_type_content_type"|int_to_str|json_script:"initialSelectedMediaTypeContentType"}}
     {{review_form|get_initial_field_value:"media_type_object_id"|json_script:"initialSelectedMediaTypeObjectId"}}
     {{review_mgmt_form|get_initial_field_value:"create_new_media_type_object"|json_script:"initialCreateNewMediaTypeObject"}}
 
@@ -47,6 +47,7 @@
                                                 state-key="selectedMediaTypeObjectId"
                                                 url={{ media_type_form.autocomplete_url }}
                                                 csrf-token={{csrf_token}}
+                                                :should-fetch-initial="{{media_type_id}} == store.selectedMediaTypeContentType"
                                             >
                                             </autocomplete>
                                         </div>

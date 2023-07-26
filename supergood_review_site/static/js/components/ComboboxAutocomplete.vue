@@ -7,7 +7,7 @@
       >
         <ComboboxInput
           class="w-full rounded-md border-gray-300 shadow-sm py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-          :display-value="(result) => (result ? result.title : query)"
+          :display-value="(result) => (result ? (result as Result).title : query)"
           @change="query = $event.target.value"
         />
         <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import type { PropType } from 'vue';
 import {
   Combobox,
@@ -118,6 +118,14 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  /**
+   * Indicate if we should populate the initial selectedResult based on the
+   * store[props.stateKey] value.
+   */
+  shouldFetchInitial: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const fieldData = ref<FieldData>({
@@ -131,6 +139,8 @@ let results = ref<Array<Result>>([]);
 let selectedResult = ref<Result | null>(null);
 
 const store = window.store;
+
+const computedStateValue = computed(() => store[props.stateKey]);
 
 // Query server for new results whenever the querystring changes.
 watch(query, () => {
@@ -148,6 +158,15 @@ watch(selectedResult, (newValue) => {
     store[props.stateKey] = newValue.id;
   } else {
     store[props.stateKey] = '';
+  }
+});
+
+/**
+ * Set the initial value for selectedResult.
+ */
+watch([computedStateValue, selectedResult], ([newStateValue, newSelectedResult]) => {
+  if (newStateValue && !newSelectedResult && props.shouldFetchInitial) {
+    getInitial(newStateValue);
   }
 });
 
@@ -178,6 +197,35 @@ const getResults = () => {
   })
     .then((res) => {
       results.value = res.data.results;
+    })
+    .catch((error) => {
+      console.log('Error:', error);
+    });
+};
+
+/**
+ * Fetch complete data for initial selected object.
+ * @param id The UUID of the initial selected object.
+ */
+const getInitial = (id: string) => {
+  return axios({
+    method: 'get',
+    url: props.url,
+    params: {
+      q: id,
+    },
+    timeout: 5000,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': props.csrfToken,
+    },
+  })
+    .then((res) => {
+      const responseResults = res.data.results;
+      if (responseResults.length) {
+        results.value = responseResults;
+        selectedResult.value = responseResults[0];
+      }
     })
     .catch((error) => {
       console.log('Error:', error);

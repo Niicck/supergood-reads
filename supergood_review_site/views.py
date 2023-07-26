@@ -27,6 +27,7 @@ from supergood_review_site.media_types.models import AbstractMediaType, Book, Fi
 from supergood_review_site.reviews.forms import ReviewFormGroup
 from supergood_review_site.reviews.models import Review
 from supergood_review_site.utils.json import UUIDEncoder
+from supergood_review_site.utils.uuid import is_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,11 @@ class FilmAutocompleteView(View):
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
         q = query_dict.get("q", "")
-        films = Film.objects.filter(title__icontains=q).annotate(
+        if is_uuid(q):
+            film_qs = Film.objects.filter(pk=q)
+        else:
+            film_qs = Film.objects.filter(title__icontains=q)
+        films = film_qs.annotate(
             display_name=Concat(
                 "title",
                 Value(" ("),
@@ -143,7 +148,11 @@ class BookAutocompleteView(View):
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
         q = query_dict.get("q", "")
-        books = Book.objects.filter(title__icontains=q).annotate(
+        if is_uuid(q):
+            book_qs = Book.objects.filter(pk=q)
+        else:
+            book_qs = Book.objects.filter(title__icontains=q)
+        books = book_qs.annotate(
             display_name=Concat(
                 "title",
                 Value(" ("),
