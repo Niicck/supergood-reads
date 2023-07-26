@@ -379,12 +379,10 @@ class ReviewFormGroup:
             instance=strategy_instance,
         )
 
-        media_type_instance = self.instance and self.instance.media_type
         self.media_type_forms = GenericRelationFormGroup(
             self.media_type_form_classes,
             selected_form_id=selected_media_type_id,
             data=self.data,
-            instance=media_type_instance,
         )
 
     def _get_content_type_id(self, field_name: str) -> int | None:
