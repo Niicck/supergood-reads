@@ -108,7 +108,7 @@ import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import axios from 'axios';
 import type { MyReviewRowInitialData } from '@/static/js/types';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
-import DeleteModal from '@/static/js/components/DeleteModel.vue';
+import DeleteModal from '@/static/js/components/DeleteModal.vue';
 
 const props = defineProps({
   jsonScriptId: {

@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path(
-        "reviews/update/<uuid:pk>",
+        "reviews/<uuid:pk>/update",
         views.UpdateReviewView.as_view(),
         name="update_review",
     ),
@@ -30,23 +30,28 @@ urlpatterns = [
         name="reviews",
     ),
     path(
-        "media/book/<uuid:pk>/",
+        "media/book/<uuid:pk>/update",
         views.UpdateMyMediaBookView.as_view(),
         name="update_book",
     ),
     path(
-        "media/film/<uuid:pk>/",
+        "media/film/<uuid:pk>/update",
         views.UpdateMyMediaFilmView.as_view(),
         name="update_film",
     ),
     path(
-        "my-media/book/<uuid:pk>/delete/",
+        "media/book/<uuid:pk>/delete/",
         views.DeleteMyMediaBookView.as_view(),
         name="delete_book",
     ),
     path(
-        "my-media/film/<uuid:pk>/delete/",
+        "media/film/<uuid:pk>/delete/",
         views.DeleteMyMediaFilmView.as_view(),
         name="delete_film",
+    ),
+    path(
+        "reviews/<uuid:pk>/delete/",
+        views.DeleteReview.as_view(),
+        name="delete_review",
     ),
 ]

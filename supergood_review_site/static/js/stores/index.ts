@@ -9,6 +9,8 @@ interface State {
   selectedMediaTypeObjectId: Ref<string>;
   createNewMediaTypeObject: Ref<CreateNewMediaOption>;
   shouldCreateNewMediaTypeObject: ComputedRef<boolean>;
+  showDeleteReviewModal: Ref<boolean>;
+  setShowDeleteReviewModal: (value: boolean) => void;
 }
 
 enum CreateNewMediaOption {
@@ -21,6 +23,7 @@ const useCreateReviewStore = defineStore('createReview', (): State => {
   const selectedMediaTypeContentType = ref('');
   const selectedMediaTypeObjectId = ref('');
   const createNewMediaTypeObject = ref(CreateNewMediaOption.SELECT_EXISTING);
+  const showDeleteReviewModal = ref(false);
 
   // Cache saved values when switching between MediaTypes
   const selectedMediaTypeObjectIdCache = ref<{ [key: string]: string }>({});
@@ -30,6 +33,11 @@ const useCreateReviewStore = defineStore('createReview', (): State => {
   const shouldCreateNewMediaTypeObject = computed((): boolean => {
     return createNewMediaTypeObject.value === CreateNewMediaOption.CREATE_NEW;
   });
+
+  // Turn showDeleteReviewModal on or off.
+  const setShowDeleteReviewModal = (value: boolean): void => {
+    showDeleteReviewModal.value = value;
+  };
 
   // Save and retrieve ObjectId values from cache if we switch between ContentTypes.
   watch(selectedMediaTypeContentType, (current, old) => {
@@ -66,12 +74,15 @@ const useCreateReviewStore = defineStore('createReview', (): State => {
     ) as CreateNewMediaOption;
   });
 
+  console.log(`##### bottom of store::: ${showDeleteReviewModal.value}`);
   return {
     selectedStrategyId,
     selectedMediaTypeContentType,
     selectedMediaTypeObjectId,
     createNewMediaTypeObject,
     shouldCreateNewMediaTypeObject,
+    showDeleteReviewModal,
+    setShowDeleteReviewModal,
   };
 });
 

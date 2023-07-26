@@ -7,3 +7,29 @@
 {% block content %}
     {{ block.super }}
 {% endblock %}
+
+{% block submit %}
+    <div class="flex justify-start pt-5 pb-5 space-x-3">
+        <div class="flex justify-start">
+            <input type="submit" class="cursor-pointer ml-3 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" value="Update Review"/>
+        </div>
+        <div
+            class="cursor-pointer inline-flex justify-center rounded-md bg-red-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            @click="openDeleteReviewModal"
+        >
+            Delete
+        </div>
+    </div>
+    <delete-modal
+        v-if="showDeleteReviewModal"
+        @close="closeDeleteReviewModal"
+    >
+        <template #content>
+            Are you sure you want to delete your Review of
+            <span class="font-medium">{{ title }}</span>
+            ?
+        </template>
+        {% url 'delete_review' object.id as delete_url %}
+        {% include "supergood_review_site/forms/_delete_form.html" with url=delete_url %}
+    </delete-modal>
+{% endblock submit %}

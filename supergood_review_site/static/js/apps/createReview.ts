@@ -1,9 +1,10 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
-import { createApp, defineComponent } from 'vue';
-import { createPinia } from 'pinia';
+import { createApp, defineComponent, ref } from 'vue';
+import { createPinia, storeToRefs } from 'pinia';
 import RadioCards from '@/static/js/components/RadioCards.vue';
 import { useCreateReviewStore } from '@/static/js/stores';
 import ComboboxAutocomplete from '@/static/js/components/ComboboxAutocomplete.vue';
+import DeleteModal from '@/static/js/components/DeleteModal.vue';
 
 const pinia = createPinia();
 
@@ -12,11 +13,20 @@ const RootComponent = defineComponent({
   components: {
     'radio-cards': RadioCards,
     'autocomplete': ComboboxAutocomplete,
+    'delete-modal': DeleteModal,
   },
   setup() {
     const store = useCreateReviewStore();
     window.store = store;
-    return { store };
+
+    const openDeleteReviewModal = () => {
+      store.setShowDeleteReviewModal(true);
+    };
+
+    const closeDeleteReviewModal = () => {
+      store.setShowDeleteReviewModal(false);
+    };
+    return { ...storeToRefs(store), openDeleteReviewModal, closeDeleteReviewModal };
   },
   mounted() {
     const toggleRequiredFieldsOnForms = (
@@ -89,10 +99,7 @@ const RootComponent = defineComponent({
 
     // Handle "required" attribute toggling for new MediaType Instance forms.
     this.$watch(
-      () => [
-        this.store.shouldCreateNewMediaTypeObject,
-        this.store.selectedMediaTypeContentType,
-      ],
+      () => [this.shouldCreateNewMediaTypeObject, this.selectedMediaTypeContentType],
       ([shouldCreateNewMediaTypeObject, selectedMediaTypeContentType]) => {
         toggleRequiredFieldsOnForms(
           'media_type_form_',
@@ -105,7 +112,7 @@ const RootComponent = defineComponent({
 
     // Handle "required" attribute toggling for new Strategy Instance forms.
     this.$watch(
-      () => this.store.selectedStrategyId,
+      () => this.selectedStrategyId,
       (selectedStrategyId) => {
         toggleRequiredFieldsOnForms(
           'strategy_form_',

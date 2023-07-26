@@ -30,15 +30,15 @@
                 {% comment %} Handle MediaType Selection {% endcomment %}
                 <div class="sm:border-t sm:border-gray-200">
                     {% comment %}
-                        <div>Selected MediaType: [[store.selectedMediaTypeContentType]]</div>
-                        <div>Selected MediaType ObjectId: [[store.selectedMediaTypeObjectId]]</div>
+                        <div>Selected MediaType: [[selectedMediaTypeContentType]]</div>
+                        <div>Selected MediaType ObjectId: [[selectedMediaTypeObjectId]]</div>
                     {% endcomment %}
                     {% field_wrapper review_form.media_type_content_type state_key="selectedMediaTypeContentType" field_type="radio_cards" %}
-                    <div v-show="store.selectedMediaTypeContentType">
+                    <div v-show="selectedMediaTypeContentType">
                         {% field_wrapper review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" field_type="radio_cards" border=False %}
                         {% for media_type_id, media_type_form in media_type_forms.items %}
-                            <div v-show="{{media_type_id}} == store.selectedMediaTypeContentType">
-                                <div v-show="!store.shouldCreateNewMediaTypeObject">
+                            <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
+                                <div v-show="!shouldCreateNewMediaTypeObject">
                                     <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:pt-5">
                                         <div class="col-start-2">
                                             {{ review_form.media_type_object_id.errors }}
@@ -47,13 +47,13 @@
                                                 state-key="selectedMediaTypeObjectId"
                                                 url={{ media_type_form.autocomplete_url }}
                                                 csrf-token={{csrf_token}}
-                                                :should-fetch-initial="{{media_type_id}} == store.selectedMediaTypeContentType"
+                                                :should-fetch-initial="{{media_type_id}} == selectedMediaTypeContentType"
                                             >
                                             </autocomplete>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-show="store.shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
+                                <div v-show="shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
                                     {% for field in media_type_form %}
                                         {% field_wrapper field border=false %}
                                     {% endfor %}
@@ -68,9 +68,9 @@
 
                 {% comment %} Handle Rating Strategy {% endcomment %}
                 <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:store.selectedStrategyId" %}
+                    {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms.items %}
-                        <div v-show="{{strategy_id}} == store.selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>
+                        <div v-show="{{strategy_id}} == selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>
                             {% for field in strategy_form %}
                                 {% field_wrapper field border=false %}
                             {% endfor %}
@@ -80,11 +80,13 @@
                 </div>
 
                 {% comment %} Submit {% endcomment %}
-                <div class="pt-5">
-                    <div class="flex justify-start">
-                        <input type="submit" class="cursor-pointer ml-3 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" value="Submit Review"/>
+                {% block submit %}
+                    <div class="pt-5">
+                        <div class="flex justify-start">
+                            <input type="submit" class="cursor-pointer ml-3 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" value="Submit Review"/>
+                        </div>
                     </div>
-                </div>
+                {% endblock submit %}
             </div>
         </form>
     </div>

@@ -1,6 +1,6 @@
 <template>
-  <TransitionRoot as="template" :show="props.showDeleteModal">
-    <Dialog as="div" class="relative z-10" @close="props.closeDeleteModal()">
+  <TransitionRoot as="template" :show="props.show">
+    <Dialog as="div" class="relative z-10" @close="close">
       <TransitionChild
         as="template"
         enter="ease-out duration-300"
@@ -33,7 +33,7 @@
                 <button
                   type="button"
                   class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  @click="props.closeDeleteModal()"
+                  @click="close"
                 >
                   <span class="sr-only">Close</span>
                   <XMarkIcon class="h-6 w-6" aria-hidden="true" />
@@ -52,13 +52,11 @@
                   <DialogTitle
                     as="h3"
                     class="text-base font-semibold leading-6 text-gray-900"
-                    >Delete title</DialogTitle
+                    >Delete</DialogTitle
                   >
                   <div class="mt-2">
                     <p class="text-sm text-gray-500">
-                      Are you sure you want to delete
-                      <span class="font-medium">{{ props.title }}</span
-                      >? This will also delete any Reviews associated with it.
+                      <slot name="content"></slot>
                     </p>
                   </div>
                 </div>
@@ -68,7 +66,7 @@
                 <button
                   type="button"
                   class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                  @click="props.closeDeleteModal()"
+                  @click="close"
                 >
                   Cancel
                 </button>
@@ -91,14 +89,16 @@ import {
 } from '@headlessui/vue';
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
+const emit = defineEmits(['close']);
+
+const close = () => {
+  emit('close');
+};
+
 const props = defineProps({
-  showDeleteModal: {
+  show: {
     type: Boolean,
     default: true,
-  },
-  closeDeleteModal: {
-    type: Function,
-    required: true,
   },
   title: {
     type: String,

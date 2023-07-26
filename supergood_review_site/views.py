@@ -255,10 +255,6 @@ class DeleteMyMediaMixin:
     def form_valid(
         self: FormViewMixinProtocol, form: ModelForm[Any]
     ) -> HttpResponseRedirect:
-        """
-        Calls the delete() method on the fetched object and then
-        returns pk.
-        """
         title = self.object.title
         messages.success(self.request, f"Succesfully deleted {title}.")
         return super().form_valid(form)  # type: ignore[safe-super]
@@ -292,3 +288,29 @@ class DeleteMyMediaFilmView(DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]
 
     object: Film
     model = Film
+
+
+class DeleteReview(DeleteView[Review, ModelForm[Review]]):
+    """Delete Film, add message, refresh Reviews page."""
+
+    object: Review
+    model = Review
+
+    def get_success_url(self: FormViewMixinProtocol) -> str:
+        return reverse("reviews")
+
+    def form_invalid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        messages.error(self.request, "Please fix the errors below.")
+        return super().form_invalid(form)  # type: ignore[safe-super]
+
+    def form_valid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        if self.object.media_type:
+            title = self.object.media_type.title
+        else:
+            title = "untitled"
+        messages.success(self.request, f"Succesfully deleted review of '{title}'.")
+        return super().form_valid(form)  # type: ignore[safe-super]

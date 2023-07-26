@@ -10,7 +10,7 @@ from django.urls import reverse
 from supergood_review_site.models import Book, Film, GoodreadsStrategy, Review
 from supergood_review_site.reviews.forms import CreateNewMediaOption
 from supergood_review_site.utils import ContentTypeUtils
-from tests.factories import BookFactory, FilmFactory
+from tests.factories import BookFactory, FilmFactory, ReviewFactory
 
 
 class FixtureDataItem(TypedDict, total=False):
@@ -460,6 +460,25 @@ class TestDeleteMyMediaFilmView:
         assert res.status_code == 302
         with pytest.raises(Film.DoesNotExist):
             film.refresh_from_db()
+
+    def test_wrong_uuid(self, client: Client) -> None:
+        url = self.get_url(uuid4())
+        res = client.post(url)
+        assert res.status_code == 404
+
+
+@pytest.mark.django_db
+class TestDeleteReviewView:
+    def get_url(self, review_id: UUID) -> str:
+        return reverse("delete_review", args=[review_id])
+
+    def test_delete(self, client: Client) -> None:
+        review = ReviewFactory()
+        url = self.get_url(review.id)
+        res = client.post(url)
+        assert res.status_code == 302
+        with pytest.raises(Review.DoesNotExist):
+            review.refresh_from_db()
 
     def test_wrong_uuid(self, client: Client) -> None:
         url = self.get_url(uuid4())

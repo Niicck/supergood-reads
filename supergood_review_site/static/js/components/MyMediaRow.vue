@@ -111,11 +111,12 @@
       </button>
     </td>
   </tr>
-  <DeleteModal
-    v-if="showDeleteModal"
-    :close-delete-modal="closeDeleteModal"
-    :title="title"
-  >
+  <DeleteModal v-if="showDeleteModal" @close="showDeleteModal = !showDeleteModal">
+    <template #content>
+      Are you sure you want to delete
+      <span class="font-medium">{{ title }}</span>
+      ? This will also delete any Reviews associated with it.
+    </template>
     <template #delete-form>
       <slot name="delete-form"></slot>
     </template>
@@ -125,7 +126,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
-import DeleteModal from '@/static/js/components/DeleteModel.vue';
+import DeleteModal from '@/static/js/components/DeleteModal.vue';
 
 const props = defineProps({
   initialTitle: {
@@ -189,10 +190,6 @@ const onCreatorChanged = (event: Event) => {
 const onYearChanged = (event: Event) => {
   const target = event.target as HTMLInputElement;
   editedYear.value = Number(target.value);
-};
-
-const closeDeleteModal = () => {
-  showDeleteModal.value = false;
 };
 
 const onSubmit = () => {
