@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Literal, Optional, Union
 
@@ -117,7 +118,9 @@ class CountryFactory(factory.django.DjangoModelFactory):
 
 
 class EbertStrategyFactory(factory.django.DjangoModelFactory):
-    stars = factory.fuzzy.FuzzyDecimal(0, 4, 0)
+    stars = factory.fuzzy.FuzzyChoice(
+        [Decimal(x) for x in ["0.0", "1.0", "2.0", "2.5", "3.0", "3.5", "4.0"]]
+    )
     great_film = False
 
     class Meta:
@@ -240,7 +243,9 @@ class FormDataFactory:
             value = get_initial_field_value(self.form, key)
             if value is None:
                 form_field = self.form.fields[key]
-                value = getattr(form_field, "empty_value", "") or ""
+                value = getattr(form_field, "empty_value", "")
+                if value is None:
+                    value = ""
             elif isinstance(value, uuid.UUID):
                 value = str(value)
             data.update({data_key: value})
@@ -255,7 +260,25 @@ class ReviewFormDataFactory:
     is useful for testing "update" operations.
 
     Omit a review instance to get a mostly-empty data dictionary filled with default
-    initial values.
+    initial values. Default looks like this:
+        {'review-completed_at_day': '',
+        'review-completed_at_month': '',
+        'review-completed_at_year': '',
+        'review-text': '',
+        'review-media_type_content_type': '',
+        'review-media_type_object_id': '',
+        'review-strategy_content_type': '',
+        'review_mgmt-create_new_media_type_object': 'SELECT_EXISTING',
+        'book-title': '',
+        'book-author': '',
+        'book-publication_year': '',
+        'book-pages': '',
+        'film-title': '',
+        'film-director': '',
+        'film-release_year': '',
+        'ebertstrategy-rating': '',
+        'goodreadsstrategy-stars': '',
+        'maximusstrategy-recommended': True}
     """
 
     def __init__(self, instance: Optional[models.Review] = None) -> None:

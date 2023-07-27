@@ -13,15 +13,15 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
         choices=(
             (None, ""),
             (GREAT_FILM, "Great Film"),
-            ("4", "★★★★"),
+            ("4.0", "★★★★"),
             ("3.5", "★★★½"),
-            ("3", "★★★"),
+            ("3.0", "★★★"),
             ("2.5", "★★½"),
-            ("2", "★★"),
+            ("2.0", "★★"),
             ("1.5", "★½"),
-            ("1", "★"),
+            ("1.0", "★"),
             ("0.5", "½"),
-            ("0", "Zero Stars"),
+            ("0.0", "Zero Stars"),
             (None, "No Star Rating"),
         ),
         label="Rating",
@@ -51,12 +51,14 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
 
         rating = self.cleaned_data.get("rating")
         if not rating:
-            pass
+            instance.stars = None
+            instance.great_film = False
         elif rating is GREAT_FILM:
-            instance.stars = Decimal(4)
+            instance.stars = Decimal("4.0")
             instance.great_film = True
         else:
             instance.stars = Decimal(rating)
+            instance.great_film = False
 
         if commit:
             instance.save()

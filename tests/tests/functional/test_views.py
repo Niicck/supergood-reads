@@ -7,12 +7,20 @@ from bs4 import BeautifulSoup, Tag
 from django.test import Client
 from django.urls import reverse
 
-from supergood_review_site.models import Book, Film, GoodreadsStrategy, Review
+from supergood_review_site.models import (
+    Book,
+    EbertStrategy,
+    Film,
+    GoodreadsStrategy,
+    Review,
+)
 from supergood_review_site.reviews.forms import CreateNewMediaOption
 from supergood_review_site.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
+    EbertStrategyFactory,
     FilmFactory,
+    GoodreadsStrategyFactory,
     ReviewFactory,
     ReviewFormDataFactory,
 )
@@ -502,5 +510,32 @@ class TestUpdateReviewView:
         review.refresh_from_db()
         assert review.text == "It was good."
 
+    def test_update_strategy(self, client: Client) -> None:
+        """Test that existing strategy is only updated and not replaced."""
+        strategy = GoodreadsStrategyFactory(stars=5)
+        review = ReviewFactory(strategy=strategy)
+        data = ReviewFormDataFactory(instance=review).data
+        data["goodreadsstrategy-stars"] = 4
+        url = self.get_url(review.id)
+        res = client.post(url, data)
+        assert res.status_code == 302
+        review.refresh_from_db()
+        assert review.strategy.id == strategy.id
+        assert review.strategy.stars == 4
+
     def test_replace_strategy(self, client: Client) -> None:
-        raise NotImplementedError
+        """Test that existing strategy is replaced when we change strategies."""
+        strategy = EbertStrategyFactory()
+        review = ReviewFactory(strategy=strategy)
+        data = ReviewFormDataFactory(instance=review).data
+        data["review-strategy_content_type"] = ContentTypeUtils.get_content_type_id(
+            GoodreadsStrategy
+        )
+        data["goodreadsstrategy-stars"] = 4
+        url = self.get_url(review.id)
+        res = client.post(url, data)
+        assert res.status_code == 302
+        review.refresh_from_db()
+        assert review.strategy.stars == 4
+        with pytest.raises(EbertStrategy.DoesNotExist):
+            strategy.refresh_from_db()

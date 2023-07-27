@@ -62,11 +62,11 @@ class ReviewForm(forms.ModelForm[Review]):
             "completed_at_year": "Year",
         }
 
-    media_type_content_type = forms.ChoiceField(
-        label="What do you want to review?", choices=[], required=True
+    media_type_content_type = forms.TypedChoiceField(
+        label="What do you want to review?", choices=[], required=True, coerce=int
     )
-    strategy_content_type = forms.ChoiceField(
-        label="Rating Schema", choices=[], required=True
+    strategy_content_type = forms.TypedChoiceField(
+        label="Rating Schema", choices=[], required=True, coerce=int
     )
 
     completed_at_day = forms.TypedChoiceField(
@@ -326,6 +326,7 @@ class ReviewFormGroup:
         self.data = data
         self.instance = instance
         self.valid: Optional[bool] = None
+        self.original_strategy = self._get_original_strategy()
         self.validate_strategy_form_classes()
         self.validate_media_type_form_classes()
         self.instantiate_forms()
@@ -337,6 +338,11 @@ class ReviewFormGroup:
     @property
     def media_type_model_classes(self) -> List[Type[Model]]:
         return [form._meta.model for form in self.media_type_form_classes]
+
+    def _get_original_strategy(self) -> AbstractStrategy | None:
+        if self.instance and self.instance.strategy:
+            return self.instance.strategy
+        return None
 
     def validate_strategy_form_classes(self) -> None:
         """Validate that all strategy_form_classes are Strategies."""
@@ -442,6 +448,11 @@ class ReviewFormGroup:
             media_type = selected_media_type_form.save()
             review.media_type = media_type
 
+        # If we've chosen a new strategy, delete the old strategy instance.
+        if self.original_strategy and (
+            "strategy_content_type" in self.review_form.changed_data
+        ):
+            self.original_strategy.delete()
         selected_strategy_form = self.strategy_forms.selected_form
         assert selected_strategy_form
         strategy = selected_strategy_form.save()

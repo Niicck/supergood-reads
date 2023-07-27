@@ -36,10 +36,10 @@ class TestEbertStrategyForm:
         assert get_initial_field_value(update_form, "rating") is None
 
     def test_zero(self) -> None:
-        form = EbertStrategyForm({"rating": "0"})
+        form = EbertStrategyForm({"rating": "0.0"})
         strategy = form.save()
         assert strategy.great_film is False
-        assert strategy.stars == Decimal("0")
+        assert strategy.stars == Decimal("0.0")
 
         update_form = EbertStrategyForm(instance=strategy)
-        assert get_initial_field_value(update_form, "rating") == "0"
+        assert get_initial_field_value(update_form, "rating") == "0.0"
