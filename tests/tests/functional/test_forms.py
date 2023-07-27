@@ -75,9 +75,3 @@ class TestReviewForm:
             form.errors["media_type_content_type"][0]
             == f"{invalid_content_type_id} is not a valid AbstractMediaType."
         )
-
-
-@pytest.mark.django_db
-class TestReviewFormGroup:
-    def test_update_review(self) -> None:
-        raise NotImplementedError

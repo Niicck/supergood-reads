@@ -11,6 +11,7 @@ from faker import Faker
 
 from supergood_review_site import models
 from supergood_review_site.reviews.forms import ReviewFormGroup
+from supergood_review_site.utils.forms import get_initial_field_value
 
 fake = Faker()
 
@@ -30,159 +31,6 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = settings.AUTH_USER_MODEL
-
-
-class ReviewFactory(factory.django.DjangoModelFactory):
-    """Fake Review for test data generation.
-
-    Includes an option to speed up test data generation by accepting a single
-    "completed_at" datetime kwarg rather than forcing developers to enter
-    completed_at_day, completed_at_month, and completed_at_year. Real Users submitting
-    a non-factory Review would have to supply those 3 values.
-
-    kwargs:
-        completed_at: optional datetime that will be broken out into
-          completed_at_day, completed_at_month, completed_at_year.
-
-    Examples:
-        Use today's date in completed_at* fields.
-        r = ReviewFactory(completed_at=datetime.now())
-
-        Set all completed_at* fields to None.
-        r = ReviewFactory(completed_at=None)
-
-        Set approximate date.
-        r = ReviewFactory(completed_at_month=1, completed_at_year=1999)
-
-        Let Faker choose a random date for you.
-        r = ReviewFactory()
-    """
-
-    user = factory.SubFactory(UserFactory)
-    created_at = factory.LazyFunction(datetime.now)
-    updated_at = factory.LazyFunction(datetime.now)
-    text = factory.LazyFunction(fake.unique.sentence)
-
-    @classmethod
-    def _adjust_completed_at(cls, **kwargs: Any) -> Any:
-        """Instructions for parsing a factory-only "completed_at" kwarg."""
-        completed_at: Union[
-            Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
-        ] = kwargs.get("completed_at")
-
-        unset_completed_at: bool = completed_at == FactoryParam.UNSET_COMPLETED_AT
-        unset_completed_at_fields: bool = (
-            "completed_at_day" not in kwargs
-            and "completed_at_month" not in kwargs
-            and "completed_at_year" not in kwargs
-        )
-
-        # If any completed_at* fields are set, then don't adjust them.
-        if not unset_completed_at_fields:
-            return kwargs
-
-        # If any "completed_at" is explicitly set to None, then allow completed_at*
-        # fields to be blank.
-        if completed_at is None:
-            return kwargs
-        assert completed_at is not None
-
-        # If "completed_at" is unset and the completed_at fields are also unset, then
-        # fill in faker date values for them.
-        if unset_completed_at and unset_completed_at_fields:
-            completed_at = fake.date_time()
-        assert isinstance(completed_at, datetime)
-
-        kwargs["completed_at_day"] = completed_at.day
-        kwargs["completed_at_month"] = completed_at.month
-        kwargs["completed_at_year"] = completed_at.year
-
-        return kwargs
-
-    @classmethod
-    def _adjust_kwargs(cls, **kwargs):
-        kwargs = cls._adjust_completed_at(**kwargs)
-        return kwargs
-
-    class Meta:
-        model = models.Review
-
-    class Params:
-        completed_at: Union[
-            Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
-        ] = FactoryParam.UNSET_COMPLETED_AT
-
-
-class FormDataFactory:
-    def __init__(self, form: Form):
-        self.form = form
-        self.data = self.build_data()
-
-    def build_data(self) -> dict[str, str]:
-        data = {}
-        instance = getattr(self.form, "instance", None)
-        for key in self.form.fields.keys():
-            if self.form.prefix:
-                data_key = f"{self.form.prefix}-{key}"
-            else:
-                data_key = key
-
-            is_model_field = key in self.form.Meta.fields
-            if is_model_field and instance:
-                value = getattr(instance, key, "")
-            else:
-                value = ""
-            data.update({data_key: value})
-        return data
-
-
-class ReviewFormFactory:
-    def __init__(
-        self, review: Optional[models.Review] = None, blank=False, save=False
-    ) -> None:
-        if review:
-            self.review: Optional[models.Review] = review
-        elif blank:
-            self.review = None
-        else:
-            self.review = ReviewFactory.build()
-            book = BookFactory.build()
-            strategy = EbertStrategyFactory.build()
-            self.review.media_type = book
-            self.review.strategy = strategy
-            if save:
-                book.save()
-                strategy.save()
-                self.review.save()
-        self.review_form_group = ReviewFormGroup(instance=self.review)
-        self.data = self.build_data()
-
-    def build_data(self) -> dict[str, str]:
-        data = {}
-
-        review_form = self.review_form_group.review_form
-        review_form_data = FormDataFactory(review_form).data
-        data.update(review_form_data)
-
-        review_mgmt_form = self.review_form_group.review_mgmt_form
-        review_mgmt_form_data = FormDataFactory(review_mgmt_form).data
-        data.update(review_mgmt_form_data)
-
-        media_type_forms = (
-            self.review_form_group.media_type_forms.by_content_type_id.values()
-        )
-        for form in media_type_forms:
-            form_data = FormDataFactory(form).data
-            data.update(form_data)
-
-        strategy_forms = (
-            self.review_form_group.strategy_forms.by_content_type_id.values()
-        )
-        for form in strategy_forms:
-            form_data = FormDataFactory(form).data
-            data.update(form_data)
-
-        return data
 
 
 class BookFactory(factory.django.DjangoModelFactory):
@@ -269,7 +117,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
 
 
 class EbertStrategyFactory(factory.django.DjangoModelFactory):
-    stars = factory.fuzzy.FuzzyInteger(0, 4)
+    stars = factory.fuzzy.FuzzyDecimal(0, 4, 0)
     great_film = False
 
     class Meta:
@@ -288,3 +136,156 @@ class MaximusStrategyFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.MaximusStrategy
+
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    """Fake Review for test data generation.
+
+    Includes an option to speed up test data generation by accepting a single
+    "completed_at" datetime kwarg rather than forcing developers to enter
+    completed_at_day, completed_at_month, and completed_at_year. Real Users submitting
+    a non-factory Review would have to supply those 3 values.
+
+    kwargs:
+        completed_at: optional datetime that will be broken out into
+          completed_at_day, completed_at_month, completed_at_year.
+
+    Examples:
+        Use today's date in completed_at* fields.
+        r = ReviewFactory(completed_at=datetime.now())
+
+        Set all completed_at* fields to None.
+        r = ReviewFactory(completed_at=None)
+
+        Set approximate date.
+        r = ReviewFactory(completed_at_month=1, completed_at_year=1999)
+
+        Let Faker choose a random date for you.
+        r = ReviewFactory()
+    """
+
+    user = factory.SubFactory(UserFactory)
+    created_at = factory.LazyFunction(datetime.now)
+    updated_at = factory.LazyFunction(datetime.now)
+    text = factory.LazyFunction(fake.unique.sentence)
+    media_type = factory.SubFactory(BookFactory)
+    strategy = factory.SubFactory(EbertStrategyFactory)
+
+    @classmethod
+    def _adjust_completed_at(cls, **kwargs: Any) -> Any:
+        """Instructions for parsing a factory-only "completed_at" kwarg."""
+        completed_at: Union[
+            Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
+        ] = kwargs.get("completed_at")
+
+        unset_completed_at: bool = completed_at == FactoryParam.UNSET_COMPLETED_AT
+        unset_completed_at_fields: bool = (
+            "completed_at_day" not in kwargs
+            and "completed_at_month" not in kwargs
+            and "completed_at_year" not in kwargs
+        )
+
+        # If any completed_at* fields are set, then don't adjust them.
+        if not unset_completed_at_fields:
+            return kwargs
+
+        # If any "completed_at" is explicitly set to None, then allow completed_at*
+        # fields to be blank.
+        if completed_at is None:
+            return kwargs
+        assert completed_at is not None
+
+        # If "completed_at" is unset and the completed_at fields are also unset, then
+        # fill in faker date values for them.
+        if unset_completed_at and unset_completed_at_fields:
+            completed_at = fake.date_time()
+        assert isinstance(completed_at, datetime)
+
+        kwargs["completed_at_day"] = completed_at.day
+        kwargs["completed_at_month"] = completed_at.month
+        kwargs["completed_at_year"] = completed_at.year
+
+        return kwargs
+
+    @classmethod
+    def _adjust_kwargs(cls, **kwargs):
+        kwargs = cls._adjust_completed_at(**kwargs)
+        return kwargs
+
+    class Meta:
+        model = models.Review
+
+    class Params:
+        completed_at: Union[
+            Optional[datetime], Literal[FactoryParam.UNSET_COMPLETED_AT]
+        ] = FactoryParam.UNSET_COMPLETED_AT
+
+
+class FormDataFactory:
+    """
+    Builds a data dictionary payload for form.
+    """
+
+    def __init__(self, form: Form):
+        self.form = form
+        self.data = self.build_data()
+
+    def build_data(self) -> dict[str, str]:
+        data = {}
+        for key in self.form.fields.keys():
+            if self.form.prefix:
+                data_key = f"{self.form.prefix}-{key}"
+            else:
+                data_key = key
+            value = get_initial_field_value(self.form, key)
+            if value is None:
+                form_field = self.form.fields[key]
+                value = getattr(form_field, "empty_value", "") or ""
+            elif isinstance(value, uuid.UUID):
+                value = str(value)
+            data.update({data_key: value})
+        return data
+
+
+class ReviewFormDataFactory:
+    """
+    Builds a data dictionary to populate a ReviewFormGroup.
+
+    Pass in a review instance to populate your data dictionary with those values. This
+    is useful for testing "update" operations.
+
+    Omit a review instance to get a mostly-empty data dictionary filled with default
+    initial values.
+    """
+
+    def __init__(self, instance: Optional[models.Review] = None) -> None:
+        self.instance = instance
+        self.review_form_group = ReviewFormGroup(instance=instance)
+        self.data = self.build_data()
+
+    def build_data(self) -> dict[str, Any]:
+        data = {}
+
+        review_form = self.review_form_group.review_form
+        review_form_data = FormDataFactory(review_form).data
+        data.update(review_form_data)
+
+        review_mgmt_form = self.review_form_group.review_mgmt_form
+        review_mgmt_form_data = FormDataFactory(review_mgmt_form).data
+        data.update(review_mgmt_form_data)
+
+        media_type_forms = (
+            self.review_form_group.media_type_forms.by_content_type_id.values()
+        )
+        for form in media_type_forms:
+            form_data = FormDataFactory(form).data
+            data.update(form_data)
+
+        strategy_forms = (
+            self.review_form_group.strategy_forms.by_content_type_id.values()
+        )
+        for form in strategy_forms:
+            form_data = FormDataFactory(form).data
+            data.update(form_data)
+
+        return data

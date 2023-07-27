@@ -10,7 +10,12 @@ from django.urls import reverse
 from supergood_review_site.models import Book, Film, GoodreadsStrategy, Review
 from supergood_review_site.reviews.forms import CreateNewMediaOption
 from supergood_review_site.utils import ContentTypeUtils
-from tests.factories import BookFactory, FilmFactory, ReviewFactory
+from tests.factories import (
+    BookFactory,
+    FilmFactory,
+    ReviewFactory,
+    ReviewFormDataFactory,
+)
 
 
 class FixtureDataItem(TypedDict, total=False):
@@ -22,7 +27,7 @@ class FixtureDataItem(TypedDict, total=False):
 
 FixtureData: TypeAlias = list[FixtureDataItem]
 
-CreateReviewData: TypeAlias = dict[str, Any]
+ReviewFormData: TypeAlias = dict[str, Any]
 
 
 @pytest.fixture
@@ -143,33 +148,18 @@ class TestCreateReviewView:
         self.film_content_type = ContentTypeUtils.get_content_type_id(Film)
 
     @pytest.fixture
-    def create_review_data(self) -> CreateReviewData:
+    def create_review_data(self) -> ReviewFormData:
         """dict(request.POST.items()) from CreateReviewView.post"""
-        return {
-            "review-media_type_content_type": "",
-            "review_mgmt-create_new_media_type_object": "",
-            "review-media_type_object_id": "",
-            "book-title": "",
-            "book-author": "",
-            "book-publication_year": "",
-            "book-pages": "",
-            "film-title": "",
-            "film-director": "",
-            "film-release_year": "",
-            "review-completed_at_day": "",
-            "review-completed_at_month": "",
-            "review-completed_at_year": "",
-            "review-strategy_content_type": ContentTypeUtils.get_content_type_id(
-                GoodreadsStrategy
-            ),
-            "ebertstrategy-rating": "",
-            "goodreadsstrategy-stars": "5",
-            "maximusstrategy-recommended": "",
-            "review-text": "It was good.",
-        }
+        data = ReviewFormDataFactory().data
+        data["review-strategy_content_type"] = ContentTypeUtils.get_content_type_id(
+            GoodreadsStrategy
+        )
+        data["goodreadsstrategy-stars"] = "5"
+        data["review-text"] = "It was good."
+        return data
 
     def test_existing_book(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         book = BookFactory.create()
         create_review_data[
@@ -187,7 +177,7 @@ class TestCreateReviewView:
         assert review.text == "It was good."
 
     def test_existing_film(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         film = FilmFactory.create()
         create_review_data[
@@ -205,7 +195,7 @@ class TestCreateReviewView:
         assert review.text == "It was good."
 
     def test_create_new_book(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         book = BookFactory.build()  # not saved to database
         create_review_data[
@@ -223,7 +213,7 @@ class TestCreateReviewView:
         assert review.media_type.title == book.title
 
     def test_create_new_film(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         film = FilmFactory.build()  # not saved to database
         create_review_data[
@@ -241,7 +231,7 @@ class TestCreateReviewView:
         assert review.media_type.title == film.title
 
     def test_missing_selected_book(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -263,7 +253,7 @@ class TestCreateReviewView:
         assert error_list_item_tag.text == "This field is required."
 
     def test_missing_selected_film(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -285,7 +275,7 @@ class TestCreateReviewView:
         assert error_list_item_tag.text == "This field is required."
 
     def test_missing_new_book(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -299,7 +289,7 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
 
     def test_missing_new_film(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         create_review_data[
             "review_mgmt-create_new_media_type_object"
@@ -313,7 +303,7 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
 
     def test_new_book_with_wrong_fields(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         # Submit data for new Film, even though Book was the selected content_type
         create_review_data[
@@ -329,7 +319,7 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
 
     def test_new_film_with_wrong_fields(
-        self, client: Client, create_review_data: CreateReviewData
+        self, client: Client, create_review_data: ReviewFormData
     ) -> None:
         # Submit data for new Book, even though Film was the selected content_type
         create_review_data[
@@ -484,3 +474,33 @@ class TestDeleteReviewView:
         url = self.get_url(uuid4())
         res = client.post(url)
         assert res.status_code == 404
+
+
+@pytest.mark.django_db
+class TestUpdateReviewView:
+    def get_url(self, review_id: UUID) -> str:
+        return reverse("update_review", args=[review_id])
+
+    @pytest.fixture
+    def update_review_data(self, review_form_data: ReviewFormData) -> ReviewFormData:
+        """dict(request.POST.items()) from CreateReviewView.post"""
+        data = review_form_data
+        data["review-strategy_content_type"] = ContentTypeUtils.get_content_type_id(
+            GoodreadsStrategy
+        )
+        data["goodreadsstrategy-stars"] = "5"
+        data["review-text"] = "It was good."
+        return data
+
+    def test_update(self, client: Client) -> None:
+        review = ReviewFactory(text="It was bad.")
+        data = ReviewFormDataFactory(instance=review).data
+        data["review-text"] = "It was good."
+        url = self.get_url(review.id)
+        res = client.post(url, data)
+        assert res.status_code == 302
+        review.refresh_from_db()
+        assert review.text == "It was good."
+
+    def test_replace_strategy(self, client: Client) -> None:
+        raise NotImplementedError

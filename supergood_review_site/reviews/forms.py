@@ -392,8 +392,11 @@ class ReviewFormGroup:
         selected_content_type_id: str | int | None = get_initial_field_value(
             self.review_form, field_name
         )
-        if isinstance(selected_content_type_id, str):
-            selected_content_type_id = int(selected_content_type_id)
+        if selected_content_type_id and isinstance(selected_content_type_id, str):
+            try:
+                selected_content_type_id = int(selected_content_type_id)
+            except ValueError:
+                selected_content_type_id = None
         return selected_content_type_id
 
     def is_valid(self) -> bool:
