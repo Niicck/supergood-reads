@@ -1,15 +1,15 @@
 {% extends "supergood_review_site/base.html" %}
 {% load partials %}
 {% load django_vite %}
-{% load reviews_row %}
+{% load review_row %}
 
 {% block header %}
     My Reviews
 {% endblock header %}
 
 {% block content %}
-    {% vite_asset 'js/apps/myReviews.ts' %}
-    <div class="px-4 sm:px-0" id="my-reviews-app">
+    {% vite_asset 'js/apps/reviewList.ts' %}
+    <div class="px-4 sm:px-0" id="review-list-vue-app">
         <div class="-mx-4 mt-8 sm:-mx-0">
             <table class="min-w-full divide-y divide-gray-300 table-fixed">
                 <thead>
@@ -25,7 +25,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
                     {% for review in review_list %}
-                        {% reviews_row review=review %}
+                        {% review_row review=review %}
                     {% endfor %}
                 </tbody>
             </table>

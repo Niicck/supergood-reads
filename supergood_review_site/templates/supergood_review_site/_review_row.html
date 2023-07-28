@@ -4,8 +4,7 @@
     >
         <!-- Title -->
         <div>
-            <p class="flex flex-row items-center"><span class="pr-1">{{ icon }}</span>{{ title }}</p>
-            <p class="text-gray-700">{{ subheading }}</p>
+            <p class="flex flex-row items-center"><span class="pr-1">{{ icon }}</span>{{ title }}<span class="pl-1 text-gray-700">{{ year }}</span></p>
         </div>
         <!-- On smaller screens, collapse data into first column -->
         <dl class="font-normal space-y-2 lg:hidden">
@@ -51,9 +50,9 @@
 </tr>
 
 {% if review.text %}
-    <tr class="border-none">
-        <td class="pb-4" colspan=2>
-            {{ review.text }}
-        </td>
+    <tr
+        is="vue:review-row-text"
+        text="{{ review.text }}"
+    >
     </tr>
 {% endif %}

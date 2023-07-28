@@ -10,22 +10,22 @@ from supergood_review_site.strategies.models import AbstractStrategy
 register = template.Library()
 
 
-@register.inclusion_tag("supergood_review_site/_reviews_row.html")
-def reviews_row(
+@register.inclusion_tag("supergood_review_site/_review_row.html")
+def review_row(
     review: Review,
 ) -> Dict[str, Any]:
     if isinstance(review.media_type, AbstractMediaType):
         title = review.media_type.title
         year = review.media_type.year
         if year is None:
-            year_str = "unknown"
+            year_str = "(unknown)"
         else:
-            year_str = str(year)
+            year_str = f"({str(year)})"
         icon = review.media_type.icon()
-        title = title + f" ({year_str})"
     else:
         icon = SafeText("")
         title = ""
+        year_str = ""
     if isinstance(review.strategy, AbstractStrategy):
         rating_html = review.strategy.rating_html
     else:
@@ -34,6 +34,7 @@ def reviews_row(
     return {
         "review": review,
         "title": title,
+        "year": year_str,
         "icon": icon,
         "rating_html": rating_html,
     }
