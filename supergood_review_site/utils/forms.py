@@ -1,9 +1,9 @@
 from typing import Any
 
-from django.forms import Form
+from django.forms import Form, ModelForm
 
 
-def get_initial_field_value(form: Form, field_name: str) -> Any:
+def get_initial_field_value(form: Form | ModelForm[Any], field_name: str) -> Any:
     """Get the initial value of a form field.
 
     Normally, the initial values of a form field are set during django template

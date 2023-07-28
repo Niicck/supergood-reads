@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from django import template
+from django.utils.safestring import SafeText
 
 from supergood_review_site.media_types.models import AbstractMediaType
 from supergood_review_site.reviews.models import Review
@@ -16,17 +17,19 @@ def reviews_row(
     if isinstance(review.media_type, AbstractMediaType):
         title = review.media_type.title
         year = review.media_type.year
-        icon = review.media_type.icon
         if year is None:
-            year = "unknown"
-        title = title + f" ({year})"
+            year_str = "unknown"
+        else:
+            year_str = str(year)
+        icon = review.media_type.icon()
+        title = title + f" ({year_str})"
     else:
-        icon = ""
+        icon = SafeText("")
         title = ""
     if isinstance(review.strategy, AbstractStrategy):
         rating_html = review.strategy.rating_html
     else:
-        rating_html = ""
+        rating_html = SafeText("")
 
     return {
         "review": review,

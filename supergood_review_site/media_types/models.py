@@ -28,7 +28,7 @@ class AbstractMediaType(models.Model):
         return str(self._meta.verbose_name)
 
     @property
-    def year(self) -> str | None:
+    def year(self) -> int | None:
         # TODO: make all media_types have a year
         raise NotImplementedError
 
@@ -76,7 +76,7 @@ class Book(AbstractMediaType):
         return self.title
 
     @property
-    def year(self) -> str | None:
+    def year(self) -> int | None:
         return self.publication_year
 
     @property
@@ -117,7 +117,7 @@ class Film(AbstractMediaType):
         return self.title
 
     @property
-    def year(self) -> str | None:
+    def year(self) -> int | None:
         return self.release_year
 
     @property

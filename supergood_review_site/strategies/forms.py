@@ -46,7 +46,7 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
             else:
                 self.fields["rating"].initial = str(instance.stars)
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> EbertStrategy:
         instance = super().save(commit=False)
 
         rating = self.cleaned_data.get("rating")

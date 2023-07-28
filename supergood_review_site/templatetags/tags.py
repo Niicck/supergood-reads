@@ -185,7 +185,7 @@ def is_film(item: AbstractMediaType) -> bool:
 
 
 @register.filter(is_safe=True)
-def int_to_str(value: int | None) -> str:
+def int_to_str(value: int | None) -> str | None:
     if value is None:
         return None
     else:

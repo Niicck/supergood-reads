@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, cast
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
@@ -92,8 +92,8 @@ class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
-        strategy_choices: List[Type[Model]] = None,
-        media_type_choices: List[Type[Model]] = None,
+        strategy_choices: Optional[List[Type[Model]]] = None,
+        media_type_choices: Optional[List[Type[Model]]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -343,7 +343,7 @@ class ReviewFormGroup:
 
     def _get_original_strategy(self) -> AbstractStrategy | None:
         if self.instance and self.instance.strategy:
-            return self.instance.strategy
+            return cast(AbstractStrategy, self.instance.strategy)
         return None
 
     def validate_strategy_form_classes(self) -> None:
@@ -400,7 +400,7 @@ class ReviewFormGroup:
         selected_content_type_id: str | int | None = get_initial_field_value(
             self.review_form, field_name
         )
-        if selected_content_type_id and isinstance(selected_content_type_id, str):
+        if isinstance(selected_content_type_id, str):
             try:
                 selected_content_type_id = int(selected_content_type_id)
             except ValueError:

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Protocol
+from typing import Any, Dict, Optional, Protocol, cast
 
 from django.conf import settings
 from django.contrib import messages
@@ -95,19 +95,19 @@ class CreateReviewView(TemplateView):
         return redirect("reviews")
 
 
-class UpdateReviewView(CreateReviewView, SingleObjectMixin):
+class UpdateReviewView(CreateReviewView, SingleObjectMixin[Review]):
     template_name = "supergood_review_site/update_review.html"
     model = Review
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         try:
             self.object = self.get_object()
         except Http404:
             messages.error(self.request, "Invalid Request.")
             return self.redirect_to_reviews()
-        return super().dispatch(request, *args, **kwargs)
+        return cast(HttpResponse, super().dispatch(request, *args, **kwargs))
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset: Optional[QuerySet[Review]] = None) -> Review:
         obj = super().get_object(queryset=queryset)
         # TODO: check for editing permissions
         return obj
