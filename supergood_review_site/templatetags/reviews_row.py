@@ -3,8 +3,8 @@ from typing import Any, Dict
 from django import template
 
 from supergood_review_site.media_types.models import AbstractMediaType
-from supergood_review_site.reviews.forms import UpdateMyReviewForm
 from supergood_review_site.reviews.models import Review
+from supergood_review_site.strategies.models import AbstractStrategy
 
 register = template.Library()
 
@@ -13,24 +13,24 @@ register = template.Library()
 def reviews_row(
     review: Review,
 ) -> Dict[str, Any]:
-    if review.media_type:
-        assert isinstance(review.media_type, AbstractMediaType)
-        initial_title = review.media_type.title
-        initial_media_type = review.media_type.media_type
+    if isinstance(review.media_type, AbstractMediaType):
+        title = review.media_type.title
+        year = review.media_type.year
+        icon = review.media_type.icon
+        if year is None:
+            year = "unknown"
+        title = title + f" ({year})"
     else:
-        initial_title = ""
-        initial_media_type = ""
-    json_script_id = f"{review.id}_json_script_id"
+        icon = ""
+        title = ""
+    if isinstance(review.strategy, AbstractStrategy):
+        rating_html = review.strategy.rating_html
+    else:
+        rating_html = ""
 
     return {
         "review": review,
-        "json_script_id": json_script_id,
-        "initial_data": {
-            "initialTitle": initial_title,
-            "initialMediaType": initial_media_type,
-            "initialCompletedAt": review.completed_at,
-            "initialRating": "★★★★★",  # TODO: make this work, raw html?
-            "initialText": review.text,
-        },
-        "form": UpdateMyReviewForm(instance=review),
+        "title": title,
+        "icon": icon,
+        "rating_html": rating_html,
     }

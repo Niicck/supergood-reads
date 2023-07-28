@@ -15,10 +15,12 @@ from supergood_review_site.media_types.forms import (
 )
 from supergood_review_site.media_types.models import AbstractMediaType
 from supergood_review_site.reviews.models import Review
-from supergood_review_site.strategies.base.models import AbstractStrategy
-from supergood_review_site.strategies.ebert.forms import EbertStrategyForm
-from supergood_review_site.strategies.goodreads.forms import GoodreadsStrategyForm
-from supergood_review_site.strategies.maximus.forms import MaximusStrategyForm
+from supergood_review_site.strategies.forms import (
+    EbertStrategyForm,
+    GoodreadsStrategyForm,
+    MaximusStrategyForm,
+)
+from supergood_review_site.strategies.models import AbstractStrategy
 from supergood_review_site.utils import ContentTypeUtils
 from supergood_review_site.utils.forms import get_initial_field_value
 

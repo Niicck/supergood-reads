@@ -11,13 +11,14 @@
     {% vite_asset 'js/apps/myReviews.ts' %}
     <div class="px-4 sm:px-0" id="my-reviews-app">
         <div class="-mx-4 mt-8 sm:-mx-0">
-            <table class="table-fixed min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-y divide-gray-300 table-fixed">
                 <thead>
                     <tr>
                         <th scope="col" class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Title</th>
-                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell w-80">Date</th>
-                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-28">Score</th>
-                        <th scope="col" class="py-3.5 sm:pl-2 sm:pr-0 w-12">
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">Creator</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell w-28">Completed</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Rating</th>
+                        <th scope="col" class="py-3.5 sm:pl-2 sm:pr-0">
                             <span class="sr-only">Edit</span>
                         </th>
                     </tr>

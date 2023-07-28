@@ -5,8 +5,7 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import supergood_review_site.strategies.ebert.models
-import supergood_review_site.strategies.letterboxd.models
+import supergood_review_site.strategies.models
 import uuid
 
 
@@ -53,7 +52,7 @@ class Migration(migrations.Migration):
                         max_digits=2,
                         null=True,
                         validators=[
-                            supergood_review_site.strategies.ebert.models.ebert_star_validator
+                            supergood_review_site.strategies.models.ebert_star_validator
                         ],
                     ),
                 ),
@@ -148,7 +147,7 @@ class Migration(migrations.Migration):
                         decimal_places=1,
                         max_digits=2,
                         validators=[
-                            supergood_review_site.strategies.letterboxd.models.letterboxd_star_validator
+                            supergood_review_site.strategies.models.letterboxd_star_validator
                         ],
                     ),
                 ),

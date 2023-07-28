@@ -11,7 +11,7 @@ class DefaultSettings(Enum):
     """
     This is the default strategy that will applied to a new Review.
     Write in the form of a model string.
-    Ex: "supergood_review_site.strategies.ebert.models.EbertStrategy"
+    Ex: "supergood_review_site.strategies.models.EbertStrategy"
 
     If you use UserStrategyDefaults, you can more finely tune the default strategies
     per user, per media type.

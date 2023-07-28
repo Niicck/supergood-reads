@@ -1,15 +1,59 @@
-{% load widget_tweaks %}
-{% load tags %}
-{% load date_picker %}
-
-{{ initial_data|vue_json_script:json_script_id }}
-<tr is="vue:my-reviews-row"
-    json-script-id="{{json_script_id}}"
-    csrf-token={{csrf_token}}
-    update-url={% url 'update_review' review.id %}
->
-    <template #date-picker>
-        {% date_picker day_field=form.completed_at_day month_field=form.completed_at_month year_field=form.completed_at_year label_above=true border=false %}
-    </template>
-    {% include "supergood_review_site/forms/_reviews_field_wrapper.html" with field=form.text v_slot_name="text-field"%}
+<tr class="align-text-top">
+    <td
+        class="w-full max-w-0 py-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-0"
+    >
+        <!-- Title -->
+        <div>
+            <p class="flex flex-row items-center">{{ icon }}{{ title }}</p>
+            <p class="text-gray-700">{{ subheading }}</p>
+        </div>
+        <!-- On smaller screens, collapse data into first column -->
+        <dl class="font-normal space-y-2 lg:hidden">
+            <!-- Creator (small screens) -->
+            <div>
+                <dt class="sr-only">Creator</dt>
+                <dd class="mt-1 truncate text-gray-700">{{ review.media_type.creator }}</dd>
+            </div>
+            <!-- CompletedAt (small screens) -->
+            <div class="md:hidden">
+                <dt class="sr-only">Completed at</dt>
+                <dd class="mt-1 truncate text-gray-700">{{ review.completed_at }}</dd>
+            </div>
+            <!-- Rating (small screens) -->
+            <div class="sm:hidden">
+                <dt class="sr-only">Rating</dt>
+                <dd class="mt-1 truncate text-gray-500">{{ rating_html|safe }}</dd>
+            </div>
+        </dl>
+    </td>
+    <!-- Creator (large screens) -->
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top lg:table-cell">
+        {{ review.media_type.creator }}
+    </td>
+    <!-- CompletedAt (large screens) -->
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right md:table-cell">
+        {{ review.completed_at }}
+    </td>
+    <!-- Rating (large screens) -->
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top sm:table-cell">
+        {{ rating_html|safe }}
+    </td>
+    <!-- Edit Button -->
+    <td class="py-4 sm:pl-3 text-right text-sm font-medium align-top sm:pr-0">
+        <a
+            type="button"
+            class="text-indigo-600 hover:text-indigo-900 align-top w-12"
+            href="{% url 'update_review' review.id %}"
+        >
+            Edit <span class="sr-only">, Review of {{ title }}</span>
+        </a>
+    </td>
 </tr>
+
+{% if review.text %}
+    <tr class="border-none">
+        <td class="pb-4" colspan=2>
+            {{ review.text }}
+        </td>
+    </tr>
+{% endif %}

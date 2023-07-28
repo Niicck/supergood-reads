@@ -3,7 +3,7 @@ from typing import Any
 
 from django import forms
 
-from .models import EbertStrategy
+from .models import EbertStrategy, GoodreadsStrategy, MaximusStrategy
 
 GREAT_FILM = "GREAT_FILM"
 
@@ -11,7 +11,6 @@ GREAT_FILM = "GREAT_FILM"
 class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
     rating = forms.ChoiceField(
         choices=(
-            (None, ""),
             (GREAT_FILM, "Great Film"),
             ("4.0", "★★★★"),
             ("3.5", "★★★½"),
@@ -24,6 +23,7 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
             ("0.0", "Zero Stars"),
             (None, "No Star Rating"),
         ),
+        initial="4.0",
         label="Rating",
         required=False,
     )
@@ -63,3 +63,29 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
         if commit:
             instance.save()
         return instance
+
+
+class GoodreadsStrategyForm(forms.ModelForm[GoodreadsStrategy]):
+    stars = forms.ChoiceField(
+        choices=tuple((i, i) for i in range(5, 0, -1)),
+        label="Stars",
+    )
+
+    class Meta:
+        model = GoodreadsStrategy
+        fields = ["stars"]
+
+
+class MaximusStrategyForm(forms.ModelForm[MaximusStrategy]):
+    recommended = forms.ChoiceField(
+        choices=(
+            (True, "Yes"),
+            (False, "No"),
+        ),
+        widget=forms.RadioSelect,
+        label="Is it good?",
+    )
+
+    class Meta:
+        model = MaximusStrategy
+        fields = ["recommended"]

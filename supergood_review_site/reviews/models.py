@@ -11,6 +11,8 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
 
+from supergood_review_site.strategies.models import AbstractStrategy
+
 
 class ReviewManager(models.Manager["Review"]):
     def with_generic_relations(self) -> QuerySet["Review"]:
@@ -38,7 +40,7 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(12)], blank=True, null=True
     )
     completed_at_year = models.IntegerField(blank=True, null=True)
-    text = models.TextField(default="")
+    text = models.TextField(default="", blank=True)
 
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
@@ -104,6 +106,14 @@ class Review(models.Model):
                 + str(self.completed_at_year),
                 "%d %m %Y",
             ).strftime("%d %b %Y")
+
+    @property
+    def rating_html(self) -> str:
+        if self.strategy:
+            assert isinstance(self.strategy, AbstractStrategy)
+            return self.strategy.rating_html
+        else:
+            return ""
 
     def validate_completed_at(self) -> None:
         """

@@ -3,7 +3,10 @@ from typing import Any
 
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.html import format_html
+from django.utils.safestring import SafeText
 
 
 class AbstractMediaType(models.Model):
@@ -23,6 +26,19 @@ class AbstractMediaType(models.Model):
     @property
     def media_type(self) -> str:
         return str(self._meta.verbose_name)
+
+    @property
+    def year(self) -> str | None:
+        # TODO: make all media_types have a year
+        raise NotImplementedError
+
+    @property
+    def creator(self) -> str:
+        raise NotImplementedError
+
+    @classmethod
+    def icon(cls) -> SafeText:
+        raise NotImplementedError
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()
@@ -53,11 +69,24 @@ class Book(AbstractMediaType):
     )
     genres = models.ManyToManyField(Genre)
 
+    class Meta:
+        verbose_name = "Book"
+
     def __str__(self) -> str:
         return self.title
 
-    class Meta:
-        verbose_name = "Book"
+    @property
+    def year(self) -> str | None:
+        return self.publication_year
+
+    @property
+    def creator(self) -> str:
+        return self.author
+
+    @classmethod
+    def icon(cls) -> SafeText:
+        value = render_to_string("supergood_review_site/svg/book.html")
+        return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)
 
 
 class Country(models.Model):
@@ -81,8 +110,21 @@ class Film(AbstractMediaType):
     genres = models.ManyToManyField(Genre)
     countries = models.ManyToManyField(Country)
 
+    class Meta:
+        verbose_name = "Film"
+
     def __str__(self) -> str:
         return self.title
 
-    class Meta:
-        verbose_name = "Film"
+    @property
+    def year(self) -> str | None:
+        return self.release_year
+
+    @property
+    def creator(self) -> str:
+        return self.director
+
+    @classmethod
+    def icon(cls) -> SafeText:
+        value = render_to_string("supergood_review_site/svg/film.html")
+        return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)

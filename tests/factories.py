@@ -135,7 +135,7 @@ class GoodreadsStrategyFactory(factory.django.DjangoModelFactory):
 
 
 class MaximusStrategyFactory(factory.django.DjangoModelFactory):
-    recommended = factory.fuzzy.FuzzyChoice([True, False, None])
+    recommended = factory.fuzzy.FuzzyChoice([True, False])
 
     class Meta:
         model = models.MaximusStrategy
