@@ -1,6 +1,6 @@
 <template>
   <tr class="border-none review-row-vue-app">
-    <td class="pb-4 pl-4 min-w-full" colspan="2">
+    <td class="pb-4 pl-4" colspan="2" aria-label="Review Text">
       <div>
         <span v-if="expanded || !hasMore">
           {{ text }}
