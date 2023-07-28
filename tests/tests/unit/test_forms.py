@@ -3,9 +3,9 @@ from typing import Any
 import pytest
 from django.forms.fields import ChoiceField
 
-from supergood_review_site.media_types.models import Book, Film
-from supergood_review_site.reviews.forms import ReviewForm
-from supergood_review_site.strategies.models import (
+from supergood_reads.media_types.models import Book, Film
+from supergood_reads.reviews.forms import ReviewForm
+from supergood_reads.strategies.models import (
     EbertStrategy,
     GoodreadsStrategy,
     MaximusStrategy,
@@ -26,7 +26,7 @@ class TestReviewForm:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setattr(
-            "supergood_review_site.utils.ContentTypeUtils.get_content_type_id",
+            "supergood_reads.utils.ContentTypeUtils.get_content_type_id",
             self._fake_get_content_type_id,
         )
         review_form = ReviewForm(

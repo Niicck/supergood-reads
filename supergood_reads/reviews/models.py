@@ -11,7 +11,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from supergood_review_site.strategies.models import AbstractStrategy
+from supergood_reads.strategies.models import AbstractStrategy
 
 
 class ReviewManager(models.Manager["Review"]):

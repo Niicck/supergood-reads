@@ -6,12 +6,12 @@ from django.conf import settings
 
 
 class DefaultSettings(Enum):
-    """Default values for django.conf.settings introduced by supergood_review_site."""
+    """Default values for django.conf.settings introduced by supergood_reads."""
 
     """
     This is the default strategy that will applied to a new Review.
     Write in the form of a model string.
-    Ex: "supergood_review_site.strategies.models.EbertStrategy"
+    Ex: "supergood_reads.strategies.models.EbertStrategy"
 
     If you use UserStrategyDefaults, you can more finely tune the default strategies
     per user, per media type.
@@ -29,7 +29,7 @@ def apply_default_settings() -> None:
 
 class DjangoFlexReviewsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "supergood_review_site"
+    name = "supergood_reads"
 
     def ready(self) -> None:
         apply_default_settings()

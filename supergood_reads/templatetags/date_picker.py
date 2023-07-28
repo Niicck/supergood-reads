@@ -6,7 +6,7 @@ from django.forms.boundfield import BoundField
 register = template.Library()
 
 
-@register.inclusion_tag("supergood_review_site/forms/_date_picker.html")
+@register.inclusion_tag("supergood_reads/forms/_date_picker.html")
 def date_picker(
     day_field: BoundField,
     month_field: BoundField,

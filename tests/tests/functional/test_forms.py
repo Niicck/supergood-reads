@@ -2,14 +2,14 @@ from typing import Any, Dict
 
 import pytest
 
-from supergood_review_site.media_types.models import Book, Film
-from supergood_review_site.reviews.forms import ReviewForm
-from supergood_review_site.strategies.models import (
+from supergood_reads.media_types.models import Book, Film
+from supergood_reads.reviews.forms import ReviewForm
+from supergood_reads.strategies.models import (
     EbertStrategy,
     GoodreadsStrategy,
     MaximusStrategy,
 )
-from supergood_review_site.utils import ContentTypeUtils
+from supergood_reads.utils import ContentTypeUtils
 
 
 @pytest.mark.django_db

@@ -12,8 +12,8 @@ from django.utils.html import (  # type: ignore [attr-defined]
 )
 from django.utils.safestring import SafeText, mark_safe
 
-from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
-from supergood_review_site.utils import forms as form_utils
+from supergood_reads.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.utils import forms as form_utils
 
 register = template.Library()
 
@@ -28,7 +28,7 @@ CustomFieldTypeOption = Literal[
 ]
 
 
-@register.inclusion_tag("supergood_review_site/_field_wrapper.html")
+@register.inclusion_tag("supergood_reads/_field_wrapper.html")
 def field_wrapper(
     field: BoundField,
     border: bool = True,

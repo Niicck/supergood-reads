@@ -7,15 +7,9 @@ from bs4 import BeautifulSoup, Tag
 from django.test import Client
 from django.urls import reverse
 
-from supergood_review_site.models import (
-    Book,
-    EbertStrategy,
-    Film,
-    GoodreadsStrategy,
-    Review,
-)
-from supergood_review_site.reviews.forms import CreateNewMediaOption
-from supergood_review_site.utils import ContentTypeUtils
+from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
+from supergood_reads.reviews.forms import CreateNewMediaOption
+from supergood_reads.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
     EbertStrategyFactory,

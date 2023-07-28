@@ -23,11 +23,11 @@
         csrf-token={{csrf_token}}
         update-url={% url 'update_book' item.id %}
     >
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.author v_slot_name="creator-field" %}
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.publication_year v_slot_name="year-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.author v_slot_name="creator-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.publication_year v_slot_name="year-field" %}
         {% url 'delete_review' object.id as delete_url %}
-        {% include "supergood_review_site/forms/_delete_form.html" with url=delete_url %}
+        {% include "supergood_reads/forms/_delete_form.html" with url=delete_url %}
     </tr>
 {% elif item|is_film %}
     <tr is="vue:my-media-row"
@@ -41,10 +41,10 @@
         csrf-token={{csrf_token}}
         update-url={% url 'update_film' item.id %}
     >
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.director v_slot_name="creator-field" %}
-        {% include "supergood_review_site/forms/_media_field_wrapper.html" with field=form.release_year v_slot_name="year-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.director v_slot_name="creator-field" %}
+        {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.release_year v_slot_name="year-field" %}
         {% url 'delete_review' object.id as delete_url %}
-        {% include "supergood_review_site/forms/_delete_form.html" with url=delete_url %}
+        {% include "supergood_reads/forms/_delete_form.html" with url=delete_url %}
     </tr>
 {% endif %}

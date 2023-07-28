@@ -9,20 +9,17 @@ from django.db.models import Model
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
-from supergood_review_site.media_types.forms import (
-    BookAutocompleteForm,
-    FilmAutocompleteForm,
-)
-from supergood_review_site.media_types.models import AbstractMediaType
-from supergood_review_site.reviews.models import Review
-from supergood_review_site.strategies.forms import (
+from supergood_reads.media_types.forms import BookAutocompleteForm, FilmAutocompleteForm
+from supergood_reads.media_types.models import AbstractMediaType
+from supergood_reads.reviews.models import Review
+from supergood_reads.strategies.forms import (
     EbertStrategyForm,
     GoodreadsStrategyForm,
     MaximusStrategyForm,
 )
-from supergood_review_site.strategies.models import AbstractStrategy
-from supergood_review_site.utils import ContentTypeUtils
-from supergood_review_site.utils.forms import get_initial_field_value
+from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.forms import get_initial_field_value
 
 MONTH_CHOICES = (
     (1, "Jan"),

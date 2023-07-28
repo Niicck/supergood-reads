@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["supergood_review_site/*"]
+      "@/*": ["supergood_reads/*"]
     }
   },
   "exclude": ["node_modules", "**/*.spec.ts"]

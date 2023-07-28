@@ -5,13 +5,13 @@ from django.forms import ModelForm
 from django.template import Context
 from django.urls import reverse
 
-from supergood_review_site.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 
 register = template.Library()
 
 
-@register.inclusion_tag("supergood_review_site/_nav_bar.html", takes_context=True)
+@register.inclusion_tag("supergood_reads/_nav_bar.html", takes_context=True)
 def nav_bar(context: Context) -> Context:
     """
     Returns:
@@ -48,7 +48,7 @@ class MyMediaRowContext(TypedDict, total=False):
     form: ModelForm[Any]
 
 
-@register.inclusion_tag("supergood_review_site/_media_row.html")
+@register.inclusion_tag("supergood_reads/_media_row.html")
 def media_row(item: AbstractMediaType) -> MyMediaRowContext:
     """
     Renders a row on the "My Media" page.

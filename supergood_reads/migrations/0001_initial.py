@@ -5,7 +5,7 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import supergood_review_site.strategies.models
+import supergood_reads.strategies.models
 import uuid
 
 
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                         max_digits=2,
                         null=True,
                         validators=[
-                            supergood_review_site.strategies.models.ebert_star_validator
+                            supergood_reads.strategies.models.ebert_star_validator
                         ],
                     ),
                 ),
@@ -147,7 +147,7 @@ class Migration(migrations.Migration):
                         decimal_places=1,
                         max_digits=2,
                         validators=[
-                            supergood_review_site.strategies.models.letterboxd_star_validator
+                            supergood_reads.strategies.models.letterboxd_star_validator
                         ],
                     ),
                 ),
@@ -308,9 +308,9 @@ class Migration(migrations.Migration):
                 ("release_year", models.IntegerField(blank=True, null=True)),
                 (
                     "countries",
-                    models.ManyToManyField(to="supergood_review_site.country"),
+                    models.ManyToManyField(to="supergood_reads.country"),
                 ),
-                ("genres", models.ManyToManyField(to="supergood_review_site.genre")),
+                ("genres", models.ManyToManyField(to="supergood_reads.genre")),
             ],
             options={
                 "verbose_name": "Film",
@@ -334,7 +334,7 @@ class Migration(migrations.Migration):
                 ("author", models.CharField(default="", max_length=256)),
                 ("pages", models.IntegerField(blank=True, null=True)),
                 ("publication_year", models.IntegerField(blank=True, null=True)),
-                ("genres", models.ManyToManyField(to="supergood_review_site.genre")),
+                ("genres", models.ManyToManyField(to="supergood_reads.genre")),
             ],
             options={
                 "verbose_name": "Book",

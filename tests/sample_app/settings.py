@@ -84,7 +84,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Local
-    "supergood_review_site",  # add supergood_review_site
+    "supergood_reads",  # add supergood_reads
     "tests.sample_app",  # add your own local app
     # Third Party
     "django_extensions",

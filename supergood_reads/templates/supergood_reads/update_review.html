@@ -1,4 +1,4 @@
-{% extends "supergood_review_site/create_review.html" %}
+{% extends "supergood_reads/create_review.html" %}
 
 {% block header %}
     Update Review
@@ -30,6 +30,6 @@
             ?
         </template>
         {% url 'delete_review' object.id as delete_url %}
-        {% include "supergood_review_site/forms/_delete_form.html" with url=delete_url %}
+        {% include "supergood_reads/forms/_delete_form.html" with url=delete_url %}
     </delete-modal>
 {% endblock submit %}

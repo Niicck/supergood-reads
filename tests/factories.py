@@ -10,9 +10,9 @@ from django.conf import settings
 from django.forms import Form
 from faker import Faker
 
-from supergood_review_site import models
-from supergood_review_site.reviews.forms import ReviewFormGroup
-from supergood_review_site.utils.forms import get_initial_field_value
+from supergood_reads import models
+from supergood_reads.reviews.forms import ReviewFormGroup
+from supergood_reads.utils.forms import get_initial_field_value
 
 fake = Faker()
 

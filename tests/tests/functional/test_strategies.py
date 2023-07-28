@@ -2,8 +2,8 @@ from decimal import Decimal
 
 import pytest
 
-from supergood_review_site.strategies.forms import GREAT_FILM, EbertStrategyForm
-from supergood_review_site.utils.forms import get_initial_field_value
+from supergood_reads.strategies.forms import GREAT_FILM, EbertStrategyForm
+from supergood_reads.utils.forms import get_initial_field_value
 
 
 @pytest.mark.django_db

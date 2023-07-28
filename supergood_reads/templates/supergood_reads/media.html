@@ -1,4 +1,4 @@
-{% extends "supergood_review_site/base.html" %}
+{% extends "supergood_reads/base.html" %}
 {% load partials %}
 {% load django_vite %}
 
@@ -28,7 +28,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            {% include "supergood_review_site/_pagination.html" %}
+            {% include "supergood_reads/_pagination.html" %}
         </div>
     </div>
 {% endblock content %}

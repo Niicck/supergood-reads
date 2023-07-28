@@ -22,18 +22,18 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
-from supergood_review_site.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_review_site.media_types.models import AbstractMediaType, Book, Film
-from supergood_review_site.reviews.forms import ReviewFormGroup
-from supergood_review_site.reviews.models import Review
-from supergood_review_site.utils.json import UUIDEncoder
-from supergood_review_site.utils.uuid import is_uuid
+from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.reviews.forms import ReviewFormGroup
+from supergood_reads.reviews.models import Review
+from supergood_reads.utils.json import UUIDEncoder
+from supergood_reads.utils.uuid import is_uuid
 
 logger = logging.getLogger(__name__)
 
 
 class CreateReviewView(TemplateView):
-    template_name = "supergood_review_site/create_review.html"
+    template_name = "supergood_reads/create_review.html"
     object: Review | None = None
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -96,7 +96,7 @@ class CreateReviewView(TemplateView):
 
 
 class UpdateReviewView(CreateReviewView, SingleObjectMixin[Review]):
-    template_name = "supergood_review_site/update_review.html"
+    template_name = "supergood_reads/update_review.html"
     model = Review
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -177,7 +177,7 @@ class MyMediaView(ListView[AbstractMediaType]):
     model = AbstractMediaType
     paginate_by = 20
     context_object_name = "media_list"
-    template_name = "supergood_review_site/media.html"
+    template_name = "supergood_reads/media.html"
 
     def get_queryset(self) -> QuerySetSequence:
         """
@@ -197,7 +197,7 @@ class MyReviewsView(ListView[Review]):
     model = Review
     paginate_by = 20
     context_object_name = "review_list"
-    template_name = "supergood_review_site/reviews.html"
+    template_name = "supergood_reads/reviews.html"
 
     def get_queryset(self) -> QuerySet[Review]:
         review_qs = (

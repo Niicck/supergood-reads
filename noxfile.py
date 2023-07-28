@@ -54,7 +54,7 @@ def test(session: nox.Session, django_version: str) -> None:
 @nox.session(python=PYTHON_VERSIONS)
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
-    args = session.posargs or ["supergood_review_site", "tests"]
+    args = session.posargs or ["supergood_reads", "tests"]
     install_poetry_groups(session, "main", "dev", "test", "mypy")
     session.run("mypy", *args)
 

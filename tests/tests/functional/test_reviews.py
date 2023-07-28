@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 
-from supergood_review_site.reviews.models import Review
+from supergood_reads.reviews.models import Review
 from tests.factories import ReviewFactory
 
 

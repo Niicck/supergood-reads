@@ -5,7 +5,7 @@ description = "Implements a flexible user review schema for your django app."
 authors = ["Nick Ivons <niicck@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "supergood_review_site"}]
+packages = [{include = "supergood_reads"}]
 homepage = "https://github.com/niicck/django-flex-reviews"
 classifiers = [
     "Development Status :: 1 - Planning",

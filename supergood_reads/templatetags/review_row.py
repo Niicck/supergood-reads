@@ -3,14 +3,14 @@ from typing import Any, Dict
 from django import template
 from django.utils.safestring import SafeText
 
-from supergood_review_site.media_types.models import AbstractMediaType
-from supergood_review_site.reviews.models import Review
-from supergood_review_site.strategies.models import AbstractStrategy
+from supergood_reads.media_types.models import AbstractMediaType
+from supergood_reads.reviews.models import Review
+from supergood_reads.strategies.models import AbstractStrategy
 
 register = template.Library()
 
 
-@register.inclusion_tag("supergood_review_site/_review_row.html")
+@register.inclusion_tag("supergood_reads/_review_row.html")
 def review_row(
     review: Review,
 ) -> Dict[str, Any]:
