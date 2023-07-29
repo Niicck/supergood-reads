@@ -9,16 +9,11 @@ from django.db.models import Model
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
-from supergood_reads.media_types.forms import BookAutocompleteForm, FilmAutocompleteForm
 from supergood_reads.media_types.models import AbstractMediaType
 from supergood_reads.reviews.models import Review
-from supergood_reads.strategies.forms import (
-    EbertStrategyForm,
-    GoodreadsStrategyForm,
-    MaximusStrategyForm,
-)
 from supergood_reads.strategies.models import AbstractStrategy
 from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.forms import get_initial_field_value
 
 MONTH_CHOICES = (
@@ -304,15 +299,6 @@ class GenericRelationFormGroup:
 
 
 class ReviewFormGroup:
-    strategy_form_classes: List[Type[ModelForm[Any]]] = [
-        EbertStrategyForm,
-        GoodreadsStrategyForm,
-        MaximusStrategyForm,
-    ]
-    media_type_form_classes: List[Type[ModelForm[Any]]] = [
-        BookAutocompleteForm,
-        FilmAutocompleteForm,
-    ]
     review_form: ReviewForm
     review_mgmt_form: ReviewMgmtForm
     strategy_forms: GenericRelationFormGroup
@@ -326,46 +312,20 @@ class ReviewFormGroup:
         self.instance = instance
         self.valid: Optional[bool] = None
         self.original_strategy = self._get_original_strategy()
-        self.validate_strategy_form_classes()
-        self.validate_media_type_form_classes()
         self.instantiate_forms()
-
-    @property
-    def strategy_model_classes(self) -> List[Type[Model]]:
-        return [form._meta.model for form in self.strategy_form_classes]
-
-    @property
-    def media_type_model_classes(self) -> List[Type[Model]]:
-        return [form._meta.model for form in self.media_type_form_classes]
 
     def _get_original_strategy(self) -> AbstractStrategy | None:
         if self.instance and self.instance.strategy:
             return cast(AbstractStrategy, self.instance.strategy)
         return None
 
-    def validate_strategy_form_classes(self) -> None:
-        """Validate that all strategy_form_classes are Strategies."""
-        for form_class in self.strategy_form_classes:
-            if not issubclass(form_class._meta.model, AbstractStrategy):
-                raise ValueError(
-                    f"{form_class.__name__} is not a valid Strategy form class."
-                )
-
-    def validate_media_type_form_classes(self) -> None:
-        """Validate that media_type_form_classes are MediaTypes."""
-        for form_class in self.media_type_form_classes:
-            if not issubclass(form_class._meta.model, AbstractMediaType):
-                raise ValueError(
-                    f"{form_class.__name__} is not a valid MediaType form class."
-                )
-
     def instantiate_forms(self) -> None:
         self.review_form = ReviewForm(
             prefix="review",
             data=self.data,
             instance=self.instance,
-            strategy_choices=self.strategy_model_classes,
-            media_type_choices=self.media_type_model_classes,
+            strategy_choices=supergood_reads_engine.config.strategy_model_classes,
+            media_type_choices=supergood_reads_engine.config.media_type_model_classes,
         )
 
         selected_strategy_id = self._get_content_type_id("strategy_content_type")
@@ -378,14 +338,14 @@ class ReviewFormGroup:
 
         strategy_instance = self.instance and self.instance.strategy
         self.strategy_forms = GenericRelationFormGroup(
-            self.strategy_form_classes,
+            supergood_reads_engine.config.strategy_form_classes,
             selected_form_id=selected_strategy_id,
             data=self.data,
             instance=strategy_instance,
         )
 
         self.media_type_forms = GenericRelationFormGroup(
-            self.media_type_form_classes,
+            supergood_reads_engine.config.media_type_form_classes,
             selected_form_id=selected_media_type_id,
             data=self.data,
         )

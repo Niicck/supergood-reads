@@ -126,3 +126,6 @@ DJANGO_VITE_DEV_SERVER_PORT = env("DJANGO_VITE_DEV_SERVER_PORT")
 STATICFILES_DIRS = [
     DJANGO_VITE_ASSETS_PATH,
 ]
+
+# supergood-reads
+SUPERGOOD_READS_CONFIG = "supergood_reads.utils.engine.DefaultSupergoodReadsConfig"
