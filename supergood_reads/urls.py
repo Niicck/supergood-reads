@@ -1,8 +1,12 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
 from . import views
 
 urlpatterns = [
+    path(
+        "", TemplateView.as_view(template_name="supergood_reads/home.html"), name="home"
+    ),
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path(
         "reviews/<uuid:pk>/update",

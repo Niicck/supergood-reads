@@ -7,7 +7,10 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 align-text-bottom">
       <div class="flex h-16 justify-between">
         <div class="flex">
-          <a class="supergood-logo flex items-center px-2 pt-1 rounded-md" href="#">
+          <a
+            class="supergood-logo flex items-center px-2 pt-1 rounded-md"
+            :href="props.homeUrl"
+          >
             supergood
             <span>
               <svg
@@ -154,6 +157,16 @@ import {
 import { Bars3Icon, UserIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
 import type { NavBarLink } from '@/static/js/types';
+
+const props = defineProps({
+  /**
+   * Homepage url.
+   */
+  homeUrl: {
+    type: String,
+    default: '#',
+  },
+});
 
 const user = {
   name: 'Niicck',

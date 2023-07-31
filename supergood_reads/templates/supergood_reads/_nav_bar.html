@@ -4,5 +4,7 @@
 {{ nav_bar_links|json_script:"nav_bar_links" }}
 
 <div id="nav-bar-vue-app">
-    <nav-bar></nav-bar>
+    <nav-bar
+        home-url={% url 'home' %}
+    ></nav-bar>
 </div>
