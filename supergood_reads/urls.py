@@ -7,6 +7,11 @@ urlpatterns = [
     path(
         "", TemplateView.as_view(template_name="supergood_reads/home.html"), name="home"
     ),
+    path(
+        "cta/",
+        TemplateView.as_view(template_name="supergood_reads/cta.html"),
+        name="cta",
+    ),
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path(
         "reviews/<uuid:pk>/update",

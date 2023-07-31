@@ -8,7 +8,7 @@
       <div class="flex h-16 justify-between">
         <div class="flex">
           <a
-            class="supergood-logo flex items-center px-2 pt-1 rounded-md"
+            class="supergood-font flex items-center px-2 pt-1 rounded-md"
             :href="props.homeUrl"
           >
             supergood
