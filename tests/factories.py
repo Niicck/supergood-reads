@@ -57,6 +57,7 @@ class BookFactory(factory.django.DjangoModelFactory):
             self.genres.add(*extracted)
         else:
             self.genres.add(GenreFactory())
+        self.save()
 
 
 class FilmFactory(factory.django.DjangoModelFactory):
@@ -82,6 +83,7 @@ class FilmFactory(factory.django.DjangoModelFactory):
             self.genres.add(*extracted)
         else:
             self.genres.add(GenreFactory())
+        self.save()
 
     @factory.post_generation
     def countries(self, create, extracted):
@@ -97,6 +99,7 @@ class FilmFactory(factory.django.DjangoModelFactory):
             self.countries.add(*extracted)
         else:
             self.countries.add(CountryFactory())
+        self.save()
 
 
 class GenreFactory(factory.django.DjangoModelFactory):

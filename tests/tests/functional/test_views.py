@@ -2,6 +2,7 @@ import json
 from typing import Any, TypeAlias, TypedDict, Union
 from uuid import UUID, uuid4
 
+import django
 import pytest
 from bs4 import BeautifulSoup, Tag
 from django.test import Client
@@ -514,6 +515,9 @@ class TestUpdateReviewView:
         res = client.post(url, data)
         assert res.status_code == 302
         review.refresh_from_db()
+        # In pre-4.2 versions of django, related fields are not automatically refreshed.
+        if django.VERSION < (4, 2):
+            review.strategy.refresh_from_db()
         assert review.strategy.id == strategy.id
         assert review.strategy.stars == 4
 

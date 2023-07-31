@@ -4,13 +4,13 @@ from pathlib import Path
 import nox
 
 PYTHON_VERSIONS = ["3.11", "3.10", "3.9", "3.8"]
-DJANGO_VERSIONS = ["4.1", "4.0", "3.2"]
+DJANGO_VERSIONS = ["4.2", "4.1", "4.0", "3.2"]
 
 
 def install_poetry_groups(session, *groups: str) -> None:
     """Install dependencies from poetry groups.
 
-    Using this as s workaround until my PR is merged in:
+    Using this as a workaround until my PR is merged in:
     https://github.com/cjolowicz/nox-poetry/pull/1080
     """
     with tempfile.NamedTemporaryFile() as requirements:
