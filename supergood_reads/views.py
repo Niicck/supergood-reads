@@ -25,6 +25,7 @@ from queryset_sequence import QuerySetSequence
 
 from supergood_reads.auth import (
     CreateReviewPermissionMixin,
+    UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
 from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
@@ -278,7 +279,9 @@ class DeleteMyMediaMixin:
         return super().form_valid(form)  # type: ignore[safe-super]
 
 
-class UpdateMyMediaBookView(JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]):
+class UpdateMyMediaBookView(
+    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]
+):
     """Update Book via ajax request."""
 
     object: Book
@@ -286,7 +289,9 @@ class UpdateMyMediaBookView(JsonableResponseMixin, UpdateView[Book, MyMediaBookF
     form_class = MyMediaBookForm
 
 
-class UpdateMyMediaFilmView(JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]):
+class UpdateMyMediaFilmView(
+    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]
+):
     """Update Film via ajax request."""
 
     object: Film
@@ -332,3 +337,25 @@ class DeleteReview(DeleteView[Review, ModelForm[Review]]):
             title = "untitled"
         messages.success(self.request, f"Succesfully deleted review of '{title}'.")
         return super().form_valid(form)  # type: ignore[safe-super]
+
+
+class StatusTemplateView(TemplateView):
+    status = 200
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context, status=self.status)
+
+
+class LoginView(StatusTemplateView):
+    template_name = "supergood_reads/login.html"
+    status = 200
+
+
+class Handle401View(LoginView):
+    status = 401
+
+
+class Handle403View(StatusTemplateView):
+    template_name = "supergood_reads/403.html"
+    status = 403

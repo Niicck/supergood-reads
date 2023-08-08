@@ -182,7 +182,7 @@ class TestCreateReviewView:
         response = client.get(self.url)
         assert response.status_code == 200
         # Disallow Posts
-        response = client.post(self.url, data)
+        response = client.post(self.url, data, follow=True)
         assert response.status_code == 401
         user = django_user_model.objects.create_user(  # noqa: S106
             username="valid_user", password="test"
@@ -193,8 +193,8 @@ class TestCreateReviewView:
         user.user_permissions.add(add_perm)
         client.force_login(user)
         # Allow Posts with proper Permission
-        response = client.post(self.url, data)
-        assert response.status_code == 302
+        response = client.post(self.url, data, follow=True)
+        assert response.status_code == 200
         review = Review.objects.first()
         assert review
         assert review.text == "It was okay."
@@ -208,11 +208,11 @@ class TestCreateReviewView:
         ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.book_content_type
         create_review_data["review-media_type_object_id"] = book.id
-        response = client.post(self.url, create_review_data)
+        response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 401
         client.force_login(reviewer_user)
-        response = client.post(self.url, create_review_data)
-        assert response.status_code == 302
+        response = client.post(self.url, create_review_data, follow=True)
+        assert response.status_code == 200
         review = Review.objects.first()
         assert review
         assert review.media_type == book
@@ -229,11 +229,11 @@ class TestCreateReviewView:
         ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.film_content_type
         create_review_data["review-media_type_object_id"] = film.id
-        response = client.post(self.url, create_review_data)
+        response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 401
         client.force_login(reviewer_user)
-        response = client.post(self.url, create_review_data)
-        assert response.status_code == 302
+        response = client.post(self.url, create_review_data, follow=True)
+        assert response.status_code == 200
         review = Review.objects.first()
         assert review
         assert review.media_type == film
@@ -248,7 +248,7 @@ class TestCreateReviewView:
         data = ReviewFormDataFactory(instance=review).data
         client.force_login(reviewer_user)
         # Should return error if media_type_object_id doesn't exist
-        response = client.post(self.url, data)
+        response = client.post(self.url, data, follow=True)
         assert response.status_code == 400
         assert (
             response.context.get("review_form").errors["media_type_object_id"][0]
@@ -256,8 +256,8 @@ class TestCreateReviewView:
         )
         # Should succeed once media_type is saved in db
         book.save()
-        response = client.post(self.url, data)
-        assert response.status_code == 302
+        response = client.post(self.url, data, follow=True)
+        assert response.status_code == 200
 
     def test_create_new_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -270,11 +270,11 @@ class TestCreateReviewView:
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
         create_review_data["book-publication_year"] = book.publication_year
-        response = client.post(self.url, create_review_data)
+        response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 401
         client.force_login(reviewer_user)
-        response = client.post(self.url, create_review_data)
-        assert response.status_code == 302
+        response = client.post(self.url, create_review_data, follow=True)
+        assert response.status_code == 200
         review = Review.objects.first()
         assert review
         assert review.media_type
@@ -291,11 +291,11 @@ class TestCreateReviewView:
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
         create_review_data["film-release_year"] = film.release_year
-        response = client.post(self.url, create_review_data)
+        response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 401
         client.force_login(reviewer_user)
-        response = client.post(self.url, create_review_data)
-        assert response.status_code == 302
+        response = client.post(self.url, create_review_data, follow=True)
+        assert response.status_code == 200
         review = Review.objects.first()
         assert review
         assert review.media_type
@@ -563,11 +563,11 @@ class TestUpdateReviewView:
         data = ReviewFormDataFactory(instance=review).data
         data["review-text"] = "It was good."
         url = self.get_url(review.id)
-        res = client.post(url, data)
+        res = client.post(url, data, follow=True)
         assert res.status_code == 401
         client.force_login(reviewer_user)
-        res = client.post(url, data)
-        assert res.status_code == 302
+        res = client.post(url, data, follow=True)
+        assert res.status_code == 200
         review.refresh_from_db()
         assert review.text == "It was good."
 
@@ -578,7 +578,7 @@ class TestUpdateReviewView:
         # Unauthorized user can't update review
         url = self.get_url(review.id)
         client.force_login(reviewer_user)
-        res = client.post(url, data)
+        res = client.post(url, data, follow=True)
         assert res.status_code == 403
 
         # Authorized user with permission, but non-staff, can't update review
@@ -587,14 +587,14 @@ class TestUpdateReviewView:
         )
         reviewer_user.user_permissions.add(change_perm)
         client.force_login(reviewer_user)
-        res = client.post(url, data)
+        res = client.post(url, data, follow=True)
         assert res.status_code == 403
 
         # Authorized user with permission, and staff status, can update review
         reviewer_user.is_staff = True
         reviewer_user.save()
-        res = client.post(url, data)
-        assert res.status_code == 302
+        res = client.post(url, data, follow=True)
+        assert res.status_code == 200
         review.refresh_from_db()
         assert review.text == "It was good."
 
@@ -606,8 +606,8 @@ class TestUpdateReviewView:
         data["goodreadsstrategy-stars"] = 4
         url = self.get_url(review.id)
         client.force_login(reviewer_user)
-        res = client.post(url, data)
-        assert res.status_code == 302
+        res = client.post(url, data, follow=True)
+        assert res.status_code == 200
         review.refresh_from_db()
         # In pre-4.2 versions of django, related fields are not automatically refreshed.
         if django.VERSION < (4, 2):
@@ -626,8 +626,8 @@ class TestUpdateReviewView:
         data["goodreadsstrategy-stars"] = 4
         url = self.get_url(review.id)
         client.force_login(reviewer_user)
-        res = client.post(url, data)
-        assert res.status_code == 302
+        res = client.post(url, data, follow=True)
+        assert res.status_code == 200
         review.refresh_from_db()
         assert review.strategy.stars == 4
         with pytest.raises(EbertStrategy.DoesNotExist):
@@ -636,20 +636,20 @@ class TestUpdateReviewView:
     def test_view_demo(self, client: Client, monkeypatch: pytest.MonkeyPatch) -> None:
         review = ReviewFactory()
         url = self.get_url(review.id)
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 401
         monkeypatch.setattr(
             "supergood_reads.utils.engine.supergood_reads_engine.config.demo_review_queryset",
             lambda: Review.objects.filter(id=review.id),
         )
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 200
 
     def test_view_non_demo(self, client: Client, django_user_model: Any) -> None:
         # Unauthorized user can't see review
         review = ReviewFactory()
         url = self.get_url(review.id)
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 401
 
         # Authorized user with permission, but non-staff, can't see review
@@ -661,22 +661,22 @@ class TestUpdateReviewView:
         )
         user.user_permissions.add(view_perm)
         client.force_login(user)
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 403
 
         # Authorized user with permission, and staff status, can see review
         user.is_staff = True
         user.save()
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 200
 
     def test_view_own_review(self, client: Client, reviewer_user: User) -> None:
         review = ReviewFactory()
         url = self.get_url(review.id)
         client.force_login(reviewer_user)
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 403
         review.owner = reviewer_user
         review.save()
-        res = client.get(url)
+        res = client.get(url, follow=True)
         assert res.status_code == 200

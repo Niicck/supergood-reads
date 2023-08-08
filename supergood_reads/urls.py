@@ -9,12 +9,17 @@ urlpatterns = [
     ),
     path(
         "login/",
-        TemplateView.as_view(template_name="supergood_reads/login.html"),
+        views.LoginView.as_view(),
         name="login",
     ),
     path(
+        "401/",
+        views.Handle401View.as_view(),
+        name="401",
+    ),
+    path(
         "403/",
-        TemplateView.as_view(template_name="supergood_reads/403.html"),
+        views.Handle403View.as_view(),
         name="403",
     ),
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
