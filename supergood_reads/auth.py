@@ -3,7 +3,8 @@ from typing import Any, Literal, Union
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import Model
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 
 from supergood_reads.media_types.models import AbstractMediaType
 from supergood_reads.reviews.models import Review
@@ -14,13 +15,11 @@ class HttpResponseUnauthorized(HttpResponse):
 
 
 class BasePermissionMixin:
-    @property
-    def login_redirect(self) -> HttpResponse:
-        return HttpResponseUnauthorized()
+    def login_redirect(self, request: HttpRequest) -> HttpResponse:
+        return render(request, "supergood_reads/login.html", status=401)
 
-    @property
-    def forbidden_redirect(self) -> HttpResponse:
-        return HttpResponseForbidden()
+    def forbidden_redirect(self, request: HttpRequest) -> HttpResponse:
+        return render(request, "supergood_reads/403.html", status=403)
 
     def has_perm_dynamic(
         self, user: User, obj: Model, perm: Literal["view", "add", "change", "delete"]
@@ -51,9 +50,9 @@ class CreateReviewPermissionMixin(BasePermissionMixin):
         user = request.user
         if not user.is_authenticated or not user.has_perm("supergood_reads.add_review"):
             if not user.is_authenticated:
-                return self.login_redirect
+                return self.login_redirect(request)
             else:
-                return self.forbidden_redirect
+                return self.forbidden_redirect(request)
         return super().post(request, *args, **kwargs)  # type: ignore
 
 
@@ -74,9 +73,9 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
             or self.has_owner_permission(user, obj)
         ):
             if not user.is_authenticated:
-                return self.login_redirect
+                return self.login_redirect(request)
             else:
-                return self.forbidden_redirect
+                return self.forbidden_redirect(request)
         return super().get(request, *args, **kwargs)  # type: ignore
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
@@ -92,7 +91,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
             or self.has_owner_permission(user, obj)
         ):
             if not user.is_authenticated:
-                return self.login_redirect
+                return self.login_redirect(request)
             else:
-                return self.forbidden_redirect
+                return self.forbidden_redirect(request)
         return super().post(request, *args, **kwargs)  # type: ignore

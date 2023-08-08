@@ -69,8 +69,3 @@ urlpatterns = [
         name="delete_review",
     ),
 ]
-
-handler401 = TemplateView.as_view(
-    template_name="403.html"
-)  # TemplateView.as_view(template_name="supergood_reads/login.html")
-handler403 = TemplateView.as_view(template_name="403.html")
