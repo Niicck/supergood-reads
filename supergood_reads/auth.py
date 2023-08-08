@@ -1,9 +1,10 @@
 from typing import Any, Literal, Union
 
+from django.contrib import messages
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import Model
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
 
 from supergood_reads.media_types.models import AbstractMediaType
@@ -44,6 +45,16 @@ class BasePermissionMixin:
 
 
 class CreateReviewPermissionMixin(BasePermissionMixin):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        messages.info(
+            self.request,
+            (
+                "This is just a demo form, you can't submit it. If you want to create or "
+                "update your own reviews, please sign in!"
+            ),
+        )
+        return super().get(request, *args, **kwargs)  # type: ignore
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         """Only allow authenticated users to create new Reviews."""
         user = request.user
@@ -75,11 +86,19 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
                 return self.login_redirect()
             else:
                 return self.forbidden_redirect()
+
+        messages.info(
+            self.request,
+            (
+                "This is just a demo form, you can't submit it. If you want to create or "
+                "update your own reviews, please sign in!"
+            ),
+        )
         return super().get(request, *args, **kwargs)  # type: ignore
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         """
-        A user can only update a review only if:
+        A user can only update a review if one of these conditions is met:
           - The user has global "change_review" permission and is_staff
           - The user owns the Review
         """
@@ -98,19 +117,17 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
 
 class UpdateMediaPermissionMixin(BasePermissionMixin):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        """
-        A user can only update a review only if:
-          - The user has global "change_[model]" permission and is_staff
-          - The user owns the Review
-        """
+        """Check if user is allowed to change MediaType instance."""
         user = request.user
         obj = self.get_object()  # type: ignore
-        if not (
-            (self.has_perm_dynamic(user, obj, "change") and user.is_staff)
-            or self.has_owner_permission(user, obj)
-        ):
+        if not obj.can_user_change(user):
             if not user.is_authenticated:
-                return self.login_redirect()
+                message = (
+                    f"This is just a demo {obj._meta.verbose_name}. If you'd "
+                    f"like to create and edit your own {obj._meta.verbose_name_plural},"
+                    f" you can login."
+                )
+                return HttpResponse(message, status=401)
             else:
-                return self.forbidden_redirect()
+                return HttpResponseForbidden()
         return super().post(request, *args, **kwargs)  # type: ignore

@@ -22,6 +22,7 @@
         media-type="Book"
         csrf-token={{csrf_token}}
         update-url={% url 'update_book' item.id %}
+        :enabled={{ enabled|to_js_bool }}
     >
         {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
         {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.author v_slot_name="creator-field" %}
@@ -40,6 +41,7 @@
         media-type="Film"
         csrf-token={{csrf_token}}
         update-url={% url 'update_film' item.id %}
+        :enabled={{ enabled|to_js_bool }}
     >
         {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
         {% include "supergood_reads/forms/_media_field_wrapper.html" with field=form.director v_slot_name="creator-field" %}

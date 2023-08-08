@@ -250,7 +250,7 @@ class JsonableResponseMixin:
     """
 
     def form_invalid(self, form: ModelForm[Any]) -> JsonResponse:
-        return JsonResponse({"errors": form.errors}, status=400)
+        return JsonResponse({"fieldErrors": form.errors}, status=400)
 
     def form_valid(self, form: ModelForm[Any]) -> JsonResponse:
         self.object = form.save()

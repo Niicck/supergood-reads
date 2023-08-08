@@ -1,5 +1,5 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
-import { createApp, defineComponent, ref } from 'vue';
+import { createApp, defineComponent } from 'vue';
 import { createPinia, storeToRefs } from 'pinia';
 import RadioCards from '@/static/js/components/RadioCards.vue';
 import { useCreateReviewStore } from '@/static/js/stores';

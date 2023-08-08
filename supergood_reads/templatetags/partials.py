@@ -46,13 +46,16 @@ def nav_bar(context: Context) -> Context:
 class MyMediaRowContext(TypedDict, total=False):
     item: AbstractMediaType
     form: ModelForm[Any]
+    enabled: bool
 
 
-@register.inclusion_tag("supergood_reads/_media_row.html")
-def media_row(item: AbstractMediaType) -> MyMediaRowContext:
+@register.inclusion_tag("supergood_reads/_media_row.html", takes_context=True)
+def media_row(context: Any, item: AbstractMediaType) -> MyMediaRowContext:
     """
     Renders a row on the "My Media" page.
     """
+    request = context.get("request")
+
     form_class: type[ModelForm[Any]]
     if isinstance(item, Book):
         form_class = MyMediaBookForm
@@ -62,7 +65,7 @@ def media_row(item: AbstractMediaType) -> MyMediaRowContext:
         raise NotImplementedError(
             f"{type(item)} is not supported by media_row inclusion_tag"
         )
+
     return MyMediaRowContext(
-        item=item,
-        form=form_class(),
+        item=item, form=form_class(), enabled=item.can_user_change(request.user)
     )

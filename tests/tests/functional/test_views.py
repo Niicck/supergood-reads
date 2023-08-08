@@ -417,7 +417,7 @@ class TestUpdateMyMediaBookView:
     def get_url(self, book_id: UUID) -> str:
         return reverse("update_book", args=[book_id])
 
-    def test_update_title(self, admin_client: Client) -> None:
+    def test_update_title(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory()
         url = self.get_url(book.id)
         new_title = "This is a new title"
@@ -426,7 +426,14 @@ class TestUpdateMyMediaBookView:
             "author": book.author,
             "publication_year": book.publication_year,
         }
-        res = admin_client.post(url, data)
+        res = client.post(url, data)
+        assert res.status_code == 401
+        client.force_login(reviewer_user)
+        res = client.post(url, data)
+        book.owner = reviewer_user
+        book.save()
+        assert res.status_code == 403
+        res = client.post(url, data)
         assert res.status_code == 200
         assert res.json()["data"] == {
             "id": str(book.id),
@@ -435,22 +442,24 @@ class TestUpdateMyMediaBookView:
         book.refresh_from_db()
         assert book.title == new_title
 
-    def test_missing_required_field(self, admin_client: Client) -> None:
-        book = BookFactory()
+    def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
+        book = BookFactory(owner=reviewer_user)
         url = self.get_url(book.id)
         new_title = "This is a new title"
         data = {
             "title": new_title,
         }
-        res = admin_client.post(url, data)
+        client.force_login(reviewer_user)
+        res = client.post(url, data)
         assert res.status_code == 400
-        assert res.json()["errors"]["author"][0] == "This field is required."
+        assert res.json()["fieldErrors"]["author"][0] == "This field is required."
         book.refresh_from_db()
         assert book.title != new_title
 
-    def test_wrong_uuid(self, admin_client: Client) -> None:
+    def test_wrong_uuid(self, client: Client, reviewer_user: User) -> None:
         url = self.get_url(uuid4())
-        res = admin_client.post(url)
+        client.force_login(reviewer_user)
+        res = client.post(url)
         assert res.status_code == 404
 
 
@@ -459,7 +468,7 @@ class TestUpdateMyMediaFilmView:
     def get_url(self, film_id: UUID) -> str:
         return reverse("update_film", args=[film_id])
 
-    def test_update_title(self, admin_client: Client) -> None:
+    def test_update_title(self, client: Client, reviewer_user: User) -> None:
         film = FilmFactory()
         url = self.get_url(film.id)
         new_title = "This is a new title"
@@ -468,7 +477,14 @@ class TestUpdateMyMediaFilmView:
             "director": film.director,
             "release_year": film.release_year,
         }
-        res = admin_client.post(url, data)
+        res = client.post(url, data)
+        assert res.status_code == 401
+        client.force_login(reviewer_user)
+        res = client.post(url, data)
+        assert res.status_code == 403
+        film.owner = reviewer_user
+        film.save()
+        res = client.post(url, data)
         assert res.status_code == 200
         assert res.json()["data"] == {
             "id": str(film.id),
@@ -477,22 +493,24 @@ class TestUpdateMyMediaFilmView:
         film.refresh_from_db()
         assert film.title == new_title
 
-    def test_missing_required_field(self, admin_client: Client) -> None:
-        film = FilmFactory()
+    def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
+        film = FilmFactory(owner=reviewer_user)
         url = self.get_url(film.id)
         new_title = "This is a new title"
         data = {
             "title": new_title,
         }
-        res = admin_client.post(url, data)
+        client.force_login(reviewer_user)
+        res = client.post(url, data)
         assert res.status_code == 400
-        assert res.json()["errors"]["director"][0] == "This field is required."
+        assert res.json()["fieldErrors"]["director"][0] == "This field is required."
         film.refresh_from_db()
         assert film.title != new_title
 
-    def test_wrong_uuid(self, admin_client: Client) -> None:
+    def test_wrong_uuid(self, client: Client, reviewer_user: User) -> None:
         url = self.get_url(uuid4())
-        res = admin_client.post(url)
+        client.force_login(reviewer_user)
+        res = client.post(url)
         assert res.status_code == 404
 
 

@@ -2,6 +2,7 @@ import uuid
 from typing import Any
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template.loader import render_to_string
@@ -49,6 +50,19 @@ class AbstractMediaType(models.Model):
         from supergood_reads.utils.engine import supergood_reads_engine
 
         return self in supergood_reads_engine.config.demo_media_queryset()
+
+    def can_user_change(self, user: User) -> bool:
+        """
+        A user can only update a MediaType instance only if:
+          - The user owns the Review
+          - The user has global "change_[model]" permission and is_staff
+        """
+        from supergood_reads.auth import BasePermissionMixin
+
+        has_change_perm = BasePermissionMixin().has_perm_dynamic(user, self, "change")
+        return (user.is_authenticated and self.owner == user) or (
+            has_change_perm and user.is_staff
+        )
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()

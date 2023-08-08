@@ -91,21 +91,21 @@
     </td>
   </tr>
   <tr v-show="editMode" class="border-none">
-    <p v-if="errorMessage" role="alert" class="mb-2 text-sm text-red-600">
+    <div v-if="errorMessage" role="alert" class="mb-2 text-sm text-red-600">
       {{ errorMessage }}
-    </p>
+    </div>
     <td class="flex justify-start pb-5 space-x-3">
       <!-- Submit Button -->
       <button
         class="cursor-pointer inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        @click="onSubmit"
+        @click="onUpdateClick"
       >
         Submit
       </button>
       <!-- Delete Button -->
       <button
         class="cursor-pointer inline-flex justify-center rounded-md bg-red-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-        @click="showDeleteModal = true"
+        @click="onDeleteClick"
       >
         Delete
       </button>
@@ -121,12 +121,20 @@
       <slot name="delete-form"></slot>
     </template>
   </DeleteModal>
+  <Teleport to="#messages-vue-app">
+    <SimpleNotification
+      v-if="activateNotification"
+      message="These are just demo objects. If you want to create or update your own, please sign in!"
+      level-tag="Info"
+    />
+  </Teleport>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import DeleteModal from '@/static/js/components/DeleteModal.vue';
+import SimpleNotification from '@/static/js/components/SimpleNotification.vue';
 
 const props = defineProps({
   initialTitle: {
@@ -165,6 +173,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  enabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const title = ref(props.initialTitle);
@@ -178,6 +190,8 @@ const showDeleteModal = ref(false);
 const titleFieldContainer = ref<HTMLElement | null>(null);
 const errorMessage = ref('');
 const fieldErrors = ref<Partial<{ String: string[] }>>({});
+const notificationFired = ref(false);
+const activateNotification = ref(false);
 
 const onTitleChanged = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -192,9 +206,33 @@ const onYearChanged = (event: Event) => {
   editedYear.value = Number(target.value);
 };
 
+const sendDemoNotification = () => {
+  if (!notificationFired.value) {
+    activateNotification.value = true;
+    notificationFired.value = true;
+  }
+};
+
+const onUpdateClick = () => {
+  if (props.enabled) {
+    return onSubmit();
+  } else {
+    sendDemoNotification();
+  }
+};
+
+const onDeleteClick = () => {
+  if (props.enabled) {
+    showDeleteModal.value = true;
+  } else {
+    sendDemoNotification();
+  }
+};
+
 const onSubmit = () => {
   errorMessage.value = '';
   fieldErrors.value = {};
+
   return axios({
     method: 'post',
     url: props.updateUrl,
@@ -217,8 +255,8 @@ const onSubmit = () => {
       editMode.value = false;
     })
     .catch((error) => {
-      errorMessage.value = error.message;
-      fieldErrors.value = error.response?.data?.errors;
+      errorMessage.value = error.response?.data || error.message;
+      fieldErrors.value = error.response?.data?.fieldErrors || {};
     });
 };
 

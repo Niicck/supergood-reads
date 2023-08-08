@@ -149,7 +149,7 @@ def vue_json_script(value, element_id=None, encoder=None) -> SafeText:
     return format_html(template, *args)
 
 
-@register.filter(is_safe=True)
+@register.filter()
 def get_media_type_form_ref(media_type_id: int) -> str:
     """Generate ref= attribute for media_type_form with specific media_type_id.
 
@@ -159,7 +159,7 @@ def get_media_type_form_ref(media_type_id: int) -> str:
     return f"media_type_form_{media_type_id}"
 
 
-@register.filter(is_safe=True)
+@register.filter()
 def get_strategy_form_ref(strategy_id: int) -> str:
     """Generate ref= attribute for strategy_form with specific media_type_id.
 
@@ -174,19 +174,27 @@ def get_initial_field_value(form: Form, field_name: str) -> Any:
     return form_utils.get_initial_field_value(form, field_name)
 
 
-@register.filter(is_safe=True)
+@register.filter()
 def is_book(item: AbstractMediaType) -> bool:
     return isinstance(item, Book)
 
 
-@register.filter(is_safe=True)
+@register.filter()
 def is_film(item: AbstractMediaType) -> bool:
     return isinstance(item, Film)
 
 
-@register.filter(is_safe=True)
+@register.filter()
 def int_to_str(value: int | None) -> str | None:
     if value is None:
         return None
     else:
         return str(value)
+
+
+@register.filter()
+def to_js_bool(value: bool) -> bool:
+    if value is True:
+        return "true"
+    else:
+        return "false"

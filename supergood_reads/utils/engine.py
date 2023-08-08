@@ -39,20 +39,13 @@ class SupergoodReadsConfig:
     Strategies that are eligible to be selected when creating a new Review.
     Users can override this variable in a subclass to return their own strategies.
     """
-    strategy_form_classes: list[Type[ModelForm[Any]]] = [
-        EbertStrategyForm,
-        GoodreadsStrategyForm,
-        MaximusStrategyForm,
-    ]
+    strategy_form_classes: list[Type[ModelForm[Any]]] = []
 
     """
     MediaTypes are eligible to be selected when creating a new Review.
     Users can override this variable in a subclass to return their own media_types.
     """
-    media_type_form_classes: list[Type[ModelForm[Any]]] = [
-        BookAutocompleteForm,
-        FilmAutocompleteForm,
-    ]
+    media_type_form_classes: list[Type[ModelForm[Any]]] = []
 
     def __init__(self) -> None:
         self._validate_strategy_form_classes()
@@ -132,7 +125,15 @@ class SupergoodReadsConfig:
 
 
 class DefaultSupergoodReadsConfig(SupergoodReadsConfig):
-    pass
+    strategy_form_classes = [
+        EbertStrategyForm,
+        GoodreadsStrategyForm,
+        MaximusStrategyForm,
+    ]
+    media_type_form_classes = [
+        BookAutocompleteForm,
+        FilmAutocompleteForm,
+    ]
 
 
 class SupergoodReadsEngine:
