@@ -28,7 +28,7 @@ class Review(models.Model):
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
+    owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
     )
     created_at = models.DateTimeField(null=False)
@@ -114,6 +114,12 @@ class Review(models.Model):
             return self.strategy.rating_html
         else:
             return ""
+
+    def is_demo(self) -> bool:
+        """Check if MediaType is a demo instance."""
+        from supergood_reads.utils.engine import supergood_reads_engine
+
+        return self in supergood_reads_engine.config.demo_review_queryset()
 
     def validate_completed_at(self) -> None:
         """

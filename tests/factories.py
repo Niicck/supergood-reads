@@ -36,12 +36,14 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 class BookFactory(factory.django.DjangoModelFactory):
     id = factory.LazyFunction(uuid.uuid4)
+    owner = factory.SubFactory(UserFactory)
     title = factory.LazyFunction(fake.unique.sentence)
     author = factory.LazyFunction(fake.name)
     publication_year = factory.LazyFunction(lambda: int(fake.year()))
 
     class Meta:
         model = models.Book
+        skip_postgeneration_save = True
 
     @factory.post_generation
     def genres(self, create, extracted):
@@ -62,12 +64,14 @@ class BookFactory(factory.django.DjangoModelFactory):
 
 class FilmFactory(factory.django.DjangoModelFactory):
     id = factory.LazyFunction(uuid.uuid4)
+    owner = factory.SubFactory(UserFactory)
     title = factory.LazyFunction(fake.unique.sentence)
     director = factory.LazyFunction(fake.name)
     release_year = factory.LazyFunction(lambda: int(fake.year()))
 
     class Meta:
         model = models.Film
+        skip_postgeneration_save = True
 
     @factory.post_generation
     def genres(self, create, extracted):
@@ -170,7 +174,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
         r = ReviewFactory()
     """
 
-    user = factory.SubFactory(UserFactory)
+    owner = factory.SubFactory(UserFactory)
     created_at = factory.LazyFunction(datetime.now)
     updated_at = factory.LazyFunction(datetime.now)
     text = factory.LazyFunction(fake.unique.sentence)

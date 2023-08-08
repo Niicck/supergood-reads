@@ -1,5 +1,6 @@
 import logging
-from typing import Any, Dict, Optional, Protocol, cast
+from functools import wraps
+from typing import Any, Callable, Dict, Protocol, TypeVar
 
 from django.conf import settings
 from django.contrib import messages
@@ -22,6 +23,10 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
+from supergood_reads.auth import (
+    CreateReviewPermissionMixin,
+    UpdateReviewPermissionMixin,
+)
 from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
 from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 from supergood_reads.reviews.forms import ReviewFormGroup
@@ -31,9 +36,25 @@ from supergood_reads.utils.uuid import is_uuid
 
 logger = logging.getLogger(__name__)
 
+ViewType = TypeVar("ViewType", bound="View")
 
-class CreateReviewView(TemplateView):
-    template_name = "supergood_reads/create_review.html"
+
+def log_post_request_data(
+    view_func: Callable[[ViewType, HttpRequest, Any, Any], Any]
+) -> Callable[[ViewType, HttpRequest, Any, Any], Any]:
+    @wraps(view_func)
+    def _wrapped_view_method(
+        self: ViewType, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Any:
+        if settings.DEBUG:
+            request_data = dict(request.POST.items())
+            logger.info(request_data)
+        return view_func(self, request, *args, **kwargs)
+
+    return _wrapped_view_method
+
+
+class ReviewFormView(TemplateView):
     object: Review | None = None
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -49,13 +70,9 @@ class CreateReviewView(TemplateView):
 
         return context
 
+    @log_post_request_data
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        if settings.DEBUG:
-            request_data = dict(request.POST.items())
-            logger.info(request_data)
-
         review_form_group = ReviewFormGroup(data=request.POST, instance=self.object)
-
         if not review_form_group.is_valid():
             messages.error(request, "Please fix the errors below.")
             return self.on_form_error(request, review_form_group, status_code=400)
@@ -95,22 +112,23 @@ class CreateReviewView(TemplateView):
         return redirect("reviews")
 
 
-class UpdateReviewView(CreateReviewView, SingleObjectMixin[Review]):
+class CreateReviewView(CreateReviewPermissionMixin, ReviewFormView):
+    template_name = "supergood_reads/create_review.html"
+
+
+class UpdateReviewView(
+    UpdateReviewPermissionMixin, ReviewFormView, SingleObjectMixin[Review]
+):
     template_name = "supergood_reads/update_review.html"
     model = Review
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         try:
             self.object = self.get_object()
         except Http404:
             messages.error(self.request, "Invalid Request.")
             return self.redirect_to_reviews()
-        return cast(HttpResponse, super().dispatch(request, *args, **kwargs))
-
-    def get_object(self, queryset: Optional[QuerySet[Review]] = None) -> Review:
-        obj = super().get_object(queryset=queryset)
-        # TODO: check for editing permissions
-        return obj
+        return super().dispatch(request, *args, **kwargs)
 
 
 class FilmAutocompleteView(View):

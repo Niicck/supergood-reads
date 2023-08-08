@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template.loader import render_to_string
@@ -13,6 +14,9 @@ class AbstractMediaType(models.Model):
     """Abstract class common to all MediaTypes."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+    )
     title = models.CharField(default="", max_length=256)
     created_at = models.DateTimeField(null=False)
     updated_at = models.DateTimeField(default=timezone.now, null=False)
@@ -39,6 +43,12 @@ class AbstractMediaType(models.Model):
     @classmethod
     def icon(cls) -> SafeText:
         raise NotImplementedError
+
+    def is_demo(self) -> bool:
+        """Check if MediaType is a demo instance."""
+        from supergood_reads.utils.engine import supergood_reads_engine
+
+        return self in supergood_reads_engine.config.demo_media_queryset()
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()

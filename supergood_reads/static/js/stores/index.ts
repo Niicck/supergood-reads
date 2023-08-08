@@ -74,7 +74,6 @@ const useCreateReviewStore = defineStore('createReview', (): State => {
     ) as CreateNewMediaOption;
   });
 
-  console.log(`##### bottom of store::: ${showDeleteReviewModal.value}`);
   return {
     selectedStrategyId,
     selectedMediaTypeContentType,

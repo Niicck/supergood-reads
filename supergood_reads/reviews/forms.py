@@ -377,13 +377,37 @@ class ReviewFormGroup:
             selected_media_type_form = self.media_type_forms.selected_form
             if not selected_media_type_form or not selected_media_type_form.is_valid():
                 self.valid = False
-        elif not self.review_form.cleaned_data.get("media_type_object_id"):
-            # If we aren't creating a new media_type object, then an existing
-            # media_type object_id must be selected.
-            self.review_form.add_error(
-                "media_type_object_id", "This field is required."
+        else:
+            media_type_object_id = self.review_form.cleaned_data.get(
+                "media_type_object_id"
             )
-            self.valid = False
+            if not media_type_object_id:
+                # If we aren't creating a new media_type object, then an existing
+                # media_type object_id must be selected.
+                self.review_form.add_error(
+                    "media_type_object_id", "This field is required."
+                )
+                self.valid = False
+            else:
+                media_type_content_type = self.review_form.cleaned_data.get(
+                    "media_type_content_type"
+                )
+                # Validate GenericForeignKey
+                try:
+                    media_type_content_type.get_object_for_this_type(
+                        id=media_type_object_id
+                    )
+                except ContentType.DoesNotExist:
+                    self.review_form.add_error(
+                        "media_type_content_type",
+                        "The selected content type does not exist.",
+                    )
+                    self.valid = False
+                except media_type_content_type.model_class().DoesNotExist:
+                    self.review_form.add_error(
+                        "media_type_object_id", "The selected object does not exist."
+                    )
+                    self.valid = False
 
         selected_strategy_form = self.strategy_forms.selected_form
         if not selected_strategy_form or not selected_strategy_form.is_valid():

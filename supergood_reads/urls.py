@@ -8,9 +8,14 @@ urlpatterns = [
         "", TemplateView.as_view(template_name="supergood_reads/home.html"), name="home"
     ),
     path(
-        "cta/",
-        TemplateView.as_view(template_name="supergood_reads/cta.html"),
-        name="cta",
+        "login/",
+        TemplateView.as_view(template_name="supergood_reads/login.html"),
+        name="login",
+    ),
+    path(
+        "403/",
+        TemplateView.as_view(template_name="supergood_reads/403.html"),
+        name="403",
     ),
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path(
@@ -64,3 +69,8 @@ urlpatterns = [
         name="delete_review",
     ),
 ]
+
+handler401 = TemplateView.as_view(
+    template_name="403.html"
+)  # TemplateView.as_view(template_name="supergood_reads/login.html")
+handler403 = TemplateView.as_view(template_name="403.html")
