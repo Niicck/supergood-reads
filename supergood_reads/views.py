@@ -25,6 +25,8 @@ from queryset_sequence import QuerySetSequence
 
 from supergood_reads.auth import (
     CreateReviewPermissionMixin,
+    DeleteMediaPermissionMixin,
+    DeleteReviewPermissionMixin,
     UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
@@ -132,6 +134,48 @@ class UpdateReviewView(
         return super().dispatch(request, *args, **kwargs)
 
 
+class FormViewMixinProtocol(Protocol):
+    @property
+    def object(self) -> Any:
+        ...
+
+    @property
+    def request(self) -> Any:
+        ...
+
+    def form_invalid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
+        ...
+
+    def form_valid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
+        ...
+
+
+class DeleteReview(DeleteReviewPermissionMixin, DeleteView[Review, ModelForm[Review]]):
+    """Delete Film, add message, refresh Reviews page."""
+
+    object: Review
+    model = Review
+
+    def get_success_url(self: FormViewMixinProtocol) -> str:
+        return reverse("reviews")
+
+    def form_invalid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        messages.error(self.request, "Please fix the errors below.")
+        return super().form_invalid(form)  # type: ignore[safe-super]
+
+    def form_valid(
+        self: FormViewMixinProtocol, form: ModelForm[Any]
+    ) -> HttpResponseRedirect:
+        if self.object.media_type:
+            title = self.object.media_type.title
+        else:
+            title = "untitled"
+        messages.success(self.request, f"Succesfully deleted review of '{title}'.")
+        return super().form_valid(form)  # type: ignore[safe-super]
+
+
 class FilmAutocompleteView(View):
     limit = 20
 
@@ -227,22 +271,6 @@ class MyReviewsView(ListView[Review]):
         return review_qs
 
 
-class FormViewMixinProtocol(Protocol):
-    @property
-    def object(self) -> Any:
-        ...
-
-    @property
-    def request(self) -> Any:
-        ...
-
-    def form_invalid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
-        ...
-
-    def form_valid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
-        ...
-
-
 class JsonableResponseMixin:
     """
     Mixin to add JSON response support to a form.
@@ -299,44 +327,22 @@ class UpdateMyMediaFilmView(
     form_class = MyMediaFilmForm
 
 
-class DeleteMyMediaBookView(DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]):
+class DeleteMyMediaBookView(
+    DeleteMediaPermissionMixin, DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]
+):
     """Delete Book, add message, refresh MyMedia page."""
 
     object: Book
     model = Book
 
 
-class DeleteMyMediaFilmView(DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]):
+class DeleteMyMediaFilmView(
+    DeleteMediaPermissionMixin, DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]
+):
     """Delete Film, add message, refresh MyMedia page."""
 
     object: Film
     model = Film
-
-
-class DeleteReview(DeleteView[Review, ModelForm[Review]]):
-    """Delete Film, add message, refresh Reviews page."""
-
-    object: Review
-    model = Review
-
-    def get_success_url(self: FormViewMixinProtocol) -> str:
-        return reverse("reviews")
-
-    def form_invalid(
-        self: FormViewMixinProtocol, form: ModelForm[Any]
-    ) -> HttpResponseRedirect:
-        messages.error(self.request, "Please fix the errors below.")
-        return super().form_invalid(form)  # type: ignore[safe-super]
-
-    def form_valid(
-        self: FormViewMixinProtocol, form: ModelForm[Any]
-    ) -> HttpResponseRedirect:
-        if self.object.media_type:
-            title = self.object.media_type.title
-        else:
-            title = "untitled"
-        messages.success(self.request, f"Succesfully deleted review of '{title}'.")
-        return super().form_valid(form)  # type: ignore[safe-super]
 
 
 class StatusTemplateView(TemplateView):

@@ -427,7 +427,7 @@ class TestUpdateMyMediaBookView:
             "publication_year": book.publication_year,
         }
         res = client.post(url, data)
-        assert res.status_code == 401
+        assert res.status_code == 403
         client.force_login(reviewer_user)
         res = client.post(url, data)
         book.owner = reviewer_user
@@ -478,7 +478,7 @@ class TestUpdateMyMediaFilmView:
             "release_year": film.release_year,
         }
         res = client.post(url, data)
-        assert res.status_code == 401
+        assert res.status_code == 403
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 403
@@ -519,17 +519,25 @@ class TestDeleteMyMediaBookView:
     def get_url(self, book_id: UUID) -> str:
         return reverse("delete_book", args=[book_id])
 
-    def test_delete(self, admin_client: Client) -> None:
+    def test_delete(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory()
         url = self.get_url(book.id)
-        res = admin_client.post(url)
-        assert res.status_code == 302
+        res = client.post(url)
+        assert res.status_code == 403
+        client.force_login(reviewer_user)
+        res = client.post(url)
+        assert res.status_code == 403
+        book.owner = reviewer_user
+        book.save()
+        res = client.post(url, follow=True)
+        assert res.status_code == 200
         with pytest.raises(Book.DoesNotExist):
             book.refresh_from_db()
 
-    def test_wrong_uuid(self, admin_client: Client) -> None:
+    def test_wrong_uuid(self, client: Client, reviewer_user: User) -> None:
         url = self.get_url(uuid4())
-        res = admin_client.post(url)
+        client.force_login(reviewer_user)
+        res = client.post(url)
         assert res.status_code == 404
 
 
@@ -538,17 +546,25 @@ class TestDeleteMyMediaFilmView:
     def get_url(self, film_id: UUID) -> str:
         return reverse("delete_film", args=[film_id])
 
-    def test_delete(self, admin_client: Client) -> None:
+    def test_delete(self, client: Client, reviewer_user: User) -> None:
         film = FilmFactory()
         url = self.get_url(film.id)
-        res = admin_client.post(url)
-        assert res.status_code == 302
+        res = client.post(url)
+        assert res.status_code == 403
+        client.force_login(reviewer_user)
+        res = client.post(url)
+        assert res.status_code == 403
+        film.owner = reviewer_user
+        film.save()
+        res = client.post(url, follow=True)
+        assert res.status_code == 200
         with pytest.raises(Film.DoesNotExist):
             film.refresh_from_db()
 
-    def test_wrong_uuid(self, admin_client: Client) -> None:
+    def test_wrong_uuid(self, client: Client, reviewer_user: User) -> None:
         url = self.get_url(uuid4())
-        res = admin_client.post(url)
+        client.force_login(reviewer_user)
+        res = client.post(url)
         assert res.status_code == 404
 
 

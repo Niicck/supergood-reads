@@ -57,12 +57,10 @@ class AbstractMediaType(models.Model):
           - The user owns the Review
           - The user has global "change_[model]" permission and is_staff
         """
-        from supergood_reads.auth import BasePermissionMixin
+        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
 
-        has_change_perm = BasePermissionMixin().has_perm_dynamic(user, self, "change")
-        return (user.is_authenticated and self.owner == user) or (
-            has_change_perm and user.is_staff
-        )
+        has_change_perm = has_perm_dynamic(user, self, "change")
+        return has_owner_permission(user, self) or (has_change_perm and user.is_staff)
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()

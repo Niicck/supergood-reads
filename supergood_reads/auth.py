@@ -15,33 +15,34 @@ class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
 
+def has_perm_dynamic(
+    user: User, obj: Model, perm: Literal["view", "add", "change", "delete"]
+) -> bool:
+    """
+    Test user permissions for any object and any base permission.
+
+    Example:
+        has_perm_dynamic(user, book, "view")
+        Returns:
+        user.has_perm("supergood_reads.view_book", book)
+    """
+    perm_string = f"{obj._meta.app_label}.{perm}_{obj._meta.model_name}"
+    return user.has_perm(perm_string, obj)
+
+
+def has_owner_permission(
+    user: Union[AbstractBaseUser, AnonymousUser],
+    obj: AbstractMediaType | Review,
+) -> bool:
+    return user.is_authenticated and obj.owner == user
+
+
 class BasePermissionMixin:
     def login_redirect(self) -> HttpResponse:
         return redirect("401")
 
     def forbidden_redirect(self) -> HttpResponse:
         return redirect("403")
-
-    def has_perm_dynamic(
-        self, user: User, obj: Model, perm: Literal["view", "add", "change", "delete"]
-    ) -> bool:
-        """
-        Test user permissions for any object and any base permission.
-
-        Example:
-          has_perm_dynamic(user, book, "view")
-          Returns:
-            user.has_perm("supergood_reads.view_book", book)
-        """
-        perm_string = f"{obj._meta.app_label}.{perm}_{obj._meta.model_name}"
-        return user.has_perm(perm_string, obj)
-
-    def has_owner_permission(
-        self,
-        user: Union[AbstractBaseUser, AnonymousUser],
-        obj: AbstractMediaType | Review,
-    ) -> bool:
-        return user.is_authenticated and obj.owner == user
 
 
 class CreateReviewPermissionMixin(BasePermissionMixin):
@@ -58,7 +59,7 @@ class CreateReviewPermissionMixin(BasePermissionMixin):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         """Only allow authenticated users to create new Reviews."""
         user = request.user
-        if not user.is_authenticated or not user.has_perm("supergood_reads.add_review"):
+        if not user.has_perm("supergood_reads.add_review"):
             if not user.is_authenticated:
                 return self.login_redirect()
             else:
@@ -80,7 +81,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         if not (
             obj.is_demo()
             or (user.has_perm("supergood_reads.view_review") and user.is_staff)
-            or self.has_owner_permission(user, obj)
+            or has_owner_permission(user, obj)
         ):
             if not user.is_authenticated:
                 return self.login_redirect()
@@ -106,12 +107,25 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         obj = self.get_object()  # type: ignore
         if not (
             (user.has_perm("supergood_reads.change_review") and user.is_staff)
-            or self.has_owner_permission(user, obj)
+            or has_owner_permission(user, obj)
         ):
             if not user.is_authenticated:
                 return self.login_redirect()
             else:
                 return self.forbidden_redirect()
+        return super().post(request, *args, **kwargs)  # type: ignore
+
+
+class DeleteReviewPermissionMixin(BasePermissionMixin):
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        """Check if user is allowed to change MediaType instance."""
+        user = request.user
+        obj = self.get_object()  # type: ignore
+        if not (
+            (user.has_perm("supergood_reads.delete_review") and user.is_staff)
+            or has_owner_permission(user, obj)
+        ):
+            return self.forbidden_redirect()
         return super().post(request, *args, **kwargs)  # type: ignore
 
 
@@ -121,13 +135,18 @@ class UpdateMediaPermissionMixin(BasePermissionMixin):
         user = request.user
         obj = self.get_object()  # type: ignore
         if not obj.can_user_change(user):
-            if not user.is_authenticated:
-                message = (
-                    f"This is just a demo {obj._meta.verbose_name}. If you'd "
-                    f"like to create and edit your own {obj._meta.verbose_name_plural},"
-                    f" you can login."
-                )
-                return HttpResponse(message, status=401)
-            else:
-                return HttpResponseForbidden()
+            return HttpResponseForbidden()
+        return super().post(request, *args, **kwargs)  # type: ignore
+
+
+class DeleteMediaPermissionMixin(BasePermissionMixin):
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        """Check if user is allowed to change MediaType instance."""
+        user = request.user
+        obj = self.get_object()  # type: ignore
+        if not (
+            (has_perm_dynamic(user, obj, "delete") and user.is_staff)
+            or has_owner_permission(user, obj)
+        ):
+            return HttpResponseForbidden()
         return super().post(request, *args, **kwargs)  # type: ignore
