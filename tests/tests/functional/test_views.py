@@ -5,8 +5,10 @@ from uuid import UUID, uuid4
 import django
 import pytest
 from bs4 import BeautifulSoup, Tag
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management import call_command
+from django.http import HttpResponse
 from django.test import Client
 from django.urls import reverse
 
@@ -77,7 +79,7 @@ def book_data() -> FixtureData:
     ]
 
 
-def cmp(actual: Any, expected: FixtureData) -> bool:
+def cmp_fixture_data(actual: Any, expected: FixtureData) -> bool:
     """Compare just the "id" and "title" fields between two dictionaries."""
 
     def filter(d: Union[Any, FixtureDataItem]) -> dict[str, Any]:
@@ -97,6 +99,11 @@ def reviewer_user(django_user_model: User) -> User:
     return user
 
 
+def is_redirected_to_login(res: HttpResponse) -> bool:
+    """Check if response will redirect to login page."""
+    return res.status_code == 302 and res.url.split("?")[0] == settings.LOGIN_URL
+
+
 @pytest.mark.django_db
 class TestFilmAutocompleteView:
     def test_without_q(self, admin_client: Client, film_data: FixtureData) -> None:
@@ -110,7 +117,7 @@ class TestFilmAutocompleteView:
         url = reverse("film_autocomplete")
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert cmp(json.loads(response.content)["results"], film_data)
+        assert cmp_fixture_data(json.loads(response.content)["results"], film_data)
 
     def test_with_q(self, admin_client: Client, film_data: FixtureData) -> None:
         """Should only return queried film."""
@@ -123,7 +130,7 @@ class TestFilmAutocompleteView:
         url = reverse("film_autocomplete")
         response = admin_client.get(url, {"q": "Charade"})
         assert response.status_code == 200
-        assert cmp(json.loads(response.content)["results"], [film_data[2]])
+        assert cmp_fixture_data(json.loads(response.content)["results"], [film_data[2]])
 
 
 @pytest.mark.django_db
@@ -139,7 +146,7 @@ class TestBookAutocompleteView:
         url = reverse("book_autocomplete")
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert cmp(json.loads(response.content)["results"], book_data)
+        assert cmp_fixture_data(json.loads(response.content)["results"], book_data)
 
     def test_with_q(self, admin_client: Client, book_data: FixtureData) -> None:
         """Should only return queried film."""
@@ -152,7 +159,7 @@ class TestBookAutocompleteView:
         url = reverse("book_autocomplete")
         response = admin_client.get(url, {"q": "Anna"})
         assert response.status_code == 200
-        assert cmp(json.loads(response.content)["results"], [book_data[2]])
+        assert cmp_fixture_data(json.loads(response.content)["results"], [book_data[2]])
 
 
 @pytest.mark.django_db
@@ -182,8 +189,8 @@ class TestCreateReviewView:
         response = client.get(self.url)
         assert response.status_code == 200
         # Disallow Posts
-        response = client.post(self.url, data, follow=True)
-        assert response.status_code == 401
+        response = client.post(self.url, data)
+        assert is_redirected_to_login(response)
         user = django_user_model.objects.create_user(  # noqa: S106
             username="valid_user", password="test"
         )
@@ -208,8 +215,8 @@ class TestCreateReviewView:
         ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.book_content_type
         create_review_data["review-media_type_object_id"] = book.id
-        response = client.post(self.url, create_review_data, follow=True)
-        assert response.status_code == 401
+        response = client.post(self.url, create_review_data)
+        assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 200
@@ -229,8 +236,8 @@ class TestCreateReviewView:
         ] = CreateNewMediaOption.SELECT_EXISTING.value
         create_review_data["review-media_type_content_type"] = self.film_content_type
         create_review_data["review-media_type_object_id"] = film.id
-        response = client.post(self.url, create_review_data, follow=True)
-        assert response.status_code == 401
+        response = client.post(self.url, create_review_data)
+        assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 200
@@ -270,8 +277,8 @@ class TestCreateReviewView:
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
         create_review_data["book-publication_year"] = book.publication_year
-        response = client.post(self.url, create_review_data, follow=True)
-        assert response.status_code == 401
+        response = client.post(self.url, create_review_data)
+        assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 200
@@ -291,8 +298,8 @@ class TestCreateReviewView:
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
         create_review_data["film-release_year"] = film.release_year
-        response = client.post(self.url, create_review_data, follow=True)
-        assert response.status_code == 401
+        response = client.post(self.url, create_review_data)
+        assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data, follow=True)
         assert response.status_code == 200
@@ -319,7 +326,7 @@ class TestCreateReviewView:
                 "autocomplete", attrs={"url": "/app/book-autocomplete/"}
             )
         )
-        assert (parent_tag := autocomplete_tag.parent)
+        assert (parent_tag := autocomplete_tag.parent.parent)
         assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
         assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
         assert error_list_item_tag.text == "This field is required."
@@ -342,7 +349,7 @@ class TestCreateReviewView:
                 "autocomplete", attrs={"url": "/app/film-autocomplete/"}
             )
         )
-        assert (parent_tag := autocomplete_tag.parent)
+        assert (parent_tag := autocomplete_tag.parent.parent)
         assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
         assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
         assert error_list_item_tag.text == "This field is required."
@@ -427,7 +434,7 @@ class TestUpdateMyMediaBookView:
             "publication_year": book.publication_year,
         }
         res = client.post(url, data)
-        assert res.status_code == 403
+        assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url, data)
         book.owner = reviewer_user
@@ -478,7 +485,7 @@ class TestUpdateMyMediaFilmView:
             "release_year": film.release_year,
         }
         res = client.post(url, data)
-        assert res.status_code == 403
+        assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 403
@@ -523,7 +530,7 @@ class TestDeleteMyMediaBookView:
         book = BookFactory()
         url = self.get_url(book.id)
         res = client.post(url)
-        assert res.status_code == 403
+        assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url)
         assert res.status_code == 403
@@ -550,7 +557,7 @@ class TestDeleteMyMediaFilmView:
         film = FilmFactory()
         url = self.get_url(film.id)
         res = client.post(url)
-        assert res.status_code == 403
+        assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url)
         assert res.status_code == 403
@@ -597,8 +604,8 @@ class TestUpdateReviewView:
         data = ReviewFormDataFactory(instance=review).data
         data["review-text"] = "It was good."
         url = self.get_url(review.id)
-        res = client.post(url, data, follow=True)
-        assert res.status_code == 401
+        res = client.post(url, data)
+        assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url, data, follow=True)
         assert res.status_code == 200
@@ -670,8 +677,8 @@ class TestUpdateReviewView:
     def test_view_demo(self, client: Client, monkeypatch: pytest.MonkeyPatch) -> None:
         review = ReviewFactory()
         url = self.get_url(review.id)
-        res = client.get(url, follow=True)
-        assert res.status_code == 401
+        res = client.get(url)
+        assert is_redirected_to_login(res)
         monkeypatch.setattr(
             "supergood_reads.utils.engine.supergood_reads_engine.config.demo_review_queryset",
             lambda: Review.objects.filter(id=review.id),
@@ -683,8 +690,8 @@ class TestUpdateReviewView:
         # Unauthorized user can't see review
         review = ReviewFactory()
         url = self.get_url(review.id)
-        res = client.get(url, follow=True)
-        assert res.status_code == 401
+        res = client.get(url)
+        assert is_redirected_to_login(res)
 
         # Authorized user with permission, but non-staff, can't see review
         user: User = django_user_model.objects.create_user(  # noqa: S106

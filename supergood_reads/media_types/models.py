@@ -59,8 +59,19 @@ class AbstractMediaType(models.Model):
         """
         from supergood_reads.auth import has_owner_permission, has_perm_dynamic
 
-        has_change_perm = has_perm_dynamic(user, self, "change")
-        return has_owner_permission(user, self) or (has_change_perm and user.is_staff)
+        has_change_perm = has_perm_dynamic(user, self, "change") and user.is_staff
+        return has_owner_permission(user, self) or has_change_perm
+
+    def can_user_delete(self, user: User) -> bool:
+        """
+        A user can only update a MediaType instance only if:
+          - The user owns the Review
+          - The user has global "change_[model]" permission and is_staff
+        """
+        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
+
+        has_delete_perm = has_perm_dynamic(user, self, "delete") and user.is_staff
+        return has_owner_permission(user, self) or has_delete_perm
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()

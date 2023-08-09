@@ -345,6 +345,10 @@ class DeleteMyMediaFilmView(
     model = Film
 
 
+class LoginView(TemplateView):
+    template_name = "supergood_reads/login.html"
+
+
 class StatusTemplateView(TemplateView):
     status = 200
 
@@ -353,15 +357,9 @@ class StatusTemplateView(TemplateView):
         return self.render_to_response(context, status=self.status)
 
 
-class LoginView(StatusTemplateView):
-    template_name = "supergood_reads/login.html"
-    status = 200
-
-
-class Handle401View(LoginView):
-    status = 401
-
-
 class Handle403View(StatusTemplateView):
     template_name = "supergood_reads/403.html"
     status = 403
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        return self.get(request, *args, **kwargs)

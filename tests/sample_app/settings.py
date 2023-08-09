@@ -52,6 +52,7 @@ TEMPLATES = [
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
+LOGIN_URL = "/app/login/"
 
 LANGUAGE_CODE = "en-us"
 

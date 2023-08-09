@@ -24,6 +24,6 @@ class PytestSupergoodReadsConfig(SupergoodReadsConfig):
 
 
 @pytest.fixture(autouse=True)
-def use_pytest_supergood_reads_engine(settings: Any) -> None:
-    """Only use a subset of strategies and media_types while testing."""
+def use_pytest_settings(settings: Any) -> None:
+    # Only use a subset of strategies and media_types while testing.
     settings.SUPERGOOD_READS_CONFIG = "tests.tests.conftest.PytestSupergoodReadsConfig"
