@@ -52,7 +52,7 @@ TEMPLATES = [
 
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
-LOGIN_URL = "/app/login/"
+LOGIN_URL = "/reads-app/auth/login/"
 
 LANGUAGE_CODE = "en-us"
 

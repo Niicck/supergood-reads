@@ -193,7 +193,7 @@ def int_to_str(value: int | None) -> str | None:
 
 
 @register.filter()
-def to_js_bool(value: bool) -> bool:
+def to_js_bool(value: bool) -> str:
     if value is True:
         return "true"
     else:

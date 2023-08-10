@@ -1,5 +1,5 @@
 import json
-from typing import Any, TypeAlias, TypedDict, Union
+from typing import Any, TypeAlias, TypedDict, Union, cast
 from uuid import UUID, uuid4
 
 import django
@@ -8,12 +8,11 @@ from bs4 import BeautifulSoup, Tag
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management import call_command
-from django.http import HttpResponse
 from django.test import Client
 from django.urls import reverse
 
 from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
-from supergood_reads.reviews.forms import CreateNewMediaOption
+from supergood_reads.reviews.forms import CreateNewMediaOption, ReviewForm
 from supergood_reads.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
@@ -99,9 +98,10 @@ def reviewer_user(django_user_model: User) -> User:
     return user
 
 
-def is_redirected_to_login(res: HttpResponse) -> bool:
+def is_redirected_to_login(res: Any) -> bool:
     """Check if response will redirect to login page."""
-    return res.status_code == 302 and res.url.split("?")[0] == settings.LOGIN_URL
+    res_url_root: str = res.url.split("?")[0]
+    return res.status_code == 302 and res_url_root == settings.LOGIN_URL
 
 
 @pytest.mark.django_db
@@ -257,8 +257,9 @@ class TestCreateReviewView:
         # Should return error if media_type_object_id doesn't exist
         response = client.post(self.url, data, follow=True)
         assert response.status_code == 400
+        res_form = cast(ReviewForm, response.context.get("review_form"))
         assert (
-            response.context.get("review_form").errors["media_type_object_id"][0]
+            res_form.errors["media_type_object_id"][0]
             == "The selected object does not exist."
         )
         # Should succeed once media_type is saved in db
@@ -323,11 +324,14 @@ class TestCreateReviewView:
         soup = BeautifulSoup(response.content, "html.parser")
         assert (
             autocomplete_tag := soup.find(
-                "autocomplete", attrs={"url": "/app/book-autocomplete/"}
+                "autocomplete", attrs={"url": "/reads-app/book-autocomplete/"}
             )
         )
-        assert (parent_tag := autocomplete_tag.parent.parent)
-        assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
+        assert (parent_tag := autocomplete_tag.parent)
+        assert (grandparent_tag := parent_tag.parent)
+        assert (
+            error_list_tag := grandparent_tag.find("ul", attrs={"class": "errorlist"})
+        )
         assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
         assert error_list_item_tag.text == "This field is required."
 
@@ -346,11 +350,14 @@ class TestCreateReviewView:
         soup = BeautifulSoup(response.content, "html.parser")
         assert (
             autocomplete_tag := soup.find(
-                "autocomplete", attrs={"url": "/app/film-autocomplete/"}
+                "autocomplete", attrs={"url": "/reads-app/film-autocomplete/"}
             )
         )
-        assert (parent_tag := autocomplete_tag.parent.parent)
-        assert (error_list_tag := parent_tag.find("ul", attrs={"class": "errorlist"}))
+        assert (parent_tag := autocomplete_tag.parent)
+        assert (grandparent_tag := parent_tag.parent)
+        assert (
+            error_list_tag := grandparent_tag.find("ul", attrs={"class": "errorlist"})
+        )
         assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
         assert error_list_item_tag.text == "This field is required."
 

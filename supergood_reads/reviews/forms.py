@@ -36,6 +36,44 @@ class InvalidContentTypeError(Exception):
     pass
 
 
+class InvalidObjectIdError(Exception):
+    pass
+
+
+def validate_generic_foreign_key(
+    form: ModelForm[Any], object_id_field_name: str, content_type_field_name: str
+) -> bool:
+    """
+    Make sure that the form's "content_type" value is a valid ContentType.
+    And make sure that the associated "object_id" is a valid id for the ContentType's Model.
+    """
+    try:
+        object_id = form.cleaned_data.get(object_id_field_name)
+        if not object_id:
+            raise InvalidObjectIdError
+
+        content_type = form.cleaned_data.get(content_type_field_name)
+        if not content_type:
+            raise InvalidContentTypeError
+
+        MediaTypeModelClass = content_type.model_class()  # noqa: N806
+        if not MediaTypeModelClass:
+            raise InvalidContentTypeError
+
+        # Raises MediaTypeModelClass.DoesNotExist if not foud
+        content_type.get_object_for_this_type(id=object_id)
+    except (ContentType.DoesNotExist, InvalidContentTypeError):
+        form.add_error(
+            content_type_field_name,
+            "The selected content type does not exist.",
+        )
+        return False
+    except (MediaTypeModelClass.DoesNotExist, InvalidObjectIdError):
+        form.add_error(object_id_field_name, "The selected object does not exist.")
+        return False
+    return True
+
+
 class ReviewForm(forms.ModelForm[Review]):
     strategy_choices: Optional[List[Type[Model]]]
     media_type_choices: Optional[List[Type[Model]]]
@@ -389,24 +427,10 @@ class ReviewFormGroup:
                 )
                 self.valid = False
             else:
-                media_type_content_type = self.review_form.cleaned_data.get(
-                    "media_type_content_type"
+                media_type_valid = validate_generic_foreign_key(
+                    self.review_form, "media_type_object_id", "media_type_content_type"
                 )
-                # Validate GenericForeignKey
-                try:
-                    media_type_content_type.get_object_for_this_type(
-                        id=media_type_object_id
-                    )
-                except ContentType.DoesNotExist:
-                    self.review_form.add_error(
-                        "media_type_content_type",
-                        "The selected content type does not exist.",
-                    )
-                    self.valid = False
-                except media_type_content_type.model_class().DoesNotExist:
-                    self.review_form.add_error(
-                        "media_type_object_id", "The selected object does not exist."
-                    )
+                if not media_type_valid:
                     self.valid = False
 
         selected_strategy_form = self.strategy_forms.selected_form

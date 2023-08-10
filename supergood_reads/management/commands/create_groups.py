@@ -16,3 +16,4 @@ class Command(BaseCommand):
             codename="add_review", content_type__app_label="supergood_reads"
         )
         group.permissions.add(permission)
+        print("supergood_reads.Review Group created successfully!")

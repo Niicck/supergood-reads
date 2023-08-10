@@ -23,15 +23,15 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
-from supergood_reads.auth import (
+from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.permissions import (
     CreateReviewPermissionMixin,
     DeleteMediaPermissionMixin,
     DeleteReviewPermissionMixin,
     UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
-from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 from supergood_reads.reviews.forms import ReviewFormGroup
 from supergood_reads.reviews.models import Review
 from supergood_reads.utils.json import UUIDEncoder
@@ -343,10 +343,6 @@ class DeleteMyMediaFilmView(
 
     object: Film
     model = Film
-
-
-class LoginView(TemplateView):
-    template_name = "supergood_reads/login.html"
 
 
 class StatusTemplateView(TemplateView):

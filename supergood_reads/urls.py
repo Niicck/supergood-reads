@@ -1,16 +1,11 @@
 from django.urls import path
 from django.views.generic import TemplateView
 
-from . import views
+from supergood_reads.views import views
 
 urlpatterns = [
     path(
         "", TemplateView.as_view(template_name="supergood_reads/home.html"), name="home"
-    ),
-    path(
-        "login/",
-        views.LoginView.as_view(),
-        name="login",
     ),
     path(
         "403/",

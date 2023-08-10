@@ -1,7 +1,7 @@
 from typing import Any, Literal
 
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 from django.db.models import Model
@@ -27,16 +27,18 @@ def has_perm_dynamic(
 
 
 def has_owner_permission(
-    user: User,
+    user: User | AnonymousUser,
     obj: AbstractMediaType | Review,
 ) -> bool:
     return user.is_authenticated and obj.owner == user
 
 
 class BasePermissionMixin:
-    def handle_unauthorized(self, request: HttpRequest) -> HttpResponseRedirect:
-        if not request.user.is_authenticated:
-            return redirect_to_login(request.get_full_path())
+    request: HttpRequest
+
+    def handle_unauthorized(self) -> HttpResponseRedirect:
+        if not self.request.user.is_authenticated:
+            return redirect_to_login(self.request.get_full_path())
         else:
             raise PermissionDenied()
 
@@ -51,6 +53,8 @@ class BasePermissionMixin:
 
 
 class CreateReviewPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
+
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         self.send_demo_notification()
         return super().get(request, *args, **kwargs)  # type: ignore
@@ -59,14 +63,16 @@ class CreateReviewPermissionMixin(BasePermissionMixin):
         """Only allow authenticated users to create new Reviews."""
         user = request.user
         if not user.has_perm("supergood_reads.add_review"):
-            return self.handle_unauthorized(request)
+            return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
 
 class UpdateReviewPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
+
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        if not self.has_get_permission(request):
-            return self.handle_unauthorized(request)
+        if not self.has_get_permission():
+            return self.handle_unauthorized()
 
         obj = self.get_object()  # type: ignore
         if obj.is_demo():
@@ -75,11 +81,11 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         return super().get(request, *args, **kwargs)  # type: ignore
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        if not self.has_post_permission(request):
-            return self.handle_unauthorized(request)
+        if not self.has_post_permission():
+            return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
-    def has_get_permission(self, request: HttpRequest) -> bool:
+    def has_get_permission(self) -> bool:
         """
         A user can only view the update page for a review only if one of these
         conditions is met:
@@ -87,18 +93,18 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
           - The user has a global "view_review" permission and is_staff
           - The user owns the Review
         """
-        user = request.user
+        user = self.request.user
         obj = self.get_object()  # type: ignore
         has_staff_perm = user.has_perm("supergood_reads.view_review") and user.is_staff
         return obj.is_demo() or has_staff_perm or has_owner_permission(user, obj)
 
-    def has_post_permission(self, request: HttpRequest) -> bool:
+    def has_post_permission(self) -> bool:
         """
         A user can only update a review if one of these conditions is met:
           - The user has global "change_review" permission and is_staff
           - The user owns the Review
         """
-        user = request.user
+        user = self.request.user
         obj = self.get_object()  # type: ignore
         has_staff_perm = (
             user.has_perm("supergood_reads.change_review") and user.is_staff
@@ -107,14 +113,16 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
 
 
 class DeleteReviewPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        if not self.has_post_permission(request):
-            return self.handle_unauthorized(request)
+        if not self.has_post_permission():
+            return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
-    def has_post_permission(self, request) -> bool:
+    def has_post_permission(self) -> bool:
         """Check if user is allowed to change MediaType instance."""
-        user = request.user
+        user = self.request.user
         obj = self.get_object()  # type: ignore
         has_staff_perm = (
             user.has_perm("supergood_reads.delete_review") and user.is_staff
@@ -132,7 +140,7 @@ class UpdateMediaPermissionMixin(BaseJsonPermissionMixin):
         user = request.user
         obj = self.get_object()  # type: ignore
         if not obj.can_user_change(user):
-            return self.handle_unauthorized(request)
+            return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
 
@@ -142,5 +150,5 @@ class DeleteMediaPermissionMixin(BaseJsonPermissionMixin):
         user = request.user
         obj = self.get_object()  # type: ignore
         if not obj.can_user_delete(user):
-            return self.handle_unauthorized(request)
+            return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
