@@ -41,6 +41,7 @@ class Review(models.Model):
     )
     completed_at_year = models.IntegerField(blank=True, null=True)
     text = models.TextField(default="", blank=True)
+    demo = models.BooleanField(default=False)
 
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
@@ -53,7 +54,7 @@ class Review(models.Model):
     strategy_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
-    # Allow reviews of any Media type
+    # Allow reviews for any Media type
     media_type_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.PROTECT,
@@ -114,12 +115,6 @@ class Review(models.Model):
             return self.strategy.rating_html
         else:
             return ""
-
-    def is_demo(self) -> bool:
-        """Check if MediaType is a demo instance."""
-        from supergood_reads.utils.engine import supergood_reads_engine
-
-        return self in supergood_reads_engine.config.demo_review_queryset()
 
     def validate_completed_at(self) -> None:
         """

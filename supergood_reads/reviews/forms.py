@@ -362,8 +362,8 @@ class ReviewFormGroup:
             prefix="review",
             data=self.data,
             instance=self.instance,
-            strategy_choices=supergood_reads_engine.config.strategy_model_classes,
-            media_type_choices=supergood_reads_engine.config.media_type_model_classes,
+            strategy_choices=supergood_reads_engine.strategy_model_classes,
+            media_type_choices=supergood_reads_engine.media_type_model_classes,
         )
 
         selected_strategy_id = self._get_content_type_id("strategy_content_type")
@@ -376,14 +376,14 @@ class ReviewFormGroup:
 
         strategy_instance = self.instance and self.instance.strategy
         self.strategy_forms = GenericRelationFormGroup(
-            supergood_reads_engine.config.strategy_form_classes,
+            supergood_reads_engine.strategy_form_classes,
             selected_form_id=selected_strategy_id,
             data=self.data,
             instance=strategy_instance,
         )
 
         self.media_type_forms = GenericRelationFormGroup(
-            supergood_reads_engine.config.media_type_form_classes,
+            supergood_reads_engine.media_type_form_classes,
             selected_form_id=selected_media_type_id,
             data=self.data,
         )

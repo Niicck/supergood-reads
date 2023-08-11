@@ -77,7 +77,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
             return self.handle_unauthorized()
 
         obj = self.get_object()  # type: ignore
-        if obj.is_demo():
+        if obj.demo:
             self.send_demo_notification()
 
         return super().get(request, *args, **kwargs)  # type: ignore
@@ -98,7 +98,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         user = self.request.user
         obj = self.get_object()  # type: ignore
         has_staff_perm = user.has_perm("supergood_reads.view_review") and user.is_staff
-        return obj.is_demo() or has_staff_perm or has_owner_permission(user, obj)
+        return obj.demo or has_staff_perm or has_owner_permission(user, obj)
 
     def has_post_permission(self) -> bool:
         """

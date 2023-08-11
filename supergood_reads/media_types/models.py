@@ -12,15 +12,26 @@ from django.utils.safestring import SafeText
 
 
 class AbstractMediaType(models.Model):
-    """Abstract class common to all MediaTypes."""
+    """
+    Abstract class common to all MediaTypes.
+
+    Subclasses can add any additional fields they'd like.
+    But they must also define:
+    - "creator" property
+    - "icon" property
+    """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
     )
     title = models.CharField(default="", max_length=256)
+    year = models.IntegerField(
+        blank=True, null=True, validators=[MaxValueValidator(9999)]
+    )
     created_at = models.DateTimeField(null=False)
     updated_at = models.DateTimeField(default=timezone.now, null=False)
+    validated = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
@@ -33,11 +44,6 @@ class AbstractMediaType(models.Model):
         return str(self._meta.verbose_name)
 
     @property
-    def year(self) -> int | None:
-        # TODO: make all media_types have a year
-        raise NotImplementedError
-
-    @property
     def creator(self) -> str:
         raise NotImplementedError
 
@@ -45,19 +51,13 @@ class AbstractMediaType(models.Model):
     def icon(cls) -> SafeText:
         raise NotImplementedError
 
-    def is_demo(self) -> bool:
-        """Check if MediaType is a demo instance."""
-        from supergood_reads.utils.engine import supergood_reads_engine
-
-        return self in supergood_reads_engine.config.demo_media_queryset()
-
     def can_user_change(self, user: User | AnonymousUser) -> bool:
         """
         A user can only update a MediaType instance only if:
           - The user owns the Review
           - The user has global "change_[model]" permission and is_staff
         """
-        from supergood_reads.permissions import has_owner_permission, has_perm_dynamic
+        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
 
         has_change_perm = has_perm_dynamic(user, self, "change") and user.is_staff
         return has_owner_permission(user, self) or has_change_perm
@@ -68,7 +68,7 @@ class AbstractMediaType(models.Model):
           - The user owns the Review
           - The user has global "change_[model]" permission and is_staff
         """
-        from supergood_reads.permissions import has_owner_permission, has_perm_dynamic
+        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
 
         has_delete_perm = has_perm_dynamic(user, self, "delete") and user.is_staff
         return has_owner_permission(user, self) or has_delete_perm
@@ -97,9 +97,6 @@ class Book(AbstractMediaType):
 
     author = models.CharField(default="", max_length=256)
     pages = models.IntegerField(blank=True, null=True)
-    publication_year = models.IntegerField(
-        blank=True, null=True, validators=[MaxValueValidator(9999)]
-    )
     genres = models.ManyToManyField(Genre)
 
     class Meta:
@@ -107,10 +104,6 @@ class Book(AbstractMediaType):
 
     def __str__(self) -> str:
         return self.title
-
-    @property
-    def year(self) -> int | None:
-        return self.publication_year
 
     @property
     def creator(self) -> str:
@@ -137,9 +130,6 @@ class Film(AbstractMediaType):
     """
 
     director = models.CharField(default="", max_length=256)
-    release_year = models.IntegerField(
-        blank=True, null=True, validators=[MaxValueValidator(9999)]
-    )
     genres = models.ManyToManyField(Genre)
     countries = models.ManyToManyField(Country)
 
@@ -148,10 +138,6 @@ class Film(AbstractMediaType):
 
     def __str__(self) -> str:
         return self.title
-
-    @property
-    def year(self) -> int | None:
-        return self.release_year
 
     @property
     def creator(self) -> str:

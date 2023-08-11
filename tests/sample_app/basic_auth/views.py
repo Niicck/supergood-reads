@@ -56,7 +56,7 @@ class BasicSignUpView(AuthMixin, CreateView[User, UserCreationForm[User]]):
             self.object.groups.add(group)
         else:
             logger.warning(
-                f"Reviewer group DoesNotExist. User {self.object.id} was not added to it. Did you run create_groups management command?"
+                f"Reviewer group DoesNotExist. User {self.object.id} was not added to it. Did you run the 'supergood_reads_create_groups' management command?"
             )
 
         # Log them in

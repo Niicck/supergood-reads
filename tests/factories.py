@@ -39,7 +39,8 @@ class BookFactory(factory.django.DjangoModelFactory):
     owner = factory.SubFactory(UserFactory)
     title = factory.LazyFunction(fake.unique.sentence)
     author = factory.LazyFunction(fake.name)
-    publication_year = factory.LazyFunction(lambda: int(fake.year()))
+    year = factory.LazyFunction(lambda: int(fake.year()))
+    validated = True
 
     class Meta:
         model = models.Book
@@ -67,7 +68,8 @@ class FilmFactory(factory.django.DjangoModelFactory):
     owner = factory.SubFactory(UserFactory)
     title = factory.LazyFunction(fake.unique.sentence)
     director = factory.LazyFunction(fake.name)
-    release_year = factory.LazyFunction(lambda: int(fake.year()))
+    year = factory.LazyFunction(lambda: int(fake.year()))
+    validated = True
 
     class Meta:
         model = models.Film
@@ -178,6 +180,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     created_at = factory.LazyFunction(datetime.now)
     updated_at = factory.LazyFunction(datetime.now)
     text = factory.LazyFunction(fake.unique.sentence)
+    demo = False
     media_type = factory.SubFactory(BookFactory)
     strategy = factory.SubFactory(EbertStrategyFactory)
 
@@ -278,11 +281,11 @@ class ReviewFormDataFactory:
         'review_mgmt-create_new_media_type_object': 'SELECT_EXISTING',
         'book-title': '',
         'book-author': '',
-        'book-publication_year': '',
+        'book-year': '',
         'book-pages': '',
         'film-title': '',
         'film-director': '',
-        'film-release_year': '',
+        'film-year': '',
         'ebertstrategy-rating': '',
         'goodreadsstrategy-stars': '',
         'maximusstrategy-recommended': True}

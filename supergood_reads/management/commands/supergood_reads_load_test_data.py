@@ -66,8 +66,8 @@ class Command(BaseCommand):
                     year=int(row["year"]),
                     defaults={
                         "director": row["director"],
-                        "validated": True,
                     },
+                    validated=True,
                 )[0]
 
                 # Add genres
@@ -106,7 +106,6 @@ class Command(BaseCommand):
                     defaults={
                         "year": row["year"],
                         "pages": row["pages"] or None,
-                        "validated": True,
                     },
                 )[0]
 

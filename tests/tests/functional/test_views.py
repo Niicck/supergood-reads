@@ -1,5 +1,6 @@
 import json
-from typing import Any, TypeAlias, TypedDict, Union, cast
+from dataclasses import dataclass
+from typing import Any, TypeAlias, cast
 from uuid import UUID, uuid4
 
 import django
@@ -8,6 +9,7 @@ from bs4 import BeautifulSoup, Tag
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.core.management import call_command
+from django.http import HttpResponse
 from django.test import Client
 from django.urls import reverse
 
@@ -24,72 +26,71 @@ from tests.factories import (
 )
 
 
-class FixtureDataItem(TypedDict, total=False):
+@dataclass
+class MediaTypeFixtureData:
     id: str
     title: str
-    release_year: int
-    publication_year: int
+    year: int
 
-
-FixtureData: TypeAlias = list[FixtureDataItem]
 
 ReviewFormData: TypeAlias = dict[str, Any]
 
 
 @pytest.fixture
-def film_data() -> FixtureData:
+def film_data() -> list[MediaTypeFixtureData]:
     return [
-        {
-            "id": "e01cdf31-c9d9-432e-a5b7-ac7a0049dd70",
-            "title": "Seven Samurai",
-            "release_year": 1954,
-        },
-        {
-            "id": "794416b7-d07d-4651-80b6-64eadeea98b1",
-            "title": "Steel Magnolias",
-            "release_year": 1989,
-        },
-        {
-            "id": "f99ba843-1ba8-4a1d-86c7-5edfd1722655",
-            "title": "Charade",
-            "release_year": 1963,
-        },
+        MediaTypeFixtureData(
+            id=data[0],
+            title=data[1],
+            year=data[2],
+        )
+        for data in [
+            ("e01cdf31-c9d9-432e-a5b7-ac7a0049dd70", "Seven Samurai", 1954),
+            ("794416b7-d07d-4651-80b6-64eadeea98b1", "Steel Magnolias", 1989),
+            ("f99ba843-1ba8-4a1d-86c7-5edfd1722655", "Charade", 1963),
+        ]
     ]
 
 
 @pytest.fixture
-def book_data() -> FixtureData:
+def book_data() -> list[MediaTypeFixtureData]:
     return [
-        {
-            "id": "e01cdf31-c9d9-432e-a5b7-ac7a0049dd70",
-            "title": "Jane Eyre",
-            "publication_year": 1847,
-        },
-        {
-            "id": "794416b7-d07d-4651-80b6-64eadeea98b1",
-            "title": "The Age of Innocence",
-            "publication_year": 1920,
-        },
-        {
-            "id": "f99ba843-1ba8-4a1d-86c7-5edfd1722655",
-            "title": "Anna Karenina",
-            "publication_year": 1878,
-        },
+        MediaTypeFixtureData(
+            id=data[0],
+            title=data[1],
+            year=data[2],
+        )
+        for data in [
+            ("e01cdf31-c9d9-432e-a5b7-ac7a0049dd70", "Jane Eyre", 1847),
+            ("794416b7-d07d-4651-80b6-64eadeea98b1", "The Age of Innocence", 1920),
+            ("f99ba843-1ba8-4a1d-86c7-5edfd1722655", "Anna Karenina", 1878),
+        ]
     ]
 
 
-def cmp_fixture_data(actual: Any, expected: FixtureData) -> bool:
-    """Compare just the "id" and "title" fields between two dictionaries."""
+def media_type_response_matches(
+    response: HttpResponse, expected: list[MediaTypeFixtureData]
+) -> bool:
+    """
+    Compare just the "id" and "title" fields between json response and expected values.
+    """
+    fields_to_compare = ["id", "title"]
+    actual = json.loads(response.content)["results"]
 
-    def filter(d: Union[Any, FixtureDataItem]) -> dict[str, Any]:
-        return {k: v for k, v in d.items() if k in ["id", "title"]}
+    if len(actual) != len(expected):
+        return False
 
-    return [filter(d) for d in actual] == [filter(d) for d in expected]
+    for actual_item, expected_item in zip(actual, expected):
+        for field in fields_to_compare:
+            if actual_item[field] != getattr(expected_item, field):
+                return False
+
+    return True
 
 
 @pytest.fixture
 def reviewer_user(django_user_model: User) -> User:
-    call_command("create_groups")
+    call_command("supergood_reads_create_groups")
     user = django_user_model.objects.create_user(  # noqa: S106
         username="valid_user", password="test"
     )
@@ -106,60 +107,68 @@ def is_redirected_to_login(res: Any) -> bool:
 
 @pytest.mark.django_db
 class TestFilmAutocompleteView:
-    def test_without_q(self, admin_client: Client, film_data: FixtureData) -> None:
+    def test_without_q(
+        self, admin_client: Client, film_data: list[MediaTypeFixtureData]
+    ) -> None:
         """Should return all films."""
         for data in film_data:
             FilmFactory.create(
-                id=UUID(data["id"]),
-                title=data["title"],
-                release_year=data["release_year"],
+                id=UUID(data.id),
+                title=data.title,
+                year=data.year,
             )
         url = reverse("film_autocomplete")
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert cmp_fixture_data(json.loads(response.content)["results"], film_data)
+        assert media_type_response_matches(cast(HttpResponse, response), film_data)
 
-    def test_with_q(self, admin_client: Client, film_data: FixtureData) -> None:
+    def test_with_q(
+        self, admin_client: Client, film_data: list[MediaTypeFixtureData]
+    ) -> None:
         """Should only return queried film."""
         for data in film_data:
             FilmFactory.create(
-                id=UUID(data["id"]),
-                title=data["title"],
-                release_year=data["release_year"],
+                id=UUID(data.id),
+                title=data.title,
+                year=data.year,
             )
         url = reverse("film_autocomplete")
         response = admin_client.get(url, {"q": "Charade"})
         assert response.status_code == 200
-        assert cmp_fixture_data(json.loads(response.content)["results"], [film_data[2]])
+        assert media_type_response_matches(cast(HttpResponse, response), [film_data[2]])
 
 
 @pytest.mark.django_db
 class TestBookAutocompleteView:
-    def test_without_q(self, admin_client: Client, book_data: FixtureData) -> None:
+    def test_without_q(
+        self, admin_client: Client, book_data: list[MediaTypeFixtureData]
+    ) -> None:
         """Should return all films."""
         for data in book_data:
             BookFactory.create(
-                id=UUID(data["id"]),
-                title=data["title"],
-                publication_year=data["publication_year"],
+                id=UUID(data.id),
+                title=data.title,
+                year=data.year,
             )
         url = reverse("book_autocomplete")
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert cmp_fixture_data(json.loads(response.content)["results"], book_data)
+        assert media_type_response_matches(cast(HttpResponse, response), book_data)
 
-    def test_with_q(self, admin_client: Client, book_data: FixtureData) -> None:
+    def test_with_q(
+        self, admin_client: Client, book_data: list[MediaTypeFixtureData]
+    ) -> None:
         """Should only return queried film."""
         for data in book_data:
             BookFactory.create(
-                id=UUID(data["id"]),
-                title=data["title"],
-                publication_year=data["publication_year"],
+                id=UUID(data.id),
+                title=data.title,
+                year=data.year,
             )
         url = reverse("book_autocomplete")
         response = admin_client.get(url, {"q": "Anna"})
         assert response.status_code == 200
-        assert cmp_fixture_data(json.loads(response.content)["results"], [book_data[2]])
+        assert media_type_response_matches(cast(HttpResponse, response), [book_data[2]])
 
 
 @pytest.mark.django_db
@@ -277,7 +286,7 @@ class TestCreateReviewView:
         create_review_data["review-media_type_content_type"] = self.book_content_type
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
-        create_review_data["book-publication_year"] = book.publication_year
+        create_review_data["book-year"] = book.year
         response = client.post(self.url, create_review_data)
         assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
@@ -298,7 +307,7 @@ class TestCreateReviewView:
         create_review_data["review-media_type_content_type"] = self.film_content_type
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
-        create_review_data["film-release_year"] = film.release_year
+        create_review_data["film-year"] = film.year
         response = client.post(self.url, create_review_data)
         assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
@@ -370,7 +379,7 @@ class TestCreateReviewView:
         create_review_data["review-media_type_content_type"] = self.book_content_type
         create_review_data["book-title"] = ""
         create_review_data["book-author"] = ""
-        create_review_data["book-publication_year"] = ""
+        create_review_data["book-year"] = ""
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -385,7 +394,7 @@ class TestCreateReviewView:
         create_review_data["review-media_type_content_type"] = self.film_content_type
         create_review_data["film-title"] = ""
         create_review_data["film-director"] = ""
-        create_review_data["film-release_year"] = ""
+        create_review_data["film-year"] = ""
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -402,7 +411,7 @@ class TestCreateReviewView:
         film = FilmFactory.build()  # not saved to database
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
-        create_review_data["film-release_year"] = film.release_year
+        create_review_data["film-year"] = film.year
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -419,7 +428,7 @@ class TestCreateReviewView:
         book = BookFactory.build()  # not saved to database
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
-        create_review_data["book-publication_year"] = book.publication_year
+        create_review_data["book-year"] = book.year
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -438,7 +447,7 @@ class TestUpdateMyMediaBookView:
         data = {
             "title": new_title,
             "author": book.author,
-            "publication_year": book.publication_year,
+            "year": book.year,
         }
         res = client.post(url, data)
         assert is_redirected_to_login(res)
@@ -489,7 +498,7 @@ class TestUpdateMyMediaFilmView:
         data = {
             "title": new_title,
             "director": film.director,
-            "release_year": film.release_year,
+            "year": film.year,
         }
         res = client.post(url, data)
         assert is_redirected_to_login(res)
@@ -681,21 +690,18 @@ class TestUpdateReviewView:
         with pytest.raises(EbertStrategy.DoesNotExist):
             strategy.refresh_from_db()
 
-    def test_view_demo(self, client: Client, monkeypatch: pytest.MonkeyPatch) -> None:
-        review = ReviewFactory()
+    def test_view_demo(self, client: Client) -> None:
+        review = ReviewFactory(demo=True)
         url = self.get_url(review.id)
         res = client.get(url)
-        assert is_redirected_to_login(res)
-        monkeypatch.setattr(
-            "supergood_reads.utils.engine.supergood_reads_engine.config.demo_review_queryset",
-            lambda: Review.objects.filter(id=review.id),
-        )
-        res = client.get(url, follow=True)
         assert res.status_code == 200
+        assert res.request["PATH_INFO"] == reverse(
+            "update_review", kwargs={"pk": review.id}
+        )
 
     def test_view_non_demo(self, client: Client, django_user_model: Any) -> None:
         # Unauthorized user can't see review
-        review = ReviewFactory()
+        review = ReviewFactory(demo=False)
         url = self.get_url(review.id)
         res = client.get(url)
         assert is_redirected_to_login(res)
@@ -717,6 +723,9 @@ class TestUpdateReviewView:
         user.save()
         res = client.get(url, follow=True)
         assert res.status_code == 200
+        assert res.request["PATH_INFO"] == reverse(
+            "update_review", kwargs={"pk": review.id}
+        )
 
     def test_view_own_review(self, client: Client, reviewer_user: User) -> None:
         review = ReviewFactory()

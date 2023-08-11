@@ -33,7 +33,7 @@ class BookAutocompleteForm(MediaTypeAutocomplete[Book]):
         fields = [
             "title",
             "author",
-            "publication_year",
+            "year",
             "pages",
         ]
 
@@ -46,19 +46,17 @@ class FilmAutocompleteForm(MediaTypeAutocomplete[Film]):
         fields = [
             "title",
             "director",
-            "release_year",
+            "year",
         ]
 
 
 class MyMediaBookForm(forms.ModelForm[Book]):
     class Meta:
         model = Book
-        fields = ["title", "author", "publication_year"]
-        labels = {"publication_year": "Year"}
+        fields = ["title", "author", "year"]
 
 
 class MyMediaFilmForm(forms.ModelForm[Film]):
     class Meta:
         model = Film
-        fields = ["title", "director", "release_year"]
-        labels = {"release_year": "Year"}
+        fields = ["title", "director", "year"]

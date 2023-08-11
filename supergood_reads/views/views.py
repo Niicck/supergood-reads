@@ -23,15 +23,15 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 
-from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_reads.media_types.models import AbstractMediaType, Book, Film
-from supergood_reads.permissions import (
+from supergood_reads.auth import (
     CreateReviewPermissionMixin,
     DeleteMediaPermissionMixin,
     DeleteReviewPermissionMixin,
     UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
+from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 from supergood_reads.reviews.forms import ReviewFormGroup
 from supergood_reads.reviews.models import Review
 from supergood_reads.utils.json import UUIDEncoder
@@ -185,12 +185,12 @@ class FilmAutocompleteView(View):
         if is_uuid(q):
             film_qs = Film.objects.filter(pk=q)
         else:
-            film_qs = Film.objects.filter(title__icontains=q)
+            film_qs = Film.objects.filter(title__icontains=q, validated=True)
         films = film_qs.annotate(
             display_name=Concat(
                 "title",
                 Value(" ("),
-                "release_year",
+                "year",
                 Value(")"),
                 output_field=CharField(),
             )
@@ -214,14 +214,14 @@ class BookAutocompleteView(View):
         if is_uuid(q):
             book_qs = Book.objects.filter(pk=q)
         else:
-            book_qs = Book.objects.filter(title__icontains=q)
+            book_qs = Book.objects.filter(title__icontains=q, validated=True)
         books = book_qs.annotate(
             display_name=Concat(
                 "title",
                 Value(" ("),
                 "author",
                 Value(", "),
-                "publication_year",
+                "year",
                 Value(")"),
                 output_field=CharField(),
             )
@@ -253,6 +253,10 @@ class MyMediaView(ListView[AbstractMediaType]):
             *[media_type.objects.all() for media_type in media_types],
             model=AbstractMediaType,
         )
+        if self.request.user.is_authenticated:
+            combined_qs = combined_qs.filter(owner=self.request.user)
+        else:
+            combined_qs = combined_qs.filter(validated=True)
         return combined_qs.order_by("-updated_at")
 
 
@@ -268,6 +272,10 @@ class MyReviewsView(ListView[Review]):
             .all()
             .order_by("-completed_at_year", "-completed_at_month", "-completed_at_day")
         )
+        if self.request.user.is_authenticated:
+            review_qs = review_qs.filter(owner=self.request.user)
+        else:
+            review_qs = review_qs.filter(demo=True)
         return review_qs
 
 

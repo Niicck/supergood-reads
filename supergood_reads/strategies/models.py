@@ -11,7 +11,13 @@ from django.utils.safestring import SafeText
 
 
 class AbstractStrategy(models.Model):
-    """Abstract class common to all Strategies."""
+    """
+    Abstract class common to all Strategies.
+
+    Subclasses can add any fields they want.
+    But they must implement:
+    - "rating_html" property for rendering with "reviews" table
+    """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
