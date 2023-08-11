@@ -16,8 +16,8 @@
                 {% csrf_token %}
                 <div>
                     {{ form.non_field_errors }}
-                    {% field_wrapper form.username border=False label_above=True %}
-                    {% field_wrapper form.password border=False label_above=True %}
+                    {% field_wrapper form.username label_above=True %}
+                    {% field_wrapper form.password label_above=True %}
                 </div>
                 {% comment %} <div>
                     <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email address</label>

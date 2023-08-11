@@ -4,6 +4,7 @@
 {% load widget_tweaks %}
 {% load tags %}
 {% load date_picker %}
+{% load forms %}
 
 {% block header %}
     {% include "supergood_reads/_basic_header.html" with title="Create Review" %}
@@ -22,20 +23,20 @@
     {{review_form.media_type_object_id|field_to_dict|json_script:"media_type_object_id_field_data"}}
 
     <div id="review-form-vue-app">
-        <form method="post" class="space-y-8 divide-y divide-gray-200">
+        <form method="post">
             <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
 
                 {% comment %} Handle MediaType Selection {% endcomment %}
-                <div class="sm:border-t sm:border-gray-200">
+                <div>
                     {% comment %}
                         <div>Selected MediaType: [[selectedMediaTypeContentType]]</div>
                         <div>Selected MediaType ObjectId: [[selectedMediaTypeObjectId]]</div>
                     {% endcomment %}
-                    {% field_wrapper review_form.media_type_content_type state_key="selectedMediaTypeContentType" field_type="radio_cards" %}
+                    {% radio_cards_field review_form.media_type_content_type state_key="selectedMediaTypeContentType" %}
                     <div v-show="selectedMediaTypeContentType">
-                        {% field_wrapper review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" field_type="radio_cards" border=False %}
+                        {% radio_cards_field review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" %}
                         {% for media_type_id, media_type_form in media_type_forms.items %}
                             <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
                                 <div v-show="!shouldCreateNewMediaTypeObject">
@@ -55,10 +56,13 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {% comment %} {% with should_fetch_initial="{{media_type_id}} == selectedMediaTypeContentType"  %}
+                                        {% autocomplete_field field=review_form.media_type_object_id state_key="createNewMediaTypeObject" url=media_type_form.autocomplete_url should_fetch_initial=should_fetch_initial %}
+                                    {% endwith %} {% endcomment %}
                                 </div>
                                 <div v-show="shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
                                     {% for field in media_type_form %}
-                                        {% field_wrapper field border=false %}
+                                        {% supergood_field field %}
                                     {% endfor %}
                                 </div>
                             </div>
@@ -70,16 +74,16 @@
                 {% date_picker day_field=review_form.completed_at_day month_field=review_form.completed_at_month year_field=review_form.completed_at_year %}
 
                 {% comment %} Handle Rating Strategy {% endcomment %}
-                <div class="sm:border-t sm:border-gray-200">
-                    {% field_wrapper field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
+                <div>
+                    {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms.items %}
                         <div v-show="{{strategy_id}} == selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>
                             {% for field in strategy_form %}
-                                {% field_wrapper field border=false %}
+                                {% supergood_field field %}
                             {% endfor %}
                         </div>
                     {% endfor %}
-                    {% field_wrapper field=review_form.text border=false %}
+                    {% supergood_field field=review_form.text %}
                 </div>
 
                 {% comment %} Submit {% endcomment %}

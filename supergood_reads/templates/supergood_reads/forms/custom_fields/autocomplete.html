@@ -1,0 +1,17 @@
+{% extends "supergood_reads/forms/_field_wrapper.html" %}
+
+{% load widget_tweaks %}
+{% load tags %}
+
+{% block field %}
+    <div class="max-w-lg">
+        <autocomplete
+            field-data-json-script-id={{ field_data_json_script_id }}
+            state-key={{ state_key }}
+            url={{ url }}
+            csrf-token={% csrf_token %}
+            :should-fetch-initial={{ should_fetch_initial }}
+        >
+        </autocomplete>
+    </div>
+{% endblock field %}

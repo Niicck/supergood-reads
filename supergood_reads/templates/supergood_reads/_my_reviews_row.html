@@ -9,7 +9,7 @@
     update-url={% url 'update_review' review.id %}
 >
     <template #date-picker>
-        {% date_picker day_field=form.completed_at_day month_field=form.completed_at_month year_field=form.completed_at_year label_above=true border=false %}
+        {% date_picker day_field=form.completed_at_day month_field=form.completed_at_month year_field=form.completed_at_year label_above=true %}
     </template>
     {% include "supergood_reads/forms/_reviews_field_wrapper.html" with field=form.text v_slot_name="text-field"%}
 </tr>
