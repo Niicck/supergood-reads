@@ -123,7 +123,7 @@ def autocomplete_field(
     field: BoundField,
     state_key: str,
     url: str,
-    should_fetch_initial: bool,
+    initial_value_id: str,
 ) -> Context:
     field_data_json_script_id = f"autocomplete_json_script_id_{field.id_for_label}"
 
@@ -133,7 +133,7 @@ def autocomplete_field(
             "state_key": state_key,
             "field_data_json_script_id": field_data_json_script_id,
             "url": url,
-            "should_fetch_initial": should_fetch_initial,
+            "initial_value_id": initial_value_id,
         }
     )
 

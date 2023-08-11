@@ -19,9 +19,6 @@
     {{review_form|get_initial_field_value:"media_type_object_id"|json_script:"initialSelectedMediaTypeObjectId"}}
     {{review_mgmt_form|get_initial_field_value:"create_new_media_type_object"|json_script:"initialCreateNewMediaTypeObject"}}
 
-    {% comment %} Convert media_type_object_id field data into json for use in vue components. {% endcomment %}
-    {{review_form.media_type_object_id|field_to_dict|json_script:"media_type_object_id_field_data"}}
-
     <div id="review-form-vue-app">
         <form method="post">
             <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
@@ -30,35 +27,19 @@
 
                 {% comment %} Handle MediaType Selection {% endcomment %}
                 <div>
-                    {% comment %}
-                        <div>Selected MediaType: [[selectedMediaTypeContentType]]</div>
-                        <div>Selected MediaType ObjectId: [[selectedMediaTypeObjectId]]</div>
-                    {% endcomment %}
                     {% radio_cards_field review_form.media_type_content_type state_key="selectedMediaTypeContentType" %}
                     <div v-show="selectedMediaTypeContentType">
                         {% radio_cards_field review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" %}
                         {% for media_type_id, media_type_form in media_type_forms.items %}
                             <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
                                 <div v-show="!shouldCreateNewMediaTypeObject">
-                                    <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 pt-5">
-                                        <div></div>
-                                        <div class="mt-1 sm:col-span-2 sm:mt-0">
-                                            {{ review_form.media_type_object_id.errors }}
-                                            <div class="max-w-lg">
-                                                <autocomplete
-                                                    field-data-json-script-id="media_type_object_id_field_data"
-                                                    state-key="selectedMediaTypeObjectId"
-                                                    url={{ media_type_form.autocomplete_url }}
-                                                    csrf-token={{csrf_token}}
-                                                    :should-fetch-initial="{{media_type_id}} == selectedMediaTypeContentType"
-                                                >
-                                                </autocomplete>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% comment %} {% with should_fetch_initial="{{media_type_id}} == selectedMediaTypeContentType"  %}
-                                        {% autocomplete_field field=review_form.media_type_object_id state_key="createNewMediaTypeObject" url=media_type_form.autocomplete_url should_fetch_initial=should_fetch_initial %}
-                                    {% endwith %} {% endcomment %}
+                                    {% with field=review_form.media_type_object_id state_key="selectedMediaTypeObjectId" url=media_type_form.autocomplete_url %}
+                                        {% if initial_media_type_content_type == media_type_id %}
+                                            {% autocomplete_field field=field state_key=state_key url=url initial_value_id=initial_media_type_object_id%}
+                                        {% else %}
+                                            {% autocomplete_field field=field state_key=state_key url=url initial_value_id=""%}
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
                                 <div v-show="shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
                                     {% for field in media_type_form %}

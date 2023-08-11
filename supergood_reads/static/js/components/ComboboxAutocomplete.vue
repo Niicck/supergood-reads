@@ -119,12 +119,11 @@ const props = defineProps({
     default: '',
   },
   /**
-   * Indicate if we should populate the initial selectedResult based on the
-   * store[props.stateKey] value.
+   * Id of the initialValue, if it exists.
    */
-  shouldFetchInitial: {
-    type: Boolean,
-    default: false,
+  initialValueId: {
+    type: String,
+    default: '',
   },
 });
 
@@ -139,8 +138,6 @@ let results = ref<Array<Result>>([]);
 let selectedResult = ref<Result | null>(null);
 
 const store = window.store;
-
-const computedStateValue = computed(() => store[props.stateKey]);
 
 // Query server for new results whenever the querystring changes.
 watch(query, () => {
@@ -162,20 +159,21 @@ watch(selectedResult, (newValue) => {
 });
 
 /**
- * Set the initial value for selectedResult.
- */
-watch([computedStateValue, selectedResult], ([newStateValue, newSelectedResult]) => {
-  if (newStateValue && !newSelectedResult && props.shouldFetchInitial) {
-    getInitial(newStateValue);
-  }
-});
-
-/**
  * Retrieve the fieldData value from the json data embedded into a <script> tag by the
  * json_script django filter.
  */
 onMounted(() => {
   fieldData.value = parseJsonScriptFilter(props.fieldDataJsonScriptId) as FieldData;
+});
+
+/**
+ * Query for the complete data of the initial value using the provided initial ID.
+ * Executes the query only if an initial ID is present.
+ */
+onMounted(() => {
+  if (props.initialValueId) {
+    getInitial(props.initialValueId);
+  }
 });
 
 /**

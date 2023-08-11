@@ -34,6 +34,7 @@ from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
 from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 from supergood_reads.reviews.forms import ReviewFormGroup
 from supergood_reads.reviews.models import Review
+from supergood_reads.utils.forms import get_initial_field_value
 from supergood_reads.utils.json import UUIDEncoder
 from supergood_reads.utils.uuid import is_uuid
 
@@ -64,12 +65,35 @@ class ReviewFormView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         review_form_group = ReviewFormGroup(instance=self.object)
-        context["review_form"] = review_form_group.review_form
-        context["review_mgmt_form"] = review_form_group.review_mgmt_form
-        context["strategy_forms"] = review_form_group.strategy_forms.by_content_type_id
-        context[
-            "media_type_forms"
-        ] = review_form_group.media_type_forms.by_content_type_id
+
+        review_form = review_form_group.review_form
+        review_mgmt_form = review_form_group.review_mgmt_form
+
+        initial_strategy_content_type = str(
+            get_initial_field_value(review_form, "strategy_content_type") or ""
+        )
+        initial_media_type_content_type = str(
+            get_initial_field_value(review_form, "media_type_content_type") or ""
+        )
+        initial_media_type_object_id = get_initial_field_value(
+            review_form, "media_type_object_id"
+        )
+        initial_create_new_media_type_object = get_initial_field_value(
+            review_form_group.review_mgmt_form, "create_new_media_type_object"
+        )
+
+        context.update(
+            {
+                "review_form": review_form,
+                "review_mgmt_form": review_mgmt_form,
+                "strategy_forms": review_form_group.strategy_forms.by_content_type_id,
+                "media_type_forms": review_form_group.media_type_forms.by_content_type_id,
+                "initial_strategy_content_type": initial_strategy_content_type,
+                "initial_media_type_content_type": initial_media_type_content_type,
+                "initial_media_type_object_id": initial_media_type_object_id,
+                "initial_create_new_media_type_object": initial_create_new_media_type_object,
+            }
+        )
 
         return context
 

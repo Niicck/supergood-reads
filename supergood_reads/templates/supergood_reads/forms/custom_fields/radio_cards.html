@@ -3,7 +3,7 @@
 {% load tags %}
 
 {% block field %}
-    {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
+    {{ field|field_to_dict|vue_json_script:field_data_json_script_id }}
     <radio-cards
         field-data-json-script-id={{field_data_json_script_id}}
         state-key={{state_key}}
