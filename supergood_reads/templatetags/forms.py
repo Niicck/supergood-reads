@@ -106,7 +106,7 @@ def supergood_field(
     }
 
     field_type = field.widget_type
-    field_template_options = ["number", "radio_select", "textarea"]
+    field_template_options = ["number", "radioselect", "textarea"]
     if field_type in field_template_options:
         template_name = f"supergood_reads/forms/fields/{field_type}.html"
     else:
