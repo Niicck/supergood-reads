@@ -1,15 +1,21 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
-import { createApp, defineComponent } from 'vue';
-import NavBar from '@/static/js/components/NavBar.vue';
+import { createApp, defineComponent, ref } from 'vue';
 
 const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],
-  components: {
-    'nav-bar': NavBar,
+  components: {},
+  setup() {
+    const menuOpen = ref(false);
+
+    const toggleMenuOpen = () => {
+      menuOpen.value = !menuOpen.value;
+    };
+
+    return { menuOpen, toggleMenuOpen };
   },
 });
 
 const app = createApp(RootComponent);
-app.mount('#nav-bar-vue-app');
+app.mount('#new-nav-bar-vue-app');
 
 export {};

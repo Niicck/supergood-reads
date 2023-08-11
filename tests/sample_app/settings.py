@@ -53,6 +53,7 @@ TEMPLATES = [
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 LOGIN_URL = "/reads-app/auth/login/"
+LOGIN_REDIRECT_URL = "/reads-app/reviews"
 
 LANGUAGE_CODE = "en-us"
 

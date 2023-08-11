@@ -24,7 +24,6 @@ class AuthMixin:
 
 class BasicLoginView(AuthMixin, LoginView):
     template_name = "sample_app/basic_auth/login.html"
-    success_url = reverse_lazy("reviews")
 
     def form_valid(self, form: AuthenticationForm) -> Any:
         response = super().form_valid(form)
@@ -33,7 +32,7 @@ class BasicLoginView(AuthMixin, LoginView):
 
 
 class BasicLogoutView(LogoutView):
-    next_page = "/"
+    next_page = reverse_lazy("home")
 
 
 class BasicPasswordChangeView(PasswordChangeView):
