@@ -1,9 +1,15 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent, ref } from 'vue';
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
 
 const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],
-  components: {},
+  components: {
+    'headless-menu': Menu,
+    'headless-menu-button': MenuButton,
+    'headless-menu-items': MenuItems,
+    'headless-menu-item': MenuItem,
+  },
   setup() {
     const menuOpen = ref(false);
 
