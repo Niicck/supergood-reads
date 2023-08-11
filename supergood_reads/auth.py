@@ -58,13 +58,13 @@ class CreateReviewPermissionMixin(BasePermissionMixin):
     request: HttpRequest
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        self.send_demo_notification()
+        if not request.user.has_perm("supergood_reads.add_review"):
+            self.send_demo_notification()
         return super().get(request, *args, **kwargs)  # type: ignore
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         """Only allow authenticated users to create new Reviews."""
-        user = request.user
-        if not user.has_perm("supergood_reads.add_review"):
+        if not request.user.has_perm("supergood_reads.add_review"):
             return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
