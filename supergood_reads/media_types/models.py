@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template.loader import render_to_string
@@ -51,7 +51,7 @@ class AbstractMediaType(models.Model):
 
         return self in supergood_reads_engine.config.demo_media_queryset()
 
-    def can_user_change(self, user: User) -> bool:
+    def can_user_change(self, user: User | AnonymousUser) -> bool:
         """
         A user can only update a MediaType instance only if:
           - The user owns the Review
@@ -62,7 +62,7 @@ class AbstractMediaType(models.Model):
         has_change_perm = has_perm_dynamic(user, self, "change") and user.is_staff
         return has_owner_permission(user, self) or has_change_perm
 
-    def can_user_delete(self, user: User) -> bool:
+    def can_user_delete(self, user: User | AnonymousUser) -> bool:
         """
         A user can only update a MediaType instance only if:
           - The user owns the Review

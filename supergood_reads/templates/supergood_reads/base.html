@@ -21,12 +21,8 @@
             <div class="py-10">
                 {% include "supergood_reads/_messages.html" %}
                 <header>
-                    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900">
-                            {% block header %}
-                            {% endblock header %}
-                        </h1>
-                    </div>
+                    {% block header %}
+                    {% endblock header %}
                 </header>
                 <main>
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

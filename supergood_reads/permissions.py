@@ -12,7 +12,9 @@ from supergood_reads.reviews.models import Review
 
 
 def has_perm_dynamic(
-    user: User, obj: Model, perm: Literal["view", "add", "change", "delete"]
+    user: User | AnonymousUser,
+    obj: Model,
+    perm: Literal["view", "add", "change", "delete"],
 ) -> bool:
     """
     Test user permissions for any object and any base permission.
