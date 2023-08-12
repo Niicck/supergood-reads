@@ -1,6 +1,7 @@
 {% extends "supergood_reads/forms/_field_wrapper.html" %}
 
-{% load tags %}
+{% load forms %}
+{% load vue_tags %}
 
 {% block field %}
     {{ field|field_to_dict|vue_json_script:field_data_json_script_id }}

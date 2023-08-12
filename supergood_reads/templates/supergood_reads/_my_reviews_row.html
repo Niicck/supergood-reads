@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
-{% load tags %}
-{% load date_picker %}
+{% load vue_tags %}
+{% load forms %}
 
 {{ initial_data|vue_json_script:json_script_id }}
 <tr is="vue:my-reviews-row"

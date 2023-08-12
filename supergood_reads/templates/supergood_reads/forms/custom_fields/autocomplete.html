@@ -2,7 +2,7 @@
 
 {% load widget_tweaks %}
 {% load forms %}
-{% load tags %}
+{% load vue_tags %}
 
 {% block field %}
     {{ field|field_to_dict|vue_json_script:field_data_json_script_id }}
