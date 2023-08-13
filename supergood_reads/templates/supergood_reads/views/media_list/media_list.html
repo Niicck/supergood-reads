@@ -1,0 +1,35 @@
+{% extends "supergood_reads/views/base/base.html" %}
+{% load media_list %}
+{% load basic_header %}
+{% load django_vite %}
+
+{% block header %}
+    {% basic_header "My Media" %}
+{% endblock header %}
+
+{% block content %}
+    {% vite_asset 'js/apps/myMedia.ts' %}
+    <div class="px-4 sm:px-0" id="my-media-app">
+        <div class="-mx-4 mt-8 sm:-mx-0">
+            <table class="table-fixed min-w-full divide-y divide-gray-300">
+                <thead>
+                    <tr>
+                        <th scope="col" class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Title</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell w-80">Creator</th>
+                        <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-28">Year</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell w-12">Type</th>
+                        <th scope="col" class="py-3.5 sm:pl-2 sm:pr-0 w-12">
+                            <span class="sr-only">Edit</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    {% for item in media_list %}
+                        {% media_list_row item=item %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% include "supergood_reads/components/_pagination.html" %}
+        </div>
+    </div>
+{% endblock content %}

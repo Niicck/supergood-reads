@@ -64,11 +64,22 @@ class ReviewFormView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
+        # Forms
         review_form_group = ReviewFormGroup(instance=self.object)
-
         review_form = review_form_group.review_form
         review_mgmt_form = review_form_group.review_mgmt_form
+        strategy_forms_by_id = review_form_group.strategy_forms.by_content_type_id
+        media_type_forms_by_id = review_form_group.media_type_forms.by_content_type_id
+        context.update(
+            {
+                "review_form": review_form,
+                "review_mgmt_form": review_mgmt_form,
+                "strategy_forms_by_id": strategy_forms_by_id,
+                "media_type_forms_by_id": media_type_forms_by_id,
+            }
+        )
 
+        # Initial Values for Vue Components
         initial_strategy_content_type = str(
             get_initial_field_value(review_form, "strategy_content_type") or ""
         )
@@ -81,17 +92,25 @@ class ReviewFormView(TemplateView):
         initial_create_new_media_type_object = get_initial_field_value(
             review_form_group.review_mgmt_form, "create_new_media_type_object"
         )
-
         context.update(
             {
-                "review_form": review_form,
-                "review_mgmt_form": review_mgmt_form,
-                "strategy_forms": review_form_group.strategy_forms.by_content_type_id,
-                "media_type_forms": review_form_group.media_type_forms.by_content_type_id,
                 "initial_strategy_content_type": initial_strategy_content_type,
                 "initial_media_type_content_type": initial_media_type_content_type,
                 "initial_media_type_object_id": initial_media_type_object_id,
                 "initial_create_new_media_type_object": initial_create_new_media_type_object,
+            }
+        )
+
+        # Initial Data for Vue Store
+        initial_data_for_vue_store = {
+            "selectedStrategyId": initial_strategy_content_type,
+            "selectedMediaTypeContentType": initial_media_type_content_type,
+            "selectedMediaTypeObjectId": initial_media_type_object_id,
+            "createNewMediaTypeObject": initial_create_new_media_type_object,
+        }
+        context.update(
+            {
+                "initial_data_for_vue_store": initial_data_for_vue_store,
             }
         )
 
@@ -140,13 +159,13 @@ class ReviewFormView(TemplateView):
 
 
 class CreateReviewView(CreateReviewPermissionMixin, ReviewFormView):
-    template_name = "supergood_reads/create_review.html"
+    template_name = "supergood_reads/views/review_form/create_review.html"
 
 
 class UpdateReviewView(
     UpdateReviewPermissionMixin, ReviewFormView, SingleObjectMixin[Review]
 ):
-    template_name = "supergood_reads/update_review.html"
+    template_name = "supergood_reads/views/review_form/update_review.html"
     model = Review
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
@@ -264,7 +283,7 @@ class MyMediaView(ListView[AbstractMediaType]):
     model = AbstractMediaType
     paginate_by = 20
     context_object_name = "media_list"
-    template_name = "supergood_reads/media.html"
+    template_name = "supergood_reads/views/media_list/media_list.html"
 
     def get_queryset(self) -> QuerySetSequence:
         """
@@ -288,7 +307,7 @@ class MyReviewsView(ListView[Review]):
     model = Review
     paginate_by = 20
     context_object_name = "review_list"
-    template_name = "supergood_reads/reviews.html"
+    template_name = "supergood_reads/views/review_list/review_list.html"
 
     def get_queryset(self) -> QuerySet[Review]:
         review_qs = (
@@ -386,7 +405,7 @@ class StatusTemplateView(TemplateView):
 
 
 class Handle403View(StatusTemplateView):
-    template_name = "supergood_reads/403.html"
+    template_name = "supergood_reads/views/403.html"
     status = 403
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:

@@ -107,7 +107,7 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import axios from 'axios';
 import type { MyReviewRowInitialData } from '@/static/js/types';
-import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
+import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
 import DeleteModal from '@/static/js/components/DeleteModal.vue';
 
 const props = defineProps({
@@ -151,9 +151,7 @@ const fieldErrors = ref<Partial<{ String: string[] }>>({});
  * json_script django filter.
  */
 onMounted(() => {
-  initialData.value = parseJsonScriptFilter(
-    props.jsonScriptId,
-  ) as MyReviewRowInitialData;
+  initialData.value = parseJsonScript(props.jsonScriptId) as MyReviewRowInitialData;
   editedText.value = initialData.value.initialText;
 });
 

@@ -148,8 +148,8 @@ class MaximusStrategy(AbstractStrategy):
     @property
     def rating_html(self) -> SafeText:
         if self.recommended:
-            template_name = "supergood_reads/svg/thumbs_up.html"
+            template_name = "supergood_reads/components/svg/thumbs_up.html"
         else:
-            template_name = "supergood_reads/svg/thumbs_down.html"
+            template_name = "supergood_reads/components/svg/thumbs_down.html"
         value = render_to_string(template_name)
         return format_html("<span class='text-emerald-600'>{}</span>", value)

@@ -5,7 +5,9 @@ from supergood_reads.views import views
 
 urlpatterns = [
     path(
-        "", TemplateView.as_view(template_name="supergood_reads/home.html"), name="home"
+        "",
+        TemplateView.as_view(template_name="supergood_reads/views/home.html"),
+        name="home",
     ),
     path(
         "403/",

@@ -22,7 +22,7 @@ def nav_bar_links_factory(
     ]
 
 
-@register.inclusion_tag("supergood_reads/_nav_bar.html", takes_context=True)
+@register.inclusion_tag("supergood_reads/views/base/_nav_bar.html", takes_context=True)
 def nav_bar(context: Context) -> Context:
     current_url = context["request"].get_full_path()
 

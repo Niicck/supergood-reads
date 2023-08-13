@@ -79,7 +79,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
 import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
-import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
+import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
 
 type Result = {
   id: string;
@@ -163,7 +163,7 @@ watch(selectedResult, (newValue) => {
  * json_script django filter.
  */
 onMounted(() => {
-  fieldData.value = parseJsonScriptFilter(props.fieldDataJsonScriptId) as FieldData;
+  fieldData.value = parseJsonScript(props.fieldDataJsonScriptId) as FieldData;
 });
 
 /**

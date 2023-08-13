@@ -61,15 +61,16 @@ def supergood_field(
     field_type = field.widget_type
     field_template_options = ["number", "radioselect", "textarea"]
     if field_type in field_template_options:
-        template_name = f"supergood_reads/forms/fields/{field_type}.html"
+        template_name = f"supergood_reads/components/forms/fields/{field_type}.html"
     else:
-        template_name = "supergood_reads/forms/fields/default.html"
+        template_name = "supergood_reads/components/forms/fields/default.html"
 
     return render_to_string(template_name, context)
 
 
 @register.inclusion_tag(
-    "supergood_reads/forms/custom_fields/autocomplete.html", takes_context=True
+    "supergood_reads/components/forms/custom_fields/autocomplete.html",
+    takes_context=True,
 )
 def autocomplete_field(
     context: Context,
@@ -93,7 +94,9 @@ def autocomplete_field(
     return context
 
 
-@register.inclusion_tag("supergood_reads/forms/custom_fields/date_picker.html")
+@register.inclusion_tag(
+    "supergood_reads/components/forms/custom_fields/date_picker.html"
+)
 def date_picker(
     day_field: BoundField,
     month_field: BoundField,
@@ -108,7 +111,9 @@ def date_picker(
     }
 
 
-@register.inclusion_tag("supergood_reads/forms/custom_fields/radio_cards.html")
+@register.inclusion_tag(
+    "supergood_reads/components/forms/custom_fields/radio_cards.html"
+)
 def radio_cards_field(field: BoundField, state_key: str) -> dict[str, Any]:
     field_data_json_script_id = f"radio_cards_json_script_id_{field.id_for_label}"
 

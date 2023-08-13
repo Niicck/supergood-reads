@@ -38,7 +38,7 @@ export default defineConfig((mode) => {
       outDir: resolve(env.DJANGO_VITE_ASSETS_PATH),
       rollupOptions: {
         input: {
-          createReview: resolve('./supergood_reads/static/js/apps/createReview.ts'),
+          reviewForm: resolve('./supergood_reads/static/js/apps/reviewForm.ts'),
           messages: resolve('./supergood_reads/static/js/apps/messages.ts'),
           navBar: resolve('./supergood_reads/static/js/apps/navBar.ts'),
           myMedia: resolve('./supergood_reads/static/js/apps/myMedia.ts'),

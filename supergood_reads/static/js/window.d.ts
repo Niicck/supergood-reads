@@ -1,10 +1,10 @@
-import { useCreateReviewStore } from '@/static/js/stores';
+import { useReviewFormStore } from '@/static/js/stores/reviewForm';
 
 /**
  * Define window.store type.
  */
 declare global {
   interface Window {
-    store: InstanceType<typeof useCreateReviewStore>;
+    store: InstanceType<typeof useReviewFormStore>;
   }
 }

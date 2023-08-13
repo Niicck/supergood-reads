@@ -111,7 +111,7 @@ class Book(AbstractMediaType):
 
     @classmethod
     def icon(cls) -> SafeText:
-        value = render_to_string("supergood_reads/svg/book.html")
+        value = render_to_string("supergood_reads/components/svg/book.html")
         return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)
 
 
@@ -145,5 +145,5 @@ class Film(AbstractMediaType):
 
     @classmethod
     def icon(cls) -> SafeText:
-        value = render_to_string("supergood_reads/svg/film.html")
+        value = render_to_string("supergood_reads/components/svg/film.html")
         return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)

@@ -35,7 +35,7 @@ import type { PropType } from 'vue';
 import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
-import { parseJsonScriptFilter } from '@/static/js/utils/parseJsonScriptFilter';
+import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
 
 const props = defineProps({
   /**
@@ -70,6 +70,6 @@ const store = window.store;
  * json_script django filter.
  */
 onMounted(() => {
-  fieldData.value = parseJsonScriptFilter(props.fieldDataJsonScriptId) as FieldData;
+  fieldData.value = parseJsonScript(props.fieldDataJsonScriptId) as FieldData;
 });
 </script>
