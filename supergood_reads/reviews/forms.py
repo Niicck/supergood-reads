@@ -92,6 +92,7 @@ class ReviewForm(forms.ModelForm[Review]):
         labels = {
             "text": "Review",
             "completed_at_year": "Year",
+            "media_type_object_id": "Title",
         }
 
     media_type_content_type = forms.TypedChoiceField(

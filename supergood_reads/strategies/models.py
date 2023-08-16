@@ -93,8 +93,14 @@ class GoodreadsStrategy(AbstractStrategy):
 
     @property
     def rating_html(self) -> SafeText:
-        value = "★" * self.stars
-        return format_html("<span class='text-orange-500'>{}</span>", value)
+        stars = "★" * self.stars
+        remainder = 5 - self.stars
+        empty_stars = "★" * remainder
+        return format_html(
+            "<span class='text-orange-500'>{}</span><span class='text-slate-200'>{}</span>",
+            stars,
+            empty_stars,
+        )
 
 
 class ImdbStrategy(AbstractStrategy):
