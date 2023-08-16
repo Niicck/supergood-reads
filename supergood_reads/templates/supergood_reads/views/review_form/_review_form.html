@@ -16,12 +16,13 @@
 
     <div id="review-form-vue-app">
         <form method="post">
-            <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
+            <div class="space-y-12 divide-y divide-gray-200 mx-auto max-w-2xl">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
 
                 {% comment %} Handle MediaType Selection {% endcomment %}
-                <div>
+                <div class="my-12">
+                    {% form_subheading title="Select a Media Type" text="What do you want to review?" %}
                     {% radio_cards_field review_form.media_type_content_type state_key="selectedMediaTypeContentType" %}
                     <div v-show="selectedMediaTypeContentType">
                         {% radio_cards_field review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" %}
@@ -47,10 +48,15 @@
                 </div>
 
                 {% comment %} Handle completed_at date {% endcomment %}
-                {% date_picker day_field=review_form.completed_at_day month_field=review_form.completed_at_month year_field=review_form.completed_at_year %}
+                <div class="my-12">
+                    {% form_subheading title="Date" text="When did you finish it?" %}
+                    {% date_picker day_field=review_form.completed_at_day month_field=review_form.completed_at_month year_field=review_form.completed_at_year %}
+                    <p class="mt-2 text-sm text-gray-500">It's okay to enter an estimated date (just a month and year, or just a year).</p>
+                </div>
 
                 {% comment %} Handle Rating Strategy {% endcomment %}
-                <div>
+                <div class="my-12">
+                    {% form_subheading title="Rating" text="What kind of rating strategy do you want to use?" %}
                     {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms_by_id.items %}
                         <div v-show="{{strategy_id}} == selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>

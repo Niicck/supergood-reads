@@ -1,37 +1,29 @@
 {% load widget_tweaks %}
 
-<fieldset>
-    <div class="space-y-6 sm:space-y-5">
-        <div class="{% if label_above %} sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 pt-5 {% endif %}">
-            <legend class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">When did you finish it?</legend>
-            <div class="mt-1 sm:col-span-2 sm:mt-0">
-                <div>
-                    {{ day_field.errors }}
-                    {{ month_field.errors }}
-                    {{ year_field.errors }}
-                </div>
-                <div class="mt-1 sm:mt-0 flex flex-wrap gap-4">
-                    <div>
-                        <label for="{{ day_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
-                            {{ day_field.label }}
-                        </label>
-                        {{ day_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"}}
-                    </div>
-                    <div>
-                        <label for="{{ month_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
-                            {{ month_field.label }}
-                        </label>
-                        {{ month_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
-                    </div>
-                    <div>
-                        <label for="{{ year_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
-                            {{ year_field.label }}
-                        </label>
-                        {{ year_field|add_class:"block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
-                    </div>
-                </div>
-                <p class="mt-2 text-sm text-gray-500">It's okay to enter an estimated date (just a month and year, or just a year).</p>
-            </div>
+<div class="mt-5">
+    <div>
+        {{ day_field.errors }}
+        {{ month_field.errors }}
+        {{ year_field.errors }}
+    </div>
+    <div class="mt-1 sm:mt-0 flex flex-wrap gap-4">
+        <div>
+            <label for="{{ day_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
+                {{ day_field.label }}
+            </label>
+            {{ day_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"}}
+        </div>
+        <div>
+            <label for="{{ month_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
+                {{ month_field.label }}
+            </label>
+            {{ month_field|add_class:"block w-fit rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
+        </div>
+        <div>
+            <label for="{{ year_field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
+                {{ year_field.label }}
+            </label>
+            {{ year_field|add_class:"block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm" }}
         </div>
     </div>
-</fieldset>
+</div>

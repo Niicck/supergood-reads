@@ -96,10 +96,10 @@ class ReviewForm(forms.ModelForm[Review]):
         }
 
     media_type_content_type = forms.TypedChoiceField(
-        label="What do you want to review?", choices=[], required=True, coerce=int
+        label="Media Type", choices=[], required=True, coerce=int
     )
     strategy_content_type = forms.TypedChoiceField(
-        label="Rating Schema", choices=[], required=True, coerce=int
+        label="Rating Strategy", choices=[], required=True, coerce=int
     )
 
     completed_at_day = forms.TypedChoiceField(

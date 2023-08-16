@@ -1,24 +1,13 @@
-<div class="space-y-6 sm:space-y-5">
-    <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 pt-5">
-        {% if not label_above %}
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
-                {{ field.label }}
-            </label>
-        {% else %}
-            <div></div>
-        {% endif %}
-        <div class="mt-1 sm:col-span-2 sm:mt-0">
-            {{ field.errors }}
-            {% if label_above %}
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
-                    {{ field.label }}
-                </label>
-            {% endif %}
-            {% block field %}
-            {% endblock field %}
-            {% if field.help_text %}
-                <p class="mt-2 text-sm text-gray-500">{{ field.help_text|safe }}</p>
-            {% endif %}
-        </div>
+<div class="mt-5">
+    {{ field.errors }}
+    <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900">
+        {{ field.label }}
+    </label>
+    <div class="mt-2">
+        {% block field %}
+        {% endblock field %}
     </div>
+    {% if field.help_text %}
+        <p class="mt-2 text-sm text-gray-500">{{ field.help_text|safe }}</p>
+    {% endif %}
 </div>
