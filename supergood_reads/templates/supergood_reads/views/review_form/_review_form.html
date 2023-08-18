@@ -5,6 +5,7 @@
 {% load review_form %}
 {% load forms %}
 {% load basic_header %}
+{% load vue_tags %}
 
 {% block header %}
     {% basic_header "Create Review" %}
@@ -29,12 +30,34 @@
                         {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
                             <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
                                 <div v-show="!shouldCreateNewMediaTypeObject">
-                                    {% with field=review_form.media_type_object_id state_key="selectedMediaTypeObjectId" url=media_type_form.autocomplete_url %}
-                                        {% if initial_media_type_content_type == media_type_id %}
-                                            {% autocomplete_field field=field state_key=state_key url=url initial_value_id=initial_media_type_object_id%}
-                                        {% else %}
-                                            {% autocomplete_field field=field state_key=state_key url=url initial_value_id=""%}
-                                        {% endif %}
+                                    {% comment %} Handle Autocomplete {% endcomment %}
+                                    {% with field=review_form.media_type_object_id %}
+                                        {% with field_data_json_script_id="media_type_object_id_field_data" %}
+                                            {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
+                                            <div class="mt-5">
+                                                {{ field.errors }}
+                                                <label for="{{ field.id_for_label }}" class="block text-sm font-medium leading-6 text-gray-900">
+                                                    {{ field.label }}
+                                                </label>
+                                                <div class="mt-2">
+                                                    <div class="max-w-lg">
+                                                        <autocomplete
+                                                            {% if initial_media_type_content_type == media_type_id %}
+                                                                initial-value-id="{{ initial_media_type_object_id }}"
+                                                            {% endif %}
+                                                            csrf-token={{ csrf_token }}
+                                                            field-data-json-script-id="{{ field_data_json_script_id }}"
+                                                            state-key="selectedMediaTypeObjectId"
+                                                            url="{{ media_type_form.autocomplete_url }}"
+                                                        >
+                                                        </autocomplete>
+                                                    </div>
+                                                </div>
+                                                {% if field.help_text %}
+                                                    <p class="mt-2 text-sm text-gray-500">{{ field.help_text|safe }}</p>
+                                                {% endif %}
+                                            </div>
+                                        {% endwith %}
                                     {% endwith %}
                                 </div>
                                 <div v-show="shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>

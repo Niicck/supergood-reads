@@ -4,7 +4,6 @@ from django import template
 from django.forms import Form
 from django.forms.boundfield import BoundField
 from django.forms.fields import ChoiceField
-from django.template import Context
 from django.template.loader import render_to_string
 
 from supergood_reads.utils.forms import (
@@ -66,32 +65,6 @@ def supergood_field(
         template_name = "supergood_reads/components/forms/fields/default.html"
 
     return render_to_string(template_name, context)
-
-
-@register.inclusion_tag(
-    "supergood_reads/components/forms/custom_fields/autocomplete.html",
-    takes_context=True,
-)
-def autocomplete_field(
-    context: Context,
-    field: BoundField,
-    state_key: str,
-    url: str,
-    initial_value_id: str,
-) -> Context:
-    field_data_json_script_id = f"autocomplete_json_script_id_{field.id_for_label}"
-
-    context.update(
-        {
-            "field": field,
-            "state_key": state_key,
-            "field_data_json_script_id": field_data_json_script_id,
-            "url": url,
-            "initial_value_id": initial_value_id,
-        }
-    )
-
-    return context
 
 
 @register.inclusion_tag(
