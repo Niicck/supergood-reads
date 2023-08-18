@@ -1,9 +1,10 @@
 import logging
 from functools import wraps
-from typing import Any, Callable, Dict, Protocol, Type, TypeVar
+from typing import Any, Callable, Dict, Protocol, Type, TypeVar, cast
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import CharField, QuerySet, Value
 from django.db.models.functions import Concat
@@ -130,7 +131,9 @@ class ReviewFormView(TemplateView):
     @transaction.atomic
     @log_post_request_data
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        review_form_group = ReviewFormGroup(data=request.POST, instance=self.object)
+        review_form_group = ReviewFormGroup(
+            data=request.POST, instance=self.object, user=cast(User, self.request.user)
+        )
         if not review_form_group.is_valid():
             messages.error(request, "Please fix the errors below.")
             return self.on_form_error(request, review_form_group, status_code=400)
@@ -337,7 +340,7 @@ class MyReviewsView(ListView[Review]):
             .all()
             .order_by("-completed_at_year", "-completed_at_month", "-completed_at_day")
         )
-        if user.is_staff and user.has_perm("supergood_reads.change_review"):
+        if user.has_perm("supergood_reads.change_review"):
             qs = all_reviews_qs
         elif user.is_authenticated:
             qs = all_reviews_qs.filter(owner=self.request.user)

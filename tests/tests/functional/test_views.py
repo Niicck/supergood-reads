@@ -258,6 +258,7 @@ class TestCreateReviewView:
         assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
+        assert review.owner == reviewer_user
 
     def test_non_existent_book(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory.build()
@@ -298,6 +299,7 @@ class TestCreateReviewView:
         assert review
         assert review.media_type
         assert review.media_type.title == book.title
+        assert review.media_type.owner == reviewer_user
 
     def test_create_new_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -642,18 +644,12 @@ class TestUpdateReviewView:
         res = client.post(url, data, follow=True)
         assert res.status_code == 403
 
-        # Authorized user with permission, but non-staff, can't update review
+        # Authorized user with permission, can update review
         change_perm = Permission.objects.get(
             codename="change_review", content_type__app_label="supergood_reads"
         )
         reviewer_user.user_permissions.add(change_perm)
         client.force_login(reviewer_user)
-        res = client.post(url, data, follow=True)
-        assert res.status_code == 403
-
-        # Authorized user with permission, and staff status, can update review
-        reviewer_user.is_staff = True
-        reviewer_user.save()
         res = client.post(url, data, follow=True)
         assert res.status_code == 200
         review.refresh_from_db()
@@ -711,7 +707,7 @@ class TestUpdateReviewView:
         res = client.get(url)
         assert is_redirected_to_login(res)
 
-        # Authorized user with permission, but non-staff, can't see review
+        # Authorized user with permission can see review
         user: User = django_user_model.objects.create_user(  # noqa: S106
             username="user", password="test"
         )
@@ -720,12 +716,6 @@ class TestUpdateReviewView:
         )
         user.user_permissions.add(view_perm)
         client.force_login(user)
-        res = client.get(url, follow=True)
-        assert res.status_code == 403
-
-        # Authorized user with permission, and staff status, can see review
-        user.is_staff = True
-        user.save()
         res = client.get(url, follow=True)
         assert res.status_code == 200
         assert res.request["PATH_INFO"] == reverse(

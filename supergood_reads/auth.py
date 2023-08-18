@@ -79,11 +79,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
             return self.handle_unauthorized()
 
         obj = self.get_object()  # type: ignore
-        if (
-            obj.demo
-            and not user.is_staff
-            and not user.has_perm("supergood_reads.change_review")
-        ):
+        if obj.demo and not user.has_perm("supergood_reads.change_review"):
             self.send_demo_notification()
 
         return super().get(request, *args, **kwargs)  # type: ignore
@@ -98,26 +94,28 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         A user can only view the update page for a review only if one of these
         conditions is met:
           - The review is a demo review
-          - The user has a global "view_review" permission and is_staff
+          - The user has a global "view_review" permission
           - The user owns the Review
         """
         user = self.request.user
         obj = self.get_object()  # type: ignore
-        has_staff_perm = user.has_perm("supergood_reads.view_review") and user.is_staff
-        return obj.demo or has_staff_perm or has_owner_permission(user, obj)
+        return (
+            obj.demo
+            or user.has_perm("supergood_reads.view_review")
+            or has_owner_permission(user, obj)
+        )
 
     def has_post_permission(self) -> bool:
         """
         A user can only update a review if one of these conditions is met:
-          - The user has global "change_review" permission and is_staff
+          - The user has global "change_review" permission
           - The user owns the Review
         """
         user = self.request.user
         obj = self.get_object()  # type: ignore
-        has_staff_perm = (
-            user.has_perm("supergood_reads.change_review") and user.is_staff
+        return user.has_perm("supergood_reads.change_review") or has_owner_permission(
+            user, obj
         )
-        return has_staff_perm or has_owner_permission(user, obj)
 
 
 class DeleteReviewPermissionMixin(BasePermissionMixin):
@@ -132,10 +130,9 @@ class DeleteReviewPermissionMixin(BasePermissionMixin):
         """Check if user is allowed to change MediaType instance."""
         user = self.request.user
         obj = self.get_object()  # type: ignore
-        has_staff_perm = (
-            user.has_perm("supergood_reads.delete_review") and user.is_staff
+        return user.has_perm("supergood_reads.delete_review") or has_owner_permission(
+            user, obj
         )
-        return has_staff_perm or has_owner_permission(user, obj)
 
 
 class BaseJsonPermissionMixin(BasePermissionMixin):
