@@ -20,7 +20,9 @@ def field_to_dict(field: BoundField) -> Dict[str, Any]:
         choices = field.field.choices
     else:
         choices = []
+    errors_html = str(field.errors)
     field_data = {
+        "errors": errors_html,
         "html_name": field.html_name,
         "label": field.label,
         "id_for_label": field.id_for_label,

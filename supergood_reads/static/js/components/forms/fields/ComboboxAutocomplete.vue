@@ -1,5 +1,5 @@
 <template>
-  <input v-model="store[stateKey]" type="hidden" :name="fieldData.html_name" />
+  <input v-model="store[stateKey]" type="hidden" :name="props.fieldData.html_name" />
   <Combobox v-model="selectedResult" by="id">
     <div class="relative mt-1">
       <div
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import {
   Combobox,
@@ -79,7 +79,6 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
 import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
-import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
 
 type Result = {
   id: string;
@@ -100,9 +99,9 @@ const props = defineProps({
    * The id attribute of the <script> element where the django field's metadata was
    * was stored as an output of the django json_script filter.
    */
-  fieldDataJsonScriptId: {
-    type: String,
-    default: null,
+  fieldData: {
+    type: Object as PropType<FieldData>,
+    required: true,
   },
   /**
    * The url of the autocomplete endpoint to query for eligible results.
@@ -127,12 +126,6 @@ const props = defineProps({
   },
 });
 
-const fieldData = ref<FieldData>({
-  html_name: '',
-  label: '',
-  id_for_label: '',
-  choices: [],
-});
 let query = ref('');
 let results = ref<Array<Result>>([]);
 let selectedResult = ref<Result | null>(null);
@@ -156,14 +149,6 @@ watch(selectedResult, (newValue) => {
   } else {
     store[props.stateKey] = '';
   }
-});
-
-/**
- * Retrieve the fieldData value from the json data embedded into a <script> tag by the
- * json_script django filter.
- */
-onMounted(() => {
-  fieldData.value = parseJsonScript(props.fieldDataJsonScriptId) as FieldData;
 });
 
 /**

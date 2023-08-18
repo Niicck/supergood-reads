@@ -3,8 +3,9 @@ import { createApp, defineComponent } from 'vue';
 import { createPinia, storeToRefs } from 'pinia';
 import RadioCards from '@/static/js/components/RadioCards.vue';
 import { useReviewFormStore } from '@/static/js/stores/reviewForm';
-import ComboboxAutocomplete from '@/static/js/components/ComboboxAutocomplete.vue';
+import ComboboxAutocomplete from '@/static/js/components/forms/fields/ComboboxAutocomplete.vue';
 import DeleteModal from '@/static/js/components/DeleteModal.vue';
+import FieldWrapper from '@/static/js/components/forms/layout/FieldWrapper.vue';
 
 const pinia = createPinia();
 
@@ -14,6 +15,7 @@ const RootComponent = defineComponent({
     'radio-cards': RadioCards,
     'autocomplete': ComboboxAutocomplete,
     'delete-modal': DeleteModal,
+    'field-wrapper': FieldWrapper,
   },
   setup() {
     const store = useReviewFormStore();
