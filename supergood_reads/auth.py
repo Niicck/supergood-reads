@@ -1,5 +1,6 @@
 from typing import Any, Literal
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.auth.views import redirect_to_login
@@ -40,7 +41,7 @@ class BasePermissionMixin:
 
     def handle_unauthorized(self) -> HttpResponseRedirect:
         if not self.request.user.is_authenticated:
-            return redirect_to_login(self.request.get_full_path())
+            return redirect_to_login(settings.LOGIN_URL)
         else:
             raise PermissionDenied()
 
