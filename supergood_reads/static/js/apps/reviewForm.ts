@@ -19,7 +19,6 @@ const RootComponent = defineComponent({
   },
   setup() {
     const store = useReviewFormStore();
-    window.store = store;
 
     const openDeleteReviewModal = () => {
       store.setShowDeleteReviewModal(true);
@@ -28,6 +27,7 @@ const RootComponent = defineComponent({
     const closeDeleteReviewModal = () => {
       store.setShowDeleteReviewModal(false);
     };
+
     return { ...storeToRefs(store), openDeleteReviewModal, closeDeleteReviewModal };
   },
   mounted() {

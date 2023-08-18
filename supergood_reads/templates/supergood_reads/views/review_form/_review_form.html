@@ -32,8 +32,8 @@
                         >
                             <template #field="{fieldData}">
                                 <radio-cards
+                                    v-model="selectedMediaTypeContentType"
                                     :field-data="fieldData"
-                                    state-key="selectedMediaTypeContentType"
                                 >
                                 </radio-cards>
                             </template>
@@ -48,8 +48,8 @@
                             >
                                 <template #field="{fieldData}">
                                     <radio-cards
+                                        v-model="createNewMediaTypeObject"
                                         :field-data="fieldData"
-                                        state-key="createNewMediaTypeObject"
                                     >
                                     </radio-cards>
                                 </template>
@@ -66,12 +66,12 @@
                                         >
                                             <template #field="{fieldData}">
                                                 <autocomplete
+                                                    v-model="selectedMediaTypeObjectId"
+                                                    :field-data="fieldData"
                                                     {% if initial_media_type_content_type == media_type_id %}
                                                         initial-value-id="{{ initial_media_type_object_id }}"
                                                     {% endif %}
-                                                    :field-data="fieldData"
                                                     csrf-token={{ csrf_token }}
-                                                    state-key="selectedMediaTypeObjectId"
                                                     url="{{ media_type_form.autocomplete_url }}"
                                                 >
                                                 </autocomplete>

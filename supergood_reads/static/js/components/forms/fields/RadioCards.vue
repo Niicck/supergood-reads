@@ -1,7 +1,11 @@
 <template>
   <div>
-    <input v-model="store[stateKey]" type="hidden" :name="props.fieldData.html_name" />
-    <RadioGroup v-model="store[stateKey]" class="mt-2">
+    <input :value="modelValue" :name="props.fieldData.html_name" type="hidden" />
+    <RadioGroup
+      :modelValue="modelValue"
+      @update:modelValue="(newValue) => emit('update:modelValue', newValue)"
+      class="mt-2"
+    >
       <RadioGroupLabel class="sr-only"> {{ props.fieldData.label }} </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 lg:grid-cols-4">
         <RadioGroupOption
@@ -31,18 +35,14 @@
 
 <script lang="ts" setup>
 import type { PropType } from 'vue';
-import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
 
 const props = defineProps({
-  /**
-   * The element from the pinia store's State that you want to be bound to the selected
-   * value of the RadioGroup.
-   */
-  stateKey: {
-    type: String as PropType<keyof State>,
-    default: null,
+  // v-model bound to the id of the selectedResult.
+  modelValue: {
+    type: String,
+    default: '',
   },
   /**
    * The id attribute of the <script> element where the django field's metadata was
@@ -54,5 +54,5 @@ const props = defineProps({
   },
 });
 
-const store = window.store;
+const emit = defineEmits(['update:modelValue']);
 </script>

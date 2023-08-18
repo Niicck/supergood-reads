@@ -1,5 +1,5 @@
 <template>
-  <input v-model="store[stateKey]" type="hidden" :name="props.fieldData.html_name" />
+  <input :value="modelValue" :name="props.fieldData.html_name" type="hidden" />
   <Combobox v-model="selectedResult" by="id">
     <div class="relative mt-1">
       <div
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import type { PropType } from 'vue';
 import {
   Combobox,
@@ -77,7 +77,6 @@ import {
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
-import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
 
 type Result = {
@@ -87,11 +86,10 @@ type Result = {
 };
 
 const props = defineProps({
-  // The element from the pinia store's State that you want to be bound to the Combobox
-  // selectedResult.id.
-  stateKey: {
-    type: String as PropType<keyof State>,
-    default: null,
+  // v-model bound to the id of the selectedResult.
+  modelValue: {
+    type: String,
+    default: '',
   },
   // The output of the "field_to_dict" django filter.
   fieldData: {
@@ -115,11 +113,19 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['update:modelValue']);
+
 let query = ref('');
 let results = ref<Array<Result>>([]);
 let selectedResult = ref<Result | null>(null);
 
-const store = window.store;
+const selectedResultId = computed((): string => {
+  if (selectedResult.value) {
+    return selectedResult.value.id;
+  } else {
+    return '';
+  }
+});
 
 // Query server for new results whenever the querystring changes.
 watch(query, () => {
@@ -132,11 +138,11 @@ watch(query, () => {
  * That id is also bound to a hidden input field. It will be bound to to the django
  * form field specified by fieldData.html_name.
  */
-watch(selectedResult, (newValue) => {
+watch(selectedResultId, (newValue) => {
   if (newValue) {
-    store[props.stateKey] = newValue.id;
+    emit('update:modelValue', newValue);
   } else {
-    store[props.stateKey] = '';
+    emit('update:modelValue', '');
   }
 });
 
