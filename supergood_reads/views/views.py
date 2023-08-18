@@ -1,9 +1,10 @@
 import logging
 from functools import wraps
-from typing import Any, Callable, Dict, Protocol, TypeVar
+from typing import Any, Callable, Dict, Protocol, Type, TypeVar
 
 from django.conf import settings
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import CharField, QuerySet, Value
 from django.db.models.functions import Concat
 from django.forms import ModelForm
@@ -64,13 +65,23 @@ class ReviewFormView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        # Forms
         review_form_group = ReviewFormGroup(instance=self.object)
+        context_data = self._context_data_from_review_form_group(review_form_group)
+        context.update(context_data)
+
+        return context
+
+    def _context_data_from_review_form_group(
+        self, review_form_group: ReviewFormGroup
+    ) -> dict[str, Any]:
+        context_data = {}
+
+        # Forms
         review_form = review_form_group.review_form
         review_mgmt_form = review_form_group.review_mgmt_form
         strategy_forms_by_id = review_form_group.strategy_forms.by_content_type_id
         media_type_forms_by_id = review_form_group.media_type_forms.by_content_type_id
-        context.update(
+        context_data.update(
             {
                 "review_form": review_form,
                 "review_mgmt_form": review_mgmt_form,
@@ -92,7 +103,7 @@ class ReviewFormView(TemplateView):
         initial_create_new_media_type_object = get_initial_field_value(
             review_form_group.review_mgmt_form, "create_new_media_type_object"
         )
-        context.update(
+        context_data.update(
             {
                 "initial_strategy_content_type": initial_strategy_content_type,
                 "initial_media_type_content_type": initial_media_type_content_type,
@@ -108,14 +119,15 @@ class ReviewFormView(TemplateView):
             "selectedMediaTypeObjectId": initial_media_type_object_id,
             "createNewMediaTypeObject": initial_create_new_media_type_object,
         }
-        context.update(
+        context_data.update(
             {
                 "initial_data_for_vue_store": initial_data_for_vue_store,
             }
         )
 
-        return context
+        return context_data
 
+    @transaction.atomic
     @log_post_request_data
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         review_form_group = ReviewFormGroup(data=request.POST, instance=self.object)
@@ -140,15 +152,11 @@ class ReviewFormView(TemplateView):
         review_form_group: ReviewFormGroup,
         status_code: int = 500,
     ) -> HttpResponse:
+        context_data = self._context_data_from_review_form_group(review_form_group)
         return render(
             request,
             self.template_name,
-            {
-                "review_form": review_form_group.review_form,
-                "review_mgmt_form": review_form_group.review_mgmt_form,
-                "strategy_forms": review_form_group.strategy_forms.by_content_type_id,
-                "media_type_forms": review_form_group.media_type_forms.by_content_type_id,
-            },
+            context_data,
             status=status_code,
         )
 
@@ -291,16 +299,29 @@ class MyMediaView(ListView[AbstractMediaType]):
         Ex: by default, this will return both Books and Films, ordered by "updated_at"
         in descending order.
         """
-        media_types = AbstractMediaType.__subclasses__()
-        combined_qs = QuerySetSequence(
+        all_media_types = AbstractMediaType.__subclasses__()
+        user = self.request.user
+        all_media_types_qs = self._media_type_queryset(all_media_types)
+
+        if user.is_staff:
+            editable_media_types = [
+                mt for mt in all_media_types if mt().can_user_change(user)
+            ]
+            qs = self._media_type_queryset(editable_media_types)
+        elif user.is_authenticated:
+            qs = all_media_types_qs.filter(owner=self.request.user)
+        else:
+            qs = all_media_types_qs.filter(validated=True)
+
+        return qs.order_by("-updated_at")
+
+    def _media_type_queryset(
+        self, media_types: list[Type[AbstractMediaType]]
+    ) -> QuerySetSequence:
+        return QuerySetSequence(
             *[media_type.objects.all() for media_type in media_types],
             model=AbstractMediaType,
         )
-        if self.request.user.is_authenticated:
-            combined_qs = combined_qs.filter(owner=self.request.user)
-        else:
-            combined_qs = combined_qs.filter(validated=True)
-        return combined_qs.order_by("-updated_at")
 
 
 class MyReviewsView(ListView[Review]):
@@ -310,16 +331,19 @@ class MyReviewsView(ListView[Review]):
     template_name = "supergood_reads/views/review_list/review_list.html"
 
     def get_queryset(self) -> QuerySet[Review]:
-        review_qs = (
+        user = self.request.user
+        all_reviews_qs = (
             Review.objects.with_generic_relations()
             .all()
             .order_by("-completed_at_year", "-completed_at_month", "-completed_at_day")
         )
-        if self.request.user.is_authenticated:
-            review_qs = review_qs.filter(owner=self.request.user)
+        if user.is_staff and user.has_perm("supergood_reads.change_review"):
+            qs = all_reviews_qs
+        elif user.is_authenticated:
+            qs = all_reviews_qs.filter(owner=self.request.user)
         else:
-            review_qs = review_qs.filter(demo=True)
-        return review_qs
+            qs = all_reviews_qs.filter(demo=True)
+        return qs
 
 
 class JsonableResponseMixin:

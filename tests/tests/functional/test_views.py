@@ -23,6 +23,7 @@ from tests.factories import (
     GoodreadsStrategyFactory,
     ReviewFactory,
     ReviewFormDataFactory,
+    UserFactory,
 )
 
 
@@ -235,6 +236,7 @@ class TestCreateReviewView:
         assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
+        assert review.owner == reviewer_user
 
     def test_existing_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -317,6 +319,7 @@ class TestCreateReviewView:
         assert review
         assert review.media_type
         assert review.media_type.title == film.title
+        assert review.media_type.owner == reviewer_user
 
     def test_missing_selected_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -629,7 +632,8 @@ class TestUpdateReviewView:
         assert review.text == "It was good."
 
     def test_update_other_review(self, client: Client, reviewer_user: User) -> None:
-        review = ReviewFactory(text="It was bad.")
+        original_user = UserFactory()
+        review = ReviewFactory(text="It was bad.", owner=original_user)
         data = ReviewFormDataFactory(instance=review).data
         data["review-text"] = "It was good."
         # Unauthorized user can't update review
@@ -654,6 +658,7 @@ class TestUpdateReviewView:
         assert res.status_code == 200
         review.refresh_from_db()
         assert review.text == "It was good."
+        assert review.owner == original_user
 
     def test_update_strategy(self, client: Client, reviewer_user: User) -> None:
         """Test that existing strategy is only updated and not replaced."""

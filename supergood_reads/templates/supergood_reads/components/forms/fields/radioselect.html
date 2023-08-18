@@ -1,11 +1,6 @@
 <div class="mt-5">
     {{ field.errors }}
     <label class="block text-sm font-medium leading-6 text-gray-900">{{ field.label }}</label>
-    {% if field.help_text %}
-        <p class="text-sm text-gray-500">
-            {{ field.help_text|safe }}
-        </p>
-    {% endif %}
     <fieldset class="mt-4">
         <legend class="sr-only">{{ field.label }}</legend>
         <div class="space-y-4">
@@ -22,4 +17,9 @@
             {% endfor %}
         </div>
     </fieldset>
+    {% if field.help_text %}
+        <p class="text-sm text-gray-500">
+            {{ field.help_text|safe }}
+        </p>
+    {% endif %}
 </div>

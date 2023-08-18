@@ -73,11 +73,16 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
     request: HttpRequest
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        user = request.user
         if not self.has_get_permission():
             return self.handle_unauthorized()
 
         obj = self.get_object()  # type: ignore
-        if obj.demo:
+        if (
+            obj.demo
+            and not user.is_staff
+            and not user.has_perm("supergood_reads.change_review")
+        ):
             self.send_demo_notification()
 
         return super().get(request, *args, **kwargs)  # type: ignore

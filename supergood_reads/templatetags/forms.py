@@ -127,7 +127,7 @@ def radio_cards_field(field: BoundField, state_key: str) -> dict[str, Any]:
 
 
 @register.inclusion_tag("supergood_reads/components/forms/layout/_subheading.html")
-def form_subheading(title: str, text: str):
+def form_subheading(title: str, text: str) -> dict[str, Any]:
     return {
         "title": title,
         "text": text,

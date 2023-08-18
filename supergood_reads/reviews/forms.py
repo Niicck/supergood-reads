@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Type, cast
 
 from django import forms
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -345,10 +346,14 @@ class ReviewFormGroup:
     review: Review
 
     def __init__(
-        self, data: Optional[Any] = None, instance: Optional[Review] = None
+        self,
+        data: Optional[Any] = None,
+        instance: Optional[Review] = None,
+        user: Optional[User] = None,
     ) -> None:
         self.data = data
         self.instance = instance
+        self.user = user
         self.valid: Optional[bool] = None
         self.original_strategy = self._get_original_strategy()
         self.instantiate_forms()
@@ -453,7 +458,9 @@ class ReviewFormGroup:
         if self.review_mgmt_form.should_create_new_media_type_object:
             selected_media_type_form = self.media_type_forms.selected_form
             assert selected_media_type_form
-            media_type = selected_media_type_form.save()
+            media_type = selected_media_type_form.save(commit=False)
+            media_type.owner = self.user
+            media_type.save()
             review.media_type = media_type
 
         # If we've chosen a new strategy, delete the old strategy instance.
@@ -465,6 +472,9 @@ class ReviewFormGroup:
         assert selected_strategy_form
         strategy = selected_strategy_form.save()
         review.strategy = strategy
+
+        if not review.owner and not review.demo:
+            review.owner = self.user
 
         review.save()
         self.review = review
