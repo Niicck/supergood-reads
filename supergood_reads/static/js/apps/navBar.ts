@@ -22,6 +22,6 @@ const RootComponent = defineComponent({
 });
 
 const app = createApp(RootComponent);
-app.mount('#new-nav-bar-vue-app');
+app.mount('#nav-bar-vue-app');
 
 export {};
