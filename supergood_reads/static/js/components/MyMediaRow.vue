@@ -115,7 +115,7 @@
     <template #content>
       Are you sure you want to delete
       <span class="font-medium">{{ title }}</span>
-      ? This will also delete any Reviews associated with it.
+      ? This will also delete all Reviews associated with it.
     </template>
     <template #delete-form>
       <slot name="delete-form"></slot>

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import CharField, QuerySet, Value
+from django.db.models import CharField, Q, QuerySet, Value
 from django.db.models.functions import Concat
 from django.forms import ModelForm
 from django.http import (
@@ -197,6 +197,9 @@ class FormViewMixinProtocol(Protocol):
     def request(self) -> Any:
         ...
 
+    def get_success_url(self) -> str:
+        ...
+
     def form_invalid(self, form: ModelForm[Any]) -> HttpResponseRedirect:
         ...
 
@@ -375,13 +378,24 @@ class DeleteMyMediaMixin:
         self: FormViewMixinProtocol, form: ModelForm[Any]
     ) -> HttpResponseRedirect:
         messages.error(self.request, "Please fix the errors below.")
-        return super().form_invalid(form)  # type: ignore[safe-super]
+        return HttpResponseRedirect(self.get_success_url())
 
+    @transaction.atomic
     def form_valid(
         self: FormViewMixinProtocol, form: ModelForm[Any]
     ) -> HttpResponseRedirect:
-        title = self.object.title
-        messages.success(self.request, f"Succesfully deleted {title}.")
+        user = self.request.user
+
+        if self.object.reviews.exclude(Q(owner=user) | Q(owner__isnull=True)).exists():
+            messages.error(
+                self.request,
+                f'Other people have made Reviews for "{self.object.title}", '
+                "so you can't delete it.",
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
+        self.object.reviews.all().delete()
+        messages.success(self.request, f"Succesfully deleted {self.object.title}.")
         return super().form_valid(form)  # type: ignore[safe-super]
 
 

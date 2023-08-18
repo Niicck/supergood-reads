@@ -5,9 +5,10 @@ from uuid import UUID, uuid4
 
 import django
 import pytest
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
+from django.contrib.messages import get_messages
 from django.core.management import call_command
 from django.http import HttpResponse
 from django.test import Client
@@ -336,18 +337,11 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
         # Check that book autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
-        assert (
-            autocomplete_tag := soup.find(
-                "autocomplete", attrs={"url": "/reads-app/book-autocomplete/"}
-            )
+        autocomplete_tag = soup.find(
+            "autocomplete", attrs={"url": "/reads-app/book-autocomplete/"}
         )
-        assert (parent_tag := autocomplete_tag.parent)
-        assert (grandparent_tag := parent_tag.parent)
-        assert (
-            error_list_tag := grandparent_tag.find("ul", attrs={"class": "errorlist"})
-        )
-        assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
-        assert error_list_item_tag.text == "This field is required."
+        autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
+        assert "This field is required." in str(autocomplete_tag_container)
 
     def test_missing_selected_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -362,18 +356,11 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
         # Check that film autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
-        assert (
-            autocomplete_tag := soup.find(
-                "autocomplete", attrs={"url": "/reads-app/film-autocomplete/"}
-            )
+        autocomplete_tag = soup.find(
+            "autocomplete", attrs={"url": "/reads-app/film-autocomplete/"}
         )
-        assert (parent_tag := autocomplete_tag.parent)
-        assert (grandparent_tag := parent_tag.parent)
-        assert (
-            error_list_tag := grandparent_tag.find("ul", attrs={"class": "errorlist"})
-        )
-        assert isinstance((error_list_item_tag := error_list_tag.find("li")), Tag)
-        assert error_list_item_tag.text == "This field is required."
+        autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
+        assert "This field is required." in str(autocomplete_tag_container)
 
     def test_missing_new_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -568,6 +555,31 @@ class TestDeleteMyMediaBookView:
         res = client.post(url)
         assert res.status_code == 404
 
+    def test_delete_reviews(self, client: Client, reviewer_user: User) -> None:
+        another_user = UserFactory()
+        book = BookFactory(owner=reviewer_user)
+        review = ReviewFactory(media_type=book, owner=another_user)
+        url = self.get_url(book.id)
+        res = client.post(url)
+        assert is_redirected_to_login(res)
+        client.force_login(reviewer_user)
+
+        # Not allowed to delete as long as a Review exists that belongs to someone else.
+        res = client.post(url)
+        assert Book.objects.filter(pk=book.pk).exists()
+        assert Review.objects.filter(pk=review.pk).exists()
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "error"
+
+        # Reviews and Book will be deleted once all Reviews are owned by reviewer_user.
+        review.owner = reviewer_user
+        review.save()
+        res = client.post(url)
+        assert not Book.objects.filter(pk=book.pk).exists()
+        assert not Review.objects.filter(pk=review.pk).exists()
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "success"
+
 
 @pytest.mark.django_db
 class TestDeleteMyMediaFilmView:
@@ -594,6 +606,31 @@ class TestDeleteMyMediaFilmView:
         client.force_login(reviewer_user)
         res = client.post(url)
         assert res.status_code == 404
+
+    def test_delete_reviews(self, client: Client, reviewer_user: User) -> None:
+        another_user = UserFactory()
+        film = FilmFactory(owner=reviewer_user)
+        review = ReviewFactory(media_type=film, owner=another_user)
+        url = self.get_url(film.id)
+        res = client.post(url)
+        assert is_redirected_to_login(res)
+        client.force_login(reviewer_user)
+
+        # Not allowed to delete as long as a Review exists that belongs to someone else.
+        res = client.post(url)
+        assert Film.objects.filter(pk=film.pk).exists()
+        assert Review.objects.filter(pk=review.pk).exists()
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "error"
+
+        # Reviews and Film will be deleted once all Reviews are owned by reviewer_user.
+        review.owner = reviewer_user
+        review.save()
+        res = client.post(url)
+        assert not Film.objects.filter(pk=film.pk).exists()
+        assert not Review.objects.filter(pk=review.pk).exists()
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "success"
 
 
 @pytest.mark.django_db

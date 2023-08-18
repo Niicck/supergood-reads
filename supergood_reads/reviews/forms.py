@@ -408,6 +408,7 @@ class ReviewFormGroup:
                 selected_content_type_id = None
         return selected_content_type_id
 
+    @transaction.atomic
     def is_valid(self) -> bool:
         self.valid = True
 
@@ -445,7 +446,7 @@ class ReviewFormGroup:
 
         return self.valid
 
-    @transaction.atomic()
+    @transaction.atomic
     def save(self) -> Review:
         """Save the Review and any associated Foriegn Models"""
         if self.valid is None:

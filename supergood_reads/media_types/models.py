@@ -3,12 +3,15 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import SafeText
+
+from supergood_reads.reviews.models import Review
 
 
 class AbstractMediaType(models.Model):
@@ -32,6 +35,12 @@ class AbstractMediaType(models.Model):
     created_at = models.DateTimeField(null=False)
     updated_at = models.DateTimeField(default=timezone.now, null=False)
     validated = models.BooleanField(default=False)
+
+    reviews = GenericRelation(
+        Review,
+        object_id_field="media_type_object_id",
+        content_type_field="media_type_content_type",
+    )
 
     class Meta:
         abstract = True
