@@ -28,12 +28,13 @@
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.author v_slot_name="creator-field" %}
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.year v_slot_name="year-field" %}
-        {% url 'delete_review' object.id as delete_url %}
         <template #delete-form>
+            {% url 'delete_book' item.id as delete_url %}
             {% include "supergood_reads/components/buttons/delete.html" with url=delete_url %}
         </template>
     </tr>
 {% elif item|is_film %}
+
     <tr is="vue:my-media-row"
         initial-title="{{item.title}}"
         initial-creator="{{item.director}}"
@@ -49,8 +50,8 @@
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.title v_slot_name="title-field" %}
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.director v_slot_name="creator-field" %}
         {% include "supergood_reads/views/media_list/_media_list_field_wrapper.html" with field=form.year v_slot_name="year-field" %}
-        {% url 'delete_review' object.id as delete_url %}
         <template #delete-form>
+            {% url 'delete_film' item.id as delete_url %}
             {% include "supergood_reads/components/buttons/delete.html" with url=delete_url %}
         </template>
     </tr>
