@@ -24,13 +24,41 @@
                 {% comment %} Handle MediaType Selection {% endcomment %}
                 <div class="my-12">
                     {% form_subheading title="Select a Media Type" text="What do you want to review?" %}
-                    {% radio_cards_field review_form.media_type_content_type state_key="selectedMediaTypeContentType" %}
+                    {% comment %} Select MediaType Type {% endcomment %}
+                    {% with field=review_form.media_type_content_type field_data_json_script_id="media_type_content_type_field_data" %}
+                        {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
+                        <field-wrapper
+                            field-data-json-script-id="{{ field_data_json_script_id }}"
+                        >
+                            <template #field="{fieldData}">
+                                <radio-cards
+                                    :field-data="fieldData"
+                                    state-key="selectedMediaTypeContentType"
+                                >
+                                </radio-cards>
+                            </template>
+                        </field-wrapper>
+                    {% endwith %}
                     <div v-show="selectedMediaTypeContentType">
-                        {% radio_cards_field review_mgmt_form.create_new_media_type_object state_key="createNewMediaTypeObject" %}
+                        {% comment %} Create New MediaType or Select Existing {% endcomment %}
+                        {% with field=review_mgmt_form.create_new_media_type_object field_data_json_script_id="field_data_create_new" %}
+                            {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
+                            <field-wrapper
+                                field-data-json-script-id="{{ field_data_json_script_id }}"
+                            >
+                                <template #field="{fieldData}">
+                                    <radio-cards
+                                        :field-data="fieldData"
+                                        state-key="createNewMediaTypeObject"
+                                    >
+                                    </radio-cards>
+                                </template>
+                            </field-wrapper>
+                        {% endwith %}
                         {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
                             <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
                                 <div v-show="!shouldCreateNewMediaTypeObject">
-                                    {% comment %} Handle Autocomplete {% endcomment %}
+                                    {% comment %} MediaType Autocomplete {% endcomment %}
                                     {% with field=review_form.media_type_object_id field_data_json_script_id="media_type_object_id_field_data" %}
                                         {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
                                         <field-wrapper

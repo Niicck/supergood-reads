@@ -1,14 +1,9 @@
 from typing import Any, Dict
 
 from django import template
-from django.forms import Form
 from django.forms.boundfield import BoundField
 from django.forms.fields import ChoiceField
 from django.template.loader import render_to_string
-
-from supergood_reads.utils.forms import (
-    get_initial_field_value as get_initial_field_value_util,
-)
 
 register = template.Library()
 
@@ -29,11 +24,6 @@ def field_to_dict(field: BoundField) -> Dict[str, Any]:
         "choices": choices,
     }
     return field_data
-
-
-@register.filter(is_safe=True)
-def get_initial_field_value(form: Form, field_name: str) -> Any:
-    return get_initial_field_value_util(form, field_name)
 
 
 @register.simple_tag
@@ -84,21 +74,6 @@ def date_picker(
         "year_field": year_field,
         "label_above": label_above,
     }
-
-
-@register.inclusion_tag(
-    "supergood_reads/components/forms/custom_fields/radio_cards.html"
-)
-def radio_cards_field(field: BoundField, state_key: str) -> dict[str, Any]:
-    field_data_json_script_id = f"radio_cards_json_script_id_{field.id_for_label}"
-
-    context = {
-        "field": field,
-        "state_key": state_key,
-        "field_data_json_script_id": field_data_json_script_id,
-    }
-
-    return context
 
 
 @register.inclusion_tag("supergood_reads/components/forms/layout/_subheading.html")

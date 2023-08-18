@@ -1,11 +1,11 @@
 <template>
   <div>
-    <input v-model="store[stateKey]" type="hidden" :name="fieldData.html_name" />
+    <input v-model="store[stateKey]" type="hidden" :name="props.fieldData.html_name" />
     <RadioGroup v-model="store[stateKey]" class="mt-2">
-      <RadioGroupLabel class="sr-only"> {{ fieldData.label }} </RadioGroupLabel>
+      <RadioGroupLabel class="sr-only"> {{ props.fieldData.label }} </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 lg:grid-cols-4">
         <RadioGroupOption
-          v-for="choice in fieldData.choices"
+          v-for="choice in props.fieldData.choices"
           :key="choice[0]"
           v-slot="{ active, checked }"
           as="template"
@@ -30,12 +30,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
 import type { PropType } from 'vue';
 import type { State } from '@/static/js/stores';
 import type { FieldData } from '@/static/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
-import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
 
 const props = defineProps({
   /**
@@ -50,26 +48,11 @@ const props = defineProps({
    * The id attribute of the <script> element where the django field's metadata was
    * was stored as an output of the django json_script filter.
    */
-  fieldDataJsonScriptId: {
-    type: String,
-    default: null,
+  fieldData: {
+    type: Object as PropType<FieldData>,
+    required: true,
   },
 });
 
-const fieldData = ref<FieldData>({
-  html_name: '',
-  label: '',
-  id_for_label: '',
-  choices: [],
-});
-
 const store = window.store;
-
-/**
- * Retrieve the fieldData value from the json data embedded into a <script> tag by the
- * json_script django filter.
- */
-onMounted(() => {
-  fieldData.value = parseJsonScript(props.fieldDataJsonScriptId) as FieldData;
-});
 </script>

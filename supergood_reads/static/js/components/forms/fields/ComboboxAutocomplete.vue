@@ -87,39 +87,28 @@ type Result = {
 };
 
 const props = defineProps({
-  /**
-   * The element from the pinia store's State that you want to be bound to the Combobox
-   * selectedResult.id.
-   */
+  // The element from the pinia store's State that you want to be bound to the Combobox
+  // selectedResult.id.
   stateKey: {
     type: String as PropType<keyof State>,
     default: null,
   },
-  /**
-   * The id attribute of the <script> element where the django field's metadata was
-   * was stored as an output of the django json_script filter.
-   */
+  // The output of the "field_to_dict" django filter.
   fieldData: {
     type: Object as PropType<FieldData>,
     required: true,
   },
-  /**
-   * The url of the autocomplete endpoint to query for eligible results.
-   */
+  // The url of the autocomplete endpoint to query for eligible results.
   url: {
     type: String,
     default: null,
   },
-  /**
-   * The django csrfToken to authenticate queries to props.url.
-   */
+  // The django csrfToken to authenticate queries to props.url.
   csrfToken: {
     type: String,
     default: '',
   },
-  /**
-   * Id of the initialValue, if it exists.
-   */
+  // Id of the initialValue, if it exists.
   initialValueId: {
     type: String,
     default: '',

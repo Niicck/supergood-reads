@@ -1,6 +1,4 @@
-/**
- * The type of the output of the custom field_to_dict django filter.
- */
+// The output of the "field_to_dict" django filter.
 type FieldData = {
   errors_html: string;
   html_name: string;
