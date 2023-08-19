@@ -72,7 +72,7 @@
                                                         initial-value-id="{{ initial_media_type_object_id }}"
                                                     {% endif %}
                                                     csrf-token={{ csrf_token }}
-                                                    url="{{ media_type_form.autocomplete_url }}"
+                                                    url={% media_type_autocomplete_url media_type_id %}
                                                 >
                                                 </autocomplete>
                                             </template>

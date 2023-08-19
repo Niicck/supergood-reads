@@ -1,17 +1,31 @@
 import uuid
-from typing import Any
+from typing import Any, Self, TypeVar
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.db.models import CharField, F, Value
+from django.db.models.functions import Concat
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import SafeText
 
 from supergood_reads.reviews.models import Review
+
+_T = TypeVar("_T", bound="AbstractMediaType")
+
+
+class MediaTypeQuerySet(models.QuerySet[_T]):
+    def with_autocomplete_label(self) -> Self:
+        return self.annotate(autocomplete_label=self.model.autocomplete_label())
+
+
+class MediaTypeManager(models.Manager[_T]):
+    def get_queryset(self) -> MediaTypeQuerySet[_T]:
+        return MediaTypeQuerySet[_T](self.model, using=self._db)
 
 
 class AbstractMediaType(models.Model):
@@ -59,6 +73,10 @@ class AbstractMediaType(models.Model):
     @classmethod
     def icon(cls) -> SafeText:
         raise NotImplementedError
+
+    @classmethod
+    def autocomplete_label(cls) -> Any:
+        return F("title")
 
     def can_user_change(self, user: User | AnonymousUser) -> bool:
         """
@@ -110,6 +128,8 @@ class Book(AbstractMediaType):
     pages = models.IntegerField(blank=True, null=True)
     genres = models.ManyToManyField(Genre)
 
+    objects = MediaTypeManager["Book"]()
+
     class Meta:
         verbose_name = "Book"
 
@@ -124,6 +144,18 @@ class Book(AbstractMediaType):
     def icon(cls) -> SafeText:
         value = render_to_string("supergood_reads/components/svg/book.html")
         return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)
+
+    @classmethod
+    def autocomplete_label(cls) -> Any:
+        return Concat(
+            "title",
+            Value(" ("),
+            "author",
+            Value(", "),
+            "year",
+            Value(")"),
+            output_field=CharField(),
+        )
 
 
 class Country(models.Model):
@@ -144,6 +176,8 @@ class Film(AbstractMediaType):
     genres = models.ManyToManyField(Genre)
     countries = models.ManyToManyField(Country)
 
+    objects = MediaTypeManager["Film"]()
+
     class Meta:
         verbose_name = "Film"
 
@@ -158,3 +192,13 @@ class Film(AbstractMediaType):
     def icon(cls) -> SafeText:
         value = render_to_string("supergood_reads/components/svg/film.html")
         return format_html("<span class='text-xs text-cyan-500'>{}</span>", value)
+
+    @classmethod
+    def autocomplete_label(cls) -> Any:
+        return Concat(
+            "title",
+            Value(" ("),
+            "year",
+            Value(")"),
+            output_field=CharField(),
+        )

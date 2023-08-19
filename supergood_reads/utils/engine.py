@@ -5,7 +5,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.forms import ModelForm
 from django.utils.module_loading import import_string
 
-from supergood_reads.media_types.forms import BookAutocompleteForm, FilmAutocompleteForm
+from supergood_reads.media_types.forms import BookForm, FilmForm
 from supergood_reads.media_types.models import AbstractMediaType
 from supergood_reads.strategies.forms import (
     EbertStrategyForm,
@@ -47,8 +47,8 @@ class DefaultSupergoodReadsConfig(SupergoodReadsConfig):
         MaximusStrategyForm,
     ]
     media_type_form_classes = [
-        BookAutocompleteForm,
-        FilmAutocompleteForm,
+        BookForm,
+        FilmForm,
     ]
 
 

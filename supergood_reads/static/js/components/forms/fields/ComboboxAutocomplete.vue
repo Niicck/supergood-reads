@@ -47,7 +47,7 @@
                 class="block truncate"
                 :class="{ 'font-medium': selected, 'font-normal': !selected }"
               >
-                {{ result.display_name }}
+                {{ result.autocomplete_label }}
               </span>
               <span
                 v-if="selected"
@@ -82,7 +82,7 @@ import type { FieldData } from '@/static/js/types';
 type Result = {
   id: string;
   title: string;
-  display_name: string;
+  autocomplete_label: string;
 };
 
 const props = defineProps({

@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, Protocol, Type, TypeVar, cast
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import CharField, Q, QuerySet, Value
-from django.db.models.functions import Concat
+from django.db.models import Q, QuerySet
 from django.forms import ModelForm
 from django.http import (
     Http404,
@@ -33,8 +33,13 @@ from supergood_reads.auth import (
     UpdateReviewPermissionMixin,
 )
 from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
-from supergood_reads.media_types.models import AbstractMediaType, Book, Film
-from supergood_reads.reviews.forms import ReviewFormGroup
+from supergood_reads.media_types.models import (
+    AbstractMediaType,
+    Book,
+    Film,
+    MediaTypeQuerySet,
+)
+from supergood_reads.reviews.forms import InvalidContentTypeError, ReviewFormGroup
 from supergood_reads.reviews.models import Review
 from supergood_reads.utils.forms import get_initial_field_value
 from supergood_reads.utils.json import UUIDEncoder
@@ -233,61 +238,38 @@ class DeleteReview(DeleteReviewPermissionMixin, DeleteView[Review, ModelForm[Rev
         return super().form_valid(form)  # type: ignore[safe-super]
 
 
-class FilmAutocompleteView(View):
+class MediaTypeAutocompleteView(View):
     limit = 20
 
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
+        content_type_id = query_dict.get("content_type_id", "")
         q = query_dict.get("q", "")
-        if is_uuid(q):
-            film_qs = Film.objects.filter(pk=q)
-        else:
-            film_qs = Film.objects.filter(title__icontains=q, validated=True)
-        films = film_qs.annotate(
-            display_name=Concat(
-                "title",
-                Value(" ("),
-                "year",
-                Value(")"),
-                output_field=CharField(),
+
+        try:
+            if not content_type_id:
+                raise InvalidContentTypeError
+            content_type = ContentType.objects.get_for_id(int(content_type_id))
+            model_class = content_type.model_class()
+            if not (model_class and issubclass(model_class, AbstractMediaType)):
+                raise InvalidContentTypeError
+        except (ContentType.DoesNotExist, InvalidContentTypeError, ValueError):
+            return JsonResponse(
+                {"error": f"Invalid content type ID {content_type_id}"}, status=400
             )
-        )[: self.limit]
-        film_values = films.values("id", "title", "display_name")
+
+        manager = cast(MediaTypeQuerySet[AbstractMediaType], model_class.objects)
+
+        if is_uuid(q):
+            qs = manager.filter(pk=q)
+        else:
+            qs = manager.filter(title__icontains=q, validated=True)
+        qs = qs.with_autocomplete_label()[: self.limit]
+        values = qs.values("id", "title", "autocomplete_label")  # type: ignore[misc]
 
         return JsonResponse(
             {
-                "results": list(film_values),
-            },
-            encoder=UUIDEncoder,
-        )
-
-
-class BookAutocompleteView(View):
-    limit = 20
-
-    def get(self, request: HttpRequest) -> JsonResponse:
-        query_dict = request.GET
-        q = query_dict.get("q", "")
-        if is_uuid(q):
-            book_qs = Book.objects.filter(pk=q)
-        else:
-            book_qs = Book.objects.filter(title__icontains=q, validated=True)
-        books = book_qs.annotate(
-            display_name=Concat(
-                "title",
-                Value(" ("),
-                "author",
-                Value(", "),
-                "year",
-                Value(")"),
-                output_field=CharField(),
-            )
-        )[: self.limit]
-        book_values = books.values("id", "title", "display_name")
-
-        return JsonResponse(
-            {
-                "results": list(book_values),
+                "results": list(values),
             },
             encoder=UUIDEncoder,
         )
@@ -339,8 +321,8 @@ class MyReviewsView(ListView[Review]):
     def get_queryset(self) -> QuerySet[Review]:
         user = self.request.user
         all_reviews_qs = (
-            Review.objects.with_generic_relations()
-            .all()
+            Review.objects.all()
+            .with_generic_relations()
             .order_by("-completed_at_year", "-completed_at_month", "-completed_at_day")
         )
         if user.has_perm("supergood_reads.change_review"):

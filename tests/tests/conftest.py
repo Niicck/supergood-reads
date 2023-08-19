@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from supergood_reads.media_types.forms import BookAutocompleteForm, FilmAutocompleteForm
+from supergood_reads.media_types.forms import BookForm, FilmForm
 from supergood_reads.strategies.forms import (
     EbertStrategyForm,
     GoodreadsStrategyForm,
@@ -18,8 +18,8 @@ class PytestSupergoodReadsConfig(SupergoodReadsConfig):
         MaximusStrategyForm,
     ]
     media_type_form_classes = [
-        BookAutocompleteForm,
-        FilmAutocompleteForm,
+        BookForm,
+        FilmForm,
     ]
 
 

@@ -16,6 +16,7 @@ from django.urls import reverse
 
 from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
 from supergood_reads.reviews.forms import CreateNewMediaOption, ReviewForm
+from supergood_reads.templatetags.review_form import media_type_autocomplete_url
 from supergood_reads.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
@@ -108,8 +109,15 @@ def is_redirected_to_login(res: Any) -> bool:
 
 
 @pytest.mark.django_db
-class TestFilmAutocompleteView:
-    def test_without_q(
+class TestMediaTypeAutocompleteView:
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        book_content_type = ContentTypeUtils.get_content_type_id(Book)
+        self.book_autocomplete_url = media_type_autocomplete_url(book_content_type)
+        film_content_type = ContentTypeUtils.get_content_type_id(Film)
+        self.film_autocomplete_url = media_type_autocomplete_url(film_content_type)
+
+    def test_film_without_q(
         self, admin_client: Client, film_data: list[MediaTypeFixtureData]
     ) -> None:
         """Should return all films."""
@@ -119,12 +127,12 @@ class TestFilmAutocompleteView:
                 title=data.title,
                 year=data.year,
             )
-        url = reverse("film_autocomplete")
+        url = self.film_autocomplete_url
         response = admin_client.get(url)
         assert response.status_code == 200
         assert media_type_response_matches(cast(HttpResponse, response), film_data)
 
-    def test_with_q(
+    def test_film_with_q(
         self, admin_client: Client, film_data: list[MediaTypeFixtureData]
     ) -> None:
         """Should only return queried film."""
@@ -134,15 +142,12 @@ class TestFilmAutocompleteView:
                 title=data.title,
                 year=data.year,
             )
-        url = reverse("film_autocomplete")
-        response = admin_client.get(url, {"q": "Charade"})
+        url = self.film_autocomplete_url
+        response = admin_client.get(url + "&q=Charade")
         assert response.status_code == 200
         assert media_type_response_matches(cast(HttpResponse, response), [film_data[2]])
 
-
-@pytest.mark.django_db
-class TestBookAutocompleteView:
-    def test_without_q(
+    def test_book_without_q(
         self, admin_client: Client, book_data: list[MediaTypeFixtureData]
     ) -> None:
         """Should return all films."""
@@ -152,12 +157,12 @@ class TestBookAutocompleteView:
                 title=data.title,
                 year=data.year,
             )
-        url = reverse("book_autocomplete")
+        url = self.book_autocomplete_url
         response = admin_client.get(url)
         assert response.status_code == 200
         assert media_type_response_matches(cast(HttpResponse, response), book_data)
 
-    def test_with_q(
+    def test_book_with_q(
         self, admin_client: Client, book_data: list[MediaTypeFixtureData]
     ) -> None:
         """Should only return queried film."""
@@ -167,8 +172,8 @@ class TestBookAutocompleteView:
                 title=data.title,
                 year=data.year,
             )
-        url = reverse("book_autocomplete")
-        response = admin_client.get(url, {"q": "Anna"})
+        url = self.book_autocomplete_url
+        response = admin_client.get(url + "&q=Anna")
         assert response.status_code == 200
         assert media_type_response_matches(cast(HttpResponse, response), [book_data[2]])
 
@@ -338,7 +343,10 @@ class TestCreateReviewView:
         # Check that book autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
         autocomplete_tag = soup.find(
-            "autocomplete", attrs={"url": "/reads-app/book-autocomplete/"}
+            "autocomplete",
+            attrs={
+                "url": f"/reads-app/media-type-autocomplete/?content_type_id={self.book_content_type}"
+            },
         )
         autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
         assert "This field is required." in str(autocomplete_tag_container)
@@ -357,7 +365,10 @@ class TestCreateReviewView:
         # Check that film autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
         autocomplete_tag = soup.find(
-            "autocomplete", attrs={"url": "/reads-app/film-autocomplete/"}
+            "autocomplete",
+            attrs={
+                "url": f"/reads-app/media-type-autocomplete/?content_type_id={self.film_content_type}"
+            },
         )
         autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
         assert "This field is required." in str(autocomplete_tag_container)

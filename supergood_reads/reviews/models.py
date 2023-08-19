@@ -8,15 +8,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import QuerySet
 from django.utils import timezone
 
 from supergood_reads.strategies.models import AbstractStrategy
 
 
-class ReviewManager(models.Manager["Review"]):
-    def with_generic_relations(self) -> QuerySet["Review"]:
+class ReviewQuerySet(models.QuerySet["Review"]):
+    def with_generic_relations(self) -> models.QuerySet["Review"]:
         return self.prefetch_related("strategy", "media_type")
+
+
+ReviewManager = models.Manager.from_queryset(ReviewQuerySet)
 
 
 class Review(models.Model):
@@ -65,7 +67,7 @@ class Review(models.Model):
     media_type_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     media_type = GenericForeignKey("media_type_content_type", "media_type_object_id")
 
-    objects = ReviewManager()
+    objects = ReviewQuerySet.as_manager()
 
     class Meta:
         ordering = (

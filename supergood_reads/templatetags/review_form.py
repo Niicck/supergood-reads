@@ -1,5 +1,8 @@
+from urllib.parse import urlencode
+
 from django import template
 from django.template import Context
+from django.urls import reverse
 
 register = template.Library()
 
@@ -36,3 +39,10 @@ def get_strategy_form_ref(strategy_id: int) -> str:
     form that corresponds to this strategy_id.
     """
     return f"strategy_form_{strategy_id}"
+
+
+@register.simple_tag()
+def media_type_autocomplete_url(content_type_id: int | str) -> str:
+    base_url = reverse("media_type_autocomplete")
+    query_params = urlencode({"content_type_id": content_type_id})
+    return f"{base_url}?{query_params}"

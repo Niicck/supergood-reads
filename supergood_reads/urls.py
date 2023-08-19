@@ -21,14 +21,9 @@ urlpatterns = [
         name="update_review",
     ),
     path(
-        "film-autocomplete/",
-        views.FilmAutocompleteView.as_view(),
-        name="film_autocomplete",
-    ),
-    path(
-        "book-autocomplete/",
-        views.BookAutocompleteView.as_view(),
-        name="book_autocomplete",
+        "media-type-autocomplete/",
+        views.MediaTypeAutocompleteView.as_view(),
+        name="media_type_autocomplete",
     ),
     path(
         "media/",
