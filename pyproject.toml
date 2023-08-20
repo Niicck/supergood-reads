@@ -33,6 +33,7 @@ django-stubs-ext = ">=4.2.2"
 django-vite = ">=2.0.2"
 django-widget-tweaks = ">=1.4.12"
 django-querysetsequence = ">=0.17"
+djangorestframework = "^3.14.0"
 
 [tool.poetry.group.dev.dependencies]
 # Dependencies required to run app locally.

@@ -31,6 +31,11 @@ urlpatterns = [
         name="media",
     ),
     path(
+        "media/search/",
+        views.MediaTypeSearchView.as_view(),
+        name="media_search",
+    ),
+    path(
         "reviews/",
         views.MyReviewsView.as_view(),
         name="reviews",

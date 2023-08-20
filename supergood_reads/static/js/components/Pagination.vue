@@ -1,0 +1,58 @@
+<template>
+  <nav
+    class="flex items-center justify-between border-t border-gray-200 bg-white py-3"
+    aria-label="Pagination"
+  >
+    <div class="hidden sm:block">
+      <p class="text-sm text-gray-700">
+        Showing
+        <span class="font-medium">{{ props.startIndex }}</span>
+        to
+        <span class="font-medium">{{ props.endIndex }}</span>
+        of
+        <span class="font-medium">{{ props.count }}</span>
+        results
+      </p>
+    </div>
+    <div class="flex flex-1 justify-between sm:justify-end">
+      <template v-if="props.previous">
+        <a
+          :href="props.previous"
+          class="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
+          >Previous</a
+        >
+      </template>
+      <template v-else>
+        <div></div>
+      </template>
+      <template v-if="props.next">
+        <a
+          :href="props.next"
+          class="relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
+          >Next</a
+        >
+      </template>
+      <template v-else>
+        <div></div>
+      </template>
+    </div>
+  </nav>
+</template>
+
+<script lang="ts" setup>
+import { PropType } from 'vue';
+
+const props = defineProps({
+  next: { type: String as PropType<string | null>, required: false, default: null },
+  previous: { type: String as PropType<string | null>, required: false, default: null },
+  startIndex: { type: Number as PropType<number>, required: true },
+  endIndex: { type: Number as PropType<number>, required: true },
+  count: { type: Number as PropType<number>, required: true },
+  previousPageNumber: {
+    type: Number as PropType<number>,
+    required: false,
+    default: null,
+  },
+  nextPageNumber: { type: Number as PropType<number>, required: false, default: null },
+});
+</script>

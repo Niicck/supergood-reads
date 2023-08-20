@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_vite",  # add django-vite
     "widget_tweaks",  # add django-widget-tweaks
+    "rest_framework",  # add rest-framework
 ]
 
 MIDDLEWARE = [

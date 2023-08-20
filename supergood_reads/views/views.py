@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import EmptyPage
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.forms import ModelForm
@@ -24,6 +25,8 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
+from rest_framework import generics, pagination, serializers
+from rest_framework.response import Response
 
 from supergood_reads.auth import (
     CreateReviewPermissionMixin,
@@ -272,6 +275,103 @@ class MediaTypeAutocompleteView(View):
                 "results": list(values),
             },
             encoder=UUIDEncoder,
+        )
+
+
+class MediaTypeSerializer(serializers.BaseSerializer):
+    """DRF Serializers don't work with Abstract Model Classes."""
+
+    def to_representation(self, obj: AbstractMediaType):
+        return {
+            "id": obj.id,
+            "title": obj.title,
+            "year": obj.year,
+            "creator": obj.creator,
+            "icon": obj.icon(),
+        }
+
+
+class SupergoodPagination(pagination.PageNumberPagination):
+    page_query_param = "page"
+    page_size = 40
+
+    def get_page_number(self, request, paginator):
+        try:
+            return super().get_page_number(request, paginator)
+        except EmptyPage:
+            return 1
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "paginator": {
+                    "next": self.get_next_link(),
+                    "previous": self.get_previous_link(),
+                    "start_index": self.page.start_index(),
+                    "end_index": self.page.end_index(),
+                    "count": self.page.paginator.count,
+                },
+                "results": data,
+            }
+        )
+
+
+class MediaTypeSearchView(generics.ListAPIView):
+    serializer_class = MediaTypeSerializer
+    pagination_class = SupergoodPagination
+
+    def get_queryset(self) -> QuerySetSequence:
+        query_params = self.request.query_params
+        q = query_params.get("q", "")
+        only_my_media = query_params.get("my-media", "0") == "1"
+
+        if only_my_media:
+            qs = self._my_media_qs()
+        else:
+            qs = self._all_media_types_qs().filter(validated=True)
+
+        if is_uuid(q):
+            qs = qs.filter(pk=q)
+        else:
+            qs = qs.filter(title__icontains=q)
+
+        qs = qs.order_by("-updated_at")
+        return qs
+
+    @property
+    def all_media_types(self) -> list[type[AbstractMediaType]]:
+        return AbstractMediaType.__subclasses__()
+
+    def _my_media_qs(self) -> QuerySetSequence:
+        """
+        Return queryset combining all child content_types of AbstractMediaType.
+        Ex: by default, this will return both Books and Films, ordered by "updated_at"
+        in descending order.
+        """
+        user = self.request.user
+
+        if user.is_staff:
+            editable_media_types = [
+                mt for mt in self.all_media_types if mt().can_user_change(user)
+            ]
+            qs = self._qs_for_media_types(editable_media_types)
+        elif user.is_authenticated:
+            all_media_types_qs = self._qs_for_media_types(self.all_media_types)
+            qs = all_media_types_qs.filter(owner=self.request.user)
+        else:
+            qs = Book.objects.none()
+        return qs
+
+    def _all_media_types_qs(self) -> QuerySetSequence:
+        all_media_types_qs = self._qs_for_media_types(self.all_media_types)
+        return all_media_types_qs
+
+    def _qs_for_media_types(
+        self, media_types: list[Type[AbstractMediaType]]
+    ) -> QuerySetSequence:
+        return QuerySetSequence(
+            *[media_type.objects.all() for media_type in media_types],
+            model=AbstractMediaType,
         )
 
 
