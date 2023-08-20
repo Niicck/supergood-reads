@@ -1,7 +1,7 @@
 <template>
-  <div class="px-4 sm:px-0">
-    <div class="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-      <div class="w-full max-w-lg lg:max-w-xs">
+  <div class="px-0">
+    <div class="flex flex-1">
+      <div class="w-full max-w-lg">
         <label for="search" class="sr-only">Search</label>
         <div class="relative text-gray-400 focus-within:text-gray-600">
           <div
@@ -12,7 +12,7 @@
           <input
             @input="query = $event.target.value"
             id="search"
-            class="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 sm:text-sm sm:leading-6"
+            class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-1.5 pl-10 pr-3 text-gray-900 sm:leading-6"
             placeholder="Search"
             type="search"
             name="search"
@@ -20,7 +20,7 @@
         </div>
       </div>
     </div>
-    <div class="-mx-4 mt-8 sm:-mx-0">
+    <div class="mt-8">
       <table v-if="results" class="table-fixed min-w-full divide-y divide-gray-300">
         <thead>
           <tr>
@@ -77,6 +77,8 @@ import axios from 'axios';
 import Pagination from '@/static/js/components/Pagination.vue';
 import MediaListRow from '@/static/js/components/MediaListRow.vue';
 
+let searchAbortController: AbortController | null = null;
+
 type Pagination = {
   hasNext: boolean;
   hasPrevious: boolean;
@@ -131,6 +133,15 @@ onMounted(() => {
 });
 
 const search = () => {
+  console.log('q=', query.value);
+
+  // Abort previous request if it's still in progress
+  if (searchAbortController) {
+    searchAbortController.abort();
+  }
+  // Create a new AbortController for this request
+  searchAbortController = new AbortController();
+
   return axios({
     method: 'get',
     url: props.searchUrl,
@@ -143,6 +154,7 @@ const search = () => {
       'Content-Type': 'application/json',
       'X-CSRFToken': props.csrfToken,
     },
+    signal: searchAbortController.signal,
   })
     .then((res) => {
       results.value = res.data.results;
@@ -150,7 +162,9 @@ const search = () => {
       console.log(res.data);
     })
     .catch((error) => {
-      console.log('Error:', error);
+      if (!(error.name === 'CanceledError')) {
+        console.log('Error:', error);
+      }
     });
 };
 </script>

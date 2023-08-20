@@ -21,7 +21,7 @@ def review_list_row(
             year_str = "(unknown)"
         else:
             year_str = f"({str(year)})"
-        icon = review.media_type.icon
+        icon = review.media_type.icon()
     else:
         icon = SafeText("")
         title = ""

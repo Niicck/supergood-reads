@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.paginator import EmptyPage
+from django.core.paginator import EmptyPage, Paginator
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.forms import ModelForm
@@ -26,6 +26,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
 from rest_framework import generics, pagination, serializers
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from supergood_reads.auth import (
@@ -247,7 +248,7 @@ class MediaTypeAutocompleteView(View):
     def get(self, request: HttpRequest) -> JsonResponse:
         query_dict = request.GET
         content_type_id = query_dict.get("content_type_id", "")
-        q = query_dict.get("q", "")
+        q = query_dict.get("q", "").strip()
 
         try:
             if not content_type_id:
@@ -281,7 +282,7 @@ class MediaTypeAutocompleteView(View):
 class MediaTypeSerializer(serializers.BaseSerializer):
     """DRF Serializers don't work with Abstract Model Classes."""
 
-    def to_representation(self, obj: AbstractMediaType):
+    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
         return {
             "id": obj.id,
             "title": obj.title,
@@ -295,13 +296,13 @@ class SupergoodPagination(pagination.PageNumberPagination):
     page_query_param = "page"
     page_size = 40
 
-    def get_page_number(self, request, paginator):
+    def get_page_number(self, request: Request, paginator: Paginator[Any]) -> int:
         try:
-            return super().get_page_number(request, paginator)
+            return int(super().get_page_number(request, paginator))
         except EmptyPage:
             return 1
 
-    def get_paginated_response(self, data):
+    def get_paginated_response(self, data: Any) -> Response:
         has_next = self.page.has_next()
         has_previous = self.page.has_previous()
         next_page_number = self.page.next_page_number() if has_next else None
@@ -330,7 +331,7 @@ class MediaTypeSearchView(generics.ListAPIView):
 
     def get_queryset(self) -> QuerySetSequence:
         query_params = self.request.query_params
-        q = query_params.get("q", "")
+        q = query_params.get("q", "").strip()
         only_my_media = query_params.get("my-media", "0") == "1"
 
         if only_my_media:
