@@ -15,22 +15,24 @@
       </p>
     </div>
     <div class="flex flex-1 justify-between sm:justify-end">
-      <template v-if="props.previous">
-        <a
-          :href="props.previous"
+      <template v-if="props.hasPrevious">
+        <button
+          @click="emit('previous')"
           class="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
-          >Previous</a
         >
+          Previous
+        </button>
       </template>
       <template v-else>
         <div></div>
       </template>
-      <template v-if="props.next">
-        <a
-          :href="props.next"
+      <template v-if="props.hasNext">
+        <button
+          @click="emit('next')"
           class="relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:outline-offset-0"
-          >Next</a
         >
+          Next
+        </button>
       </template>
       <template v-else>
         <div></div>
@@ -43,16 +45,12 @@
 import { PropType } from 'vue';
 
 const props = defineProps({
-  next: { type: String as PropType<string | null>, required: false, default: null },
-  previous: { type: String as PropType<string | null>, required: false, default: null },
+  hasNext: { type: Boolean as PropType<boolean>, required: true },
+  hasPrevious: { type: Boolean as PropType<boolean>, required: true },
   startIndex: { type: Number as PropType<number>, required: true },
   endIndex: { type: Number as PropType<number>, required: true },
   count: { type: Number as PropType<number>, required: true },
-  previousPageNumber: {
-    type: Number as PropType<number>,
-    required: false,
-    default: null,
-  },
-  nextPageNumber: { type: Number as PropType<number>, required: false, default: null },
 });
+
+const emit = defineEmits(['previous', 'next']);
 </script>

@@ -302,13 +302,21 @@ class SupergoodPagination(pagination.PageNumberPagination):
             return 1
 
     def get_paginated_response(self, data):
+        has_next = self.page.has_next()
+        has_previous = self.page.has_previous()
+        next_page_number = self.page.next_page_number() if has_next else None
+        previous_page_number = (
+            self.page.previous_page_number() if has_previous else None
+        )
         return Response(
             {
-                "paginator": {
-                    "next": self.get_next_link(),
-                    "previous": self.get_previous_link(),
-                    "start_index": self.page.start_index(),
-                    "end_index": self.page.end_index(),
+                "pagination": {
+                    "hasNext": has_next,
+                    "hasPrevious": has_previous,
+                    "nextPageNumber": next_page_number,
+                    "previousPageNumber": previous_page_number,
+                    "startIndex": self.page.start_index(),
+                    "endIndex": self.page.end_index(),
                     "count": self.page.paginator.count,
                 },
                 "results": data,

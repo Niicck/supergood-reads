@@ -10,7 +10,7 @@
             <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
           </div>
           <input
-            @change="query = $event.target.value"
+            @input="query = $event.target.value"
             id="search"
             class="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 sm:text-sm sm:leading-6"
             placeholder="Search"
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="-mx-4 mt-8 sm:-mx-0">
-      <table class="table-fixed min-w-full divide-y divide-gray-300">
+      <table v-if="results" class="table-fixed min-w-full divide-y divide-gray-300">
         <thead>
           <tr>
             <th
@@ -55,21 +55,37 @@
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <template v-for="result in results">
-            <MediaListRow />
+            <MediaListRow v-bind="result" />
           </template>
         </tbody>
       </table>
-      <Pagination v-if="pagination" v-bind="pagination" />
+      <Pagination
+        v-if="pagination"
+        v-bind="pagination"
+        @next="nextPage"
+        @previous="previousPage"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue';
+import type { Ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
 import Pagination from '@/static/js/components/Pagination.vue';
 import MediaListRow from '@/static/js/components/MediaListRow.vue';
+
+type Pagination = {
+  hasNext: boolean;
+  hasPrevious: boolean;
+  nextPageNumber: number | null;
+  previousPageNumber: number | null;
+  startIndex: number;
+  endIndex: number;
+  count: number;
+};
 
 const props = defineProps({
   searchUrl: {
@@ -83,10 +99,30 @@ const props = defineProps({
 });
 
 const query = ref('');
-const pagination = ref({});
+const pagination: Ref<Pagination | null> = ref(null);
 const results = ref([]);
+const page = ref(1);
+
+const nextPage = () => {
+  const nextPageNumber = pagination?.value?.nextPageNumber;
+  if (nextPageNumber) {
+    page.value = nextPageNumber;
+  }
+};
+
+const previousPage = () => {
+  const previousPageNumber = pagination?.value?.previousPageNumber;
+  if (pagination && previousPageNumber) {
+    page.value = previousPageNumber;
+  }
+};
 
 watch(query, () => {
+  page.value = 1;
+  search();
+});
+
+watch(page, () => {
   search();
 });
 
@@ -100,6 +136,7 @@ const search = () => {
     url: props.searchUrl,
     params: {
       q: query.value,
+      page: page.value,
     },
     timeout: 5000,
     headers: {
@@ -110,6 +147,7 @@ const search = () => {
     .then((res) => {
       results.value = res.data.results;
       pagination.value = res.data.pagination;
+      console.log(res.data);
     })
     .catch((error) => {
       console.log('Error:', error);
