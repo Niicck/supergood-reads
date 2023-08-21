@@ -45,6 +45,7 @@ from supergood_reads.media_types.models import (
 )
 from supergood_reads.reviews.forms import InvalidContentTypeError, ReviewFormGroup
 from supergood_reads.reviews.models import Review
+from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.forms import get_initial_field_value
 from supergood_reads.utils.json import UUIDEncoder
 from supergood_reads.utils.uuid import is_uuid
@@ -333,23 +334,32 @@ class MediaTypeSearchView(generics.ListAPIView):
         query_params = self.request.query_params
         q = query_params.get("q", "").strip()
         editable_only = query_params.get("showEditableOnly", "false") == "true"
+        genres = query_params.getlist("genres")
+        countries = query_params.getlist("countries")
 
         if editable_only:
             qs = self._editable_qs()
         else:
             qs = self._all_media_types_qs().filter(validated=True)
 
+        qs.prefetch_related("genres", "countries")
+
         if is_uuid(q):
             qs = qs.filter(pk=q)
         else:
             qs = qs.filter(title__icontains=q)
+
+        if genres:
+            qs = qs.filter(genres__name__in=[genres])
+        if countries:
+            qs = qs.filter(countries__name__in=[countries])
 
         qs = qs.order_by("-updated_at")
         return qs
 
     @property
     def all_media_types(self) -> list[type[AbstractMediaType]]:
-        return AbstractMediaType.__subclasses__()
+        return supergood_reads_engine.media_type_model_classes
 
     def _editable_qs(self) -> QuerySetSequence:
         """

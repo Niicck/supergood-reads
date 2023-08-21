@@ -12,14 +12,14 @@
         </p>
       </div>
       <!-- On smaller screens, collapse data into first column -->
-      <dl class="font-normal space-y-1 lg:hidden">
+      <dl class="font-normal space-y-1 md:hidden">
         <!-- Creator (small screens) -->
         <div>
           <dt class="sr-only">Creator</dt>
           <dd class="mt-1 truncate text-gray-700">{{ props.creator }}</dd>
         </div>
         <!-- Actions (small screens) -->
-        <div class="md:hidden">
+        <div class="sm:hidden">
           <dd class="mt-1 truncate text-gray-700">
             <div class="flex flex-row space-x-3">
               <Button title="Write Review" />
@@ -30,12 +30,12 @@
       </dl>
     </td>
     <!-- Creator (large screens) -->
-    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top lg:table-cell">
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top md:table-cell">
       {{ props.creator }}
     </td>
     <!-- Actions (large screens) -->
     <td
-      class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right md:table-cell"
+      class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right sm:table-cell"
     >
       <div class="flex flex-row justify-end space-x-3">
         <Button title="Write Review" />

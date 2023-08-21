@@ -1,25 +1,31 @@
 <template>
   <div class="px-0">
     <div class="flex flex-1 flex-col space-y-3">
-      <div class="w-full max-w-lg">
-        <label for="search" class="sr-only">Search</label>
-        <div class="relative text-gray-400 focus-within:text-gray-600">
-          <div
-            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
-          >
-            <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
+      <div class="w-full flex flex-col sm:flex-row space-y-3 sm:space-y-0">
+        <!-- Search -->
+        <div class="flex-1 max-w-lg">
+          <label for="search" class="sr-only">Search</label>
+          <div class="relative text-gray-400 focus-within:text-gray-600">
+            <div
+              class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
+            </div>
+            <input
+              v-model="query"
+              id="search"
+              class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-1.5 pl-10 pr-3 text-gray-900 sm:leading-6"
+              placeholder="Search"
+              type="search"
+              name="search"
+              autocomplete="off"
+            />
           </div>
-          <input
-            v-model="query"
-            id="search"
-            class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-1.5 pl-10 pr-3 text-gray-900 sm:leading-6"
-            placeholder="Search"
-            type="search"
-            name="search"
-            autocomplete="off"
-          />
         </div>
+        <!-- Filters -->
+        <MediaListFilters />
       </div>
+      <!-- Editable Checkbox -->
       <div class="relative flex items-start">
         <div class="flex h-6 items-center">
           <input
@@ -54,13 +60,13 @@
             </th>
             <th
               scope="col"
-              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell"
             >
               Creator
             </th>
             <th
               scope="col"
-              class="hidden pl-3 py-3.5 text-right text-sm font-semibold text-gray-900 md:table-cell"
+              class="hidden pl-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:table-cell"
             >
               <span class="sr-only">Actions</span>
             </th>
@@ -93,6 +99,7 @@ import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
 import Pagination from '@/static/js/components/Pagination.vue';
 import MediaListRow from '@/static/js/views/MediaList/MediaListRow.vue';
+import MediaListFilters from '@/static/js/views/MediaList/MediaListFilters.vue';
 
 type Pagination = {
   hasNext: boolean;

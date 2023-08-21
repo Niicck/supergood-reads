@@ -1,0 +1,94 @@
+<template>
+  <section aria-labelledby="filter-heading">
+    <h2 id="filter-heading" class="sr-only">Filters</h2>
+    <div>
+      <div class="">
+        <div class="flow-root">
+          <PopoverGroup class="flex items-center divide-x space-x-4 divide-gray-200">
+            <Popover
+              v-for="(section, sectionIdx) in filters"
+              :key="section.name"
+              class="relative inline-block text-left first:pl-0 sm:first:pl-4 pl-4"
+            >
+              <PopoverButton
+                class="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                <span>{{ section.name }}</span>
+                <span
+                  v-if="sectionIdx === 0"
+                  class="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700"
+                  >1</span
+                >
+                <ChevronDownIcon
+                  class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                  aria-hidden="true"
+                />
+              </PopoverButton>
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <PopoverPanel
+                  class="absolute left-0 sm:left-auto sm:right-0 z-10 mt-2 origin-top-left sm:origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+                >
+                  <form class="space-y-4">
+                    <div
+                      v-for="(option, optionIdx) in section.options"
+                      :key="option.value"
+                      class="flex items-center"
+                    >
+                      <input
+                        :id="`filter-${section.id}-${optionIdx}`"
+                        :name="`${section.id}[]`"
+                        :value="option.value"
+                        type="checkbox"
+                        :checked="option.checked"
+                        class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label
+                        :for="`filter-${section.id}-${optionIdx}`"
+                        class="ml-3 whitespace-nowrap pr-6 text-sm font-medium text-gray-900"
+                        >{{ option.label }}</label
+                      >
+                    </div>
+                  </form>
+                </PopoverPanel>
+              </transition>
+            </Popover>
+          </PopoverGroup>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script lang="ts" setup>
+import { ref } from 'vue';
+import { Popover, PopoverButton, PopoverGroup, PopoverPanel } from '@headlessui/vue';
+import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+
+const filters = [
+  {
+    id: 'genre',
+    name: 'Genre',
+    options: [
+      { value: 'Drama', label: 'Drama', checked: false },
+      { value: 'Comedy', label: 'Comedy', checked: false },
+      { value: 'Mystery', label: 'Mystery', checked: true },
+    ],
+  },
+  {
+    id: 'country',
+    name: 'Country',
+    options: [
+      { value: 'United States', label: 'United States', checked: false },
+      { value: 'United Kingdom', label: 'United Kingdom', checked: false },
+      { value: 'South Korea', label: 'South Korea', checked: false },
+    ],
+  },
+];
+</script>
