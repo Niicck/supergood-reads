@@ -332,10 +332,10 @@ class MediaTypeSearchView(generics.ListAPIView):
     def get_queryset(self) -> QuerySetSequence:
         query_params = self.request.query_params
         q = query_params.get("q", "").strip()
-        only_my_media = query_params.get("my-media", "0") == "1"
+        editable_only = query_params.get("showEditableOnly", "false") == "true"
 
-        if only_my_media:
-            qs = self._my_media_qs()
+        if editable_only:
+            qs = self._editable_qs()
         else:
             qs = self._all_media_types_qs().filter(validated=True)
 
@@ -351,14 +351,13 @@ class MediaTypeSearchView(generics.ListAPIView):
     def all_media_types(self) -> list[type[AbstractMediaType]]:
         return AbstractMediaType.__subclasses__()
 
-    def _my_media_qs(self) -> QuerySetSequence:
+    def _editable_qs(self) -> QuerySetSequence:
         """
         Return queryset combining all child content_types of AbstractMediaType.
         Ex: by default, this will return both Books and Films, ordered by "updated_at"
         in descending order.
         """
         user = self.request.user
-
         if user.is_staff:
             editable_media_types = [
                 mt for mt in self.all_media_types if mt().can_user_change(user)

@@ -1,9 +1,9 @@
 <template>
   <nav
-    class="flex items-center justify-between border-t border-gray-200 bg-white py-3"
+    class="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 bg-white py-3"
     aria-label="Pagination"
   >
-    <div class="hidden sm:block">
+    <div class="order-last sm:order-first pt-3 sm:pt-0">
       <p class="text-sm text-gray-700">
         Showing
         <span class="font-medium">{{ props.startIndex }}</span>
@@ -14,7 +14,7 @@
         results
       </p>
     </div>
-    <div class="flex flex-1 justify-between sm:justify-end">
+    <div class="flex flex-1 justify-between sm:justify-end w-full">
       <template v-if="props.hasPrevious">
         <button
           @click="emit('previous')"

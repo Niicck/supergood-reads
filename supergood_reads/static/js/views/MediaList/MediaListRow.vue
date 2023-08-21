@@ -18,15 +18,14 @@
           <dt class="sr-only">Creator</dt>
           <dd class="mt-1 truncate text-gray-700">{{ props.creator }}</dd>
         </div>
-        <!-- CompletedAt (small screens) -->
+        <!-- Actions (small screens) -->
         <div class="md:hidden">
-          <dt class="sr-only">Completed at</dt>
-          <dd class="mt-1 truncate text-gray-700">derp</dd>
-        </div>
-        <!-- Rating (small screens) -->
-        <div class="sm:hidden">
-          <dt class="sr-only">Rating</dt>
-          <dd class="mt-1 truncate text-gray-500">derp</dd>
+          <dd class="mt-1 truncate text-gray-700">
+            <div class="flex flex-row space-x-3">
+              <Button title="Write Review" />
+              <Button title="Add to Wishlist" />
+            </div>
+          </dd>
         </div>
       </dl>
     </td>
@@ -34,29 +33,28 @@
     <td class="hidden px-3 py-4 text-sm text-gray-500 align-top lg:table-cell">
       {{ props.creator }}
     </td>
-    <!-- CompletedAt (large screens) -->
+    <!-- Actions (large screens) -->
     <td
       class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right md:table-cell"
     >
-      derp
+      <div class="flex flex-row justify-end space-x-3">
+        <Button title="Write Review" />
+        <Button title="Add to Wishlist" />
+      </div>
     </td>
-    <!-- Rating (large screens) -->
-    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top sm:table-cell">derp</td>
     <!-- Edit Button -->
-    <td class="py-4 sm:pl-3 text-right text-sm font-medium align-top sm:pr-0">
-      <a
-        type="button"
-        class="text-indigo-600 hover:text-indigo-900 align-top w-12"
-        href="#"
-      >
-        Edit <span class="sr-only">, Review of {{ props.title }}</span>
-      </a>
+    <td
+      v-if="props.editableResults"
+      class="py-4 text-right text-sm font-medium align-top sm:pr-0"
+    >
+      <Button title="Edit" /> <span class="sr-only">, {{ props.title }}</span>
     </td>
   </tr>
 </template>
 
 <script lang="ts" setup>
 import { PropType } from 'vue';
+import Button from '@/static/js/components/Button.vue';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },
@@ -64,5 +62,8 @@ const props = defineProps({
   year: { type: Number as PropType<number>, required: false },
   creator: { type: String as PropType<string>, required: false },
   icon: { type: String as PropType<string>, required: false },
+  editableResults: { type: Boolean as PropType<boolean>, default: false },
 });
+
+console.log('~~~ thems props.editableResults?', props.editableResults);
 </script>
