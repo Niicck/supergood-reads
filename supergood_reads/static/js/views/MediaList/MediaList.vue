@@ -33,7 +33,7 @@
         </div>
         <div class="ml-3 text-sm leading-6">
           <label for="my-media-only" class="font-medium text-gray-900"
-            >Show Editable Only</label
+            >Show Editable Titles Only</label
           >
         </div>
       </div>
@@ -67,6 +67,7 @@
             <th v-if="showEditableOnly" scope="col" class="py-3.5">
               <span class="sr-only">Edit</span>
             </th>
+            <th v-else></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
