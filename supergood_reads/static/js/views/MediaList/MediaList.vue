@@ -126,10 +126,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  countriesApiUrl: {
-    type: String,
-    required: true,
-  },
   mediaTypeChoicesApiUrl: {
     type: String,
     required: true,
@@ -152,7 +148,6 @@ const editableResults = ref(false);
 const tableTop: Ref<HTMLElement | null> = ref(null);
 
 const genreFilterId = 'genre';
-const countryFilterId = 'country';
 const mediaTypeFilterId = 'media_type';
 
 const filters: Ref<Filter[]> = ref([
@@ -164,11 +159,6 @@ const filters: Ref<Filter[]> = ref([
   {
     id: genreFilterId,
     name: 'Genre',
-    options: [],
-  },
-  {
-    id: countryFilterId,
-    name: 'Country',
     options: [],
   },
 ]);
@@ -192,7 +182,6 @@ const getSelectedOptions = (filterId: string) => {
   return [];
 };
 const selectedGenres = computed(() => getSelectedOptions(genreFilterId));
-const selectedCountries = computed(() => getSelectedOptions(countryFilterId));
 const selectedMediaTypes = computed(() => getSelectedOptions(mediaTypeFilterId));
 
 const nextPage = () => {
@@ -222,7 +211,6 @@ watch(
     query.value,
     showEditableOnly.value,
     selectedGenres.value,
-    selectedCountries.value,
     selectedMediaTypes.value,
   ],
   async (oldValue, newValue) => {
@@ -241,7 +229,7 @@ watch(page, async () => {
 });
 
 onMounted(async () => {
-  await Promise.all([search(), getMediaTypeChoices(), getGenres(), getCountries()]);
+  await Promise.all([search(), getMediaTypeChoices(), getGenres()]);
 });
 
 const search = async () => {
@@ -257,7 +245,6 @@ const search = async () => {
     page: page.value,
     showEditableOnly: showEditableOnly.value,
     genres: selectedGenres.value,
-    countries: selectedCountries.value,
     media_types: selectedMediaTypes.value,
   };
   const res = await apiClient.get(props.searchUrl, {
@@ -289,18 +276,6 @@ const getGenres = async () => {
     const genreFilter = getFilter(genreFilterId);
     if (genreFilter) {
       genreFilter.options = res.data.map((r): FilterOption => {
-        return { label: r.name, value: r.name, checked: false };
-      });
-    }
-  }
-};
-
-const getCountries = async () => {
-  const res = await apiClient.get(props.countriesApiUrl);
-  if (res) {
-    const countryFilter = getFilter(countryFilterId);
-    if (countryFilter) {
-      countryFilter.options = res.data.map((r): FilterOption => {
         return { label: r.name, value: r.name, checked: false };
       });
     }

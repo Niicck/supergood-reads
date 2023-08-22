@@ -356,7 +356,7 @@ class CountryApiView(generics.ListAPIView):
     serializer_class = CountrySerializer
 
     def get_queryset(self) -> QuerySet[Country]:
-        return Country.objects.all()
+        return Country.objects.all().order_by("name")
 
 
 class MediaTypeSerializer(serializers.BaseSerializer):
@@ -381,7 +381,6 @@ class MediaTypeSearchView(generics.ListAPIView):
         q = query_params.get("q", "").strip()
         editable_only = query_params.get("showEditableOnly", "false") == "true"
         genres = query_params.getlist("genres")
-        countries = query_params.getlist("countries")
         media_type_ids = query_params.getlist("media_types")
 
         media_type_models = [
@@ -394,17 +393,13 @@ class MediaTypeSearchView(generics.ListAPIView):
             searchable_media_types = list(
                 set(self.media_types_with_genres) & set(searchable_media_types)
             )
-        if countries:
-            searchable_media_types = list(
-                set(self.media_types_with_countries) & set(searchable_media_types)
-            )
 
         if editable_only:
             qs = self._editable_qs(searchable_media_types)
         else:
             qs = self._qs_for_media_types(searchable_media_types).filter(validated=True)
 
-        qs.prefetch_related("genres", "countries")
+        qs.prefetch_related("genres")
 
         if is_uuid(q):
             qs = qs.filter(pk=q)
@@ -413,8 +408,6 @@ class MediaTypeSearchView(generics.ListAPIView):
 
         if genres:
             qs = qs.filter(genres__name__in=genres)
-        if countries:
-            qs = qs.filter(countries__name__in=countries)
 
         qs = qs.order_by("-updated_at")
         return qs
