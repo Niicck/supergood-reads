@@ -1,6 +1,6 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
-import SimpleNotifcation from '@/static/js/components/SimpleNotification.vue';
+import SimpleNotifcation from '@/js/components/SimpleNotification.vue';
 
 const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],

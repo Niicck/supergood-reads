@@ -19,8 +19,8 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import type { FieldData } from '@/static/js/types';
-import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
+import type { FieldData } from '@/js/types';
+import { parseJsonScript } from '@/js/utils/parseJsonScript';
 
 const props = defineProps({
   /**

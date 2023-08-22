@@ -133,8 +133,8 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
-import DeleteModal from '@/static/js/components/DeleteModal.vue';
-import SimpleNotification from '@/static/js/components/SimpleNotification.vue';
+import DeleteModal from '@/js/components/DeleteModal.vue';
+import SimpleNotification from '@/js/components/SimpleNotification.vue';
 
 const props = defineProps({
   initialTitle: {

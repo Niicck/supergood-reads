@@ -35,7 +35,7 @@
 
 <script lang="ts" setup>
 import type { PropType } from 'vue';
-import type { FieldData } from '@/static/js/types';
+import type { FieldData } from '@/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
 
 const props = defineProps({

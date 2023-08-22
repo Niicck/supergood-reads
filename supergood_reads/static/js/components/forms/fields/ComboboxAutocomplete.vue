@@ -77,7 +77,7 @@ import {
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
 import axios from 'axios';
-import type { FieldData } from '@/static/js/types';
+import type { FieldData } from '@/js/types';
 
 type Result = {
   id: string;

@@ -12,6 +12,9 @@
     <div id="my-media-app">
         <media-list
             search-url={% url 'media_search' %}
+            genres-api-url={% url 'genres_api' %}
+            countries-api-url={% url 'countries_api' %}
+            media-type-choices-api-url={% url 'media_type_choices_api' %}
             csrf-token={{csrf_token}}
         ></media-list>
     </div>

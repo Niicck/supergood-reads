@@ -19,7 +19,7 @@ export default defineConfig((mode) => {
     plugins: [vue()],
     resolve: {
       alias: {
-        '@': resolve('./supergood_reads'),
+        '@': resolve('./supergood_reads/static'),
         'vue': 'vue/dist/vue.esm-bundler.js',
       },
     },

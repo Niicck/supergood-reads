@@ -23,7 +23,10 @@
           </div>
         </div>
         <!-- Filters -->
-        <MediaListFilters />
+        <MediaListFilters
+          :filters="filters"
+          @toggle-checked-option="toggleCheckedFilterOption"
+        />
       </div>
       <!-- Editable Checkbox -->
       <div class="relative flex items-start">
@@ -93,13 +96,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import type { Ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
-import axios from 'axios';
-import Pagination from '@/static/js/components/Pagination.vue';
-import MediaListRow from '@/static/js/views/MediaList/MediaListRow.vue';
-import MediaListFilters from '@/static/js/views/MediaList/MediaListFilters.vue';
+import _ from 'lodash';
+
+import type { Filter, FilterOption } from '@/js/types';
+import Pagination from '@/js/components/Pagination.vue';
+import MediaListRow from '@/js/views/MediaList/MediaListRow.vue';
+import MediaListFilters from '@/js/views/MediaList/MediaListFilters.vue';
+import { createApiClient } from '@/js/utils/apiClient.ts';
 
 type Pagination = {
   hasNext: boolean;
@@ -114,14 +120,27 @@ type Pagination = {
 const props = defineProps({
   searchUrl: {
     type: String,
-    default: '',
+    required: true,
+  },
+  genresApiUrl: {
+    type: String,
+    required: true,
+  },
+  countriesApiUrl: {
+    type: String,
+    required: true,
+  },
+  mediaTypeChoicesApiUrl: {
+    type: String,
+    required: true,
   },
   csrfToken: {
     type: String,
-    default: '',
+    required: true,
   },
 });
 
+const apiClient = createApiClient(props.csrfToken);
 let searchAbortController: AbortController | null = null;
 
 const query = ref('');
@@ -131,6 +150,50 @@ const page = ref(1);
 const showEditableOnly = ref(false);
 const editableResults = ref(false);
 const tableTop: Ref<HTMLElement | null> = ref(null);
+
+const genreFilterId = 'genre';
+const countryFilterId = 'country';
+const mediaTypeFilterId = 'media_type';
+
+const filters: Ref<Filter[]> = ref([
+  {
+    id: mediaTypeFilterId,
+    name: 'Media Type',
+    options: [],
+  },
+  {
+    id: genreFilterId,
+    name: 'Genre',
+    options: [],
+  },
+  {
+    id: countryFilterId,
+    name: 'Country',
+    options: [],
+  },
+]);
+
+const toggleCheckedFilterOption = (filterId: string, optionValue: string) => {
+  const foundFilter = getFilter(filterId);
+  if (foundFilter) {
+    const foundOption = foundFilter.options.find((o) => o.value == optionValue);
+    if (foundOption) {
+      foundOption.checked = !foundOption.checked;
+    }
+  }
+};
+
+const getFilter = (filterId: string) => filters.value.find((f) => f.id === filterId);
+const getSelectedOptions = (filterId: string) => {
+  const foundFilter = getFilter(filterId);
+  if (foundFilter) {
+    return foundFilter.options.filter((o) => o.checked).map((o) => o.value);
+  }
+  return [];
+};
+const selectedGenres = computed(() => getSelectedOptions(genreFilterId));
+const selectedCountries = computed(() => getSelectedOptions(countryFilterId));
+const selectedMediaTypes = computed(() => getSelectedOptions(mediaTypeFilterId));
 
 const nextPage = () => {
   const nextPageNumber = pagination?.value?.nextPageNumber;
@@ -152,22 +215,36 @@ const previousPage = () => {
   }
 };
 
-watch([query, showEditableOnly], () => {
-  page.value = 1;
-  search();
+// Return array in WatchSource function so that searches are only triggered if the
+// actual selected values within each filter change.
+watch(
+  () => [
+    query.value,
+    showEditableOnly.value,
+    selectedGenres.value,
+    selectedCountries.value,
+    selectedMediaTypes.value,
+  ],
+  async (oldValue, newValue) => {
+    if (!_.isEqual(oldValue, newValue)) {
+      if (page.value !== 1) {
+        page.value = 1; // This will trigger a search()
+      } else {
+        await search();
+      }
+    }
+  },
+);
+
+watch(page, async () => {
+  await search();
 });
 
-watch(page, () => {
-  search();
+onMounted(async () => {
+  await Promise.all([search(), getMediaTypeChoices(), getGenres(), getCountries()]);
 });
 
-onMounted(() => {
-  search();
-});
-
-const search = () => {
-  console.log('q=', query.value);
-
+const search = async () => {
   // Abort previous request if it's still in progress
   if (searchAbortController) {
     searchAbortController.abort();
@@ -175,31 +252,58 @@ const search = () => {
   // Create a new AbortController for this request
   searchAbortController = new AbortController();
 
-  return axios({
-    method: 'get',
-    url: props.searchUrl,
-    params: {
-      q: query.value,
-      page: page.value,
-      showEditableOnly: showEditableOnly.value,
-    },
-    timeout: 5000,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': props.csrfToken,
-    },
+  const params = {
+    q: query.value,
+    page: page.value,
+    showEditableOnly: showEditableOnly.value,
+    genres: selectedGenres.value,
+    countries: selectedCountries.value,
+    media_types: selectedMediaTypes.value,
+  };
+  const res = await apiClient.get(props.searchUrl, {
+    params,
     signal: searchAbortController.signal,
-  })
-    .then((res) => {
-      results.value = res.data.results;
-      pagination.value = res.data.pagination;
-      editableResults.value = showEditableOnly.value;
-      console.log(res.data);
-    })
-    .catch((error) => {
-      if (!(error.name === 'CanceledError')) {
-        console.log('Error:', error);
-      }
-    });
+  });
+  if (res) {
+    results.value = res.data.results;
+    pagination.value = res.data.pagination;
+    editableResults.value = showEditableOnly.value;
+  }
+};
+
+const getMediaTypeChoices = async () => {
+  const res = await apiClient.get(props.mediaTypeChoicesApiUrl);
+  if (res) {
+    const mediaTypeFilter = getFilter(mediaTypeFilterId);
+    if (mediaTypeFilter) {
+      mediaTypeFilter.options = res.data.map((r): FilterOption => {
+        return { label: r.name, value: r.id, checked: true };
+      });
+    }
+  }
+};
+
+const getGenres = async () => {
+  const res = await apiClient.get(props.genresApiUrl);
+  if (res) {
+    const genreFilter = getFilter(genreFilterId);
+    if (genreFilter) {
+      genreFilter.options = res.data.map((r): FilterOption => {
+        return { label: r.name, value: r.name, checked: false };
+      });
+    }
+  }
+};
+
+const getCountries = async () => {
+  const res = await apiClient.get(props.countriesApiUrl);
+  if (res) {
+    const countryFilter = getFilter(countryFilterId);
+    if (countryFilter) {
+      countryFilter.options = res.data.map((r): FilterOption => {
+        return { label: r.name, value: r.name, checked: false };
+      });
+    }
+  }
 };
 </script>

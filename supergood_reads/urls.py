@@ -36,6 +36,21 @@ urlpatterns = [
         name="media_search",
     ),
     path(
+        "media-type-choices-api/",
+        views.MediaTypeChoicesApiView.as_view(),
+        name="media_type_choices_api",
+    ),
+    path(
+        "genres-api/",
+        views.GenreApiView.as_view(),
+        name="genres_api",
+    ),
+    path(
+        "countries-api/",
+        views.CountryApiView.as_view(),
+        name="countries_api",
+    ),
+    path(
         "reviews/",
         views.MyReviewsView.as_view(),
         name="reviews",

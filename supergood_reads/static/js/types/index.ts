@@ -22,4 +22,16 @@ type MyReviewRowInitialData = {
   initialText: string;
 };
 
-export type { FieldData, NavBarLink, MyReviewRowInitialData };
+type FilterOption = {
+  value: string;
+  label: string;
+  checked: boolean;
+};
+
+type Filter = {
+  id: string;
+  name: string;
+  options: Array<FilterOption>;
+};
+
+export type { FieldData, NavBarLink, MyReviewRowInitialData, Filter, FilterOption };

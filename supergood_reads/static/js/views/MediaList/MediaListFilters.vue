@@ -6,19 +6,20 @@
         <div class="flow-root">
           <PopoverGroup class="flex items-center divide-x space-x-4 divide-gray-200">
             <Popover
-              v-for="(section, sectionIdx) in filters"
-              :key="section.name"
+              v-for="(filter, sectionIdx) in filters"
+              :key="filter.name"
               class="relative inline-block text-left first:pl-0 sm:first:pl-4 pl-4"
             >
               <PopoverButton
                 class="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900"
               >
-                <span>{{ section.name }}</span>
+                <span>{{ filter.name }}</span>
                 <span
-                  v-if="sectionIdx === 0"
+                  v-if="getCheckedCount(filter)"
                   class="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700"
-                  >1</span
                 >
+                  {{ getCheckedCount(filter) }}
+                </span>
                 <ChevronDownIcon
                   class="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                   aria-hidden="true"
@@ -37,20 +38,21 @@
                 >
                   <form class="space-y-4">
                     <div
-                      v-for="(option, optionIdx) in section.options"
+                      v-for="(option, optionIdx) in filter.options"
                       :key="option.value"
                       class="flex items-center"
                     >
                       <input
-                        :id="`filter-${section.id}-${optionIdx}`"
-                        :name="`${section.id}[]`"
+                        :id="`filter-${filter.id}-${optionIdx}`"
+                        :name="`${filter.id}[]`"
                         :value="option.value"
                         type="checkbox"
                         :checked="option.checked"
+                        @input="toggleCheckedOption(filter.id, option.value)"
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                       <label
-                        :for="`filter-${section.id}-${optionIdx}`"
+                        :for="`filter-${filter.id}-${optionIdx}`"
                         class="ml-3 whitespace-nowrap pr-6 text-sm font-medium text-gray-900"
                         >{{ option.label }}</label
                       >
@@ -67,28 +69,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
 import { Popover, PopoverButton, PopoverGroup, PopoverPanel } from '@headlessui/vue';
 import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+import type { Filter } from '@/js/types';
 
-const filters = [
-  {
-    id: 'genre',
-    name: 'Genre',
-    options: [
-      { value: 'Drama', label: 'Drama', checked: false },
-      { value: 'Comedy', label: 'Comedy', checked: false },
-      { value: 'Mystery', label: 'Mystery', checked: true },
-    ],
+const { filters } = defineProps({
+  filters: {
+    type: Array<Filter>,
+    required: true,
   },
-  {
-    id: 'country',
-    name: 'Country',
-    options: [
-      { value: 'United States', label: 'United States', checked: false },
-      { value: 'United Kingdom', label: 'United Kingdom', checked: false },
-      { value: 'South Korea', label: 'South Korea', checked: false },
-    ],
-  },
-];
+});
+
+const emit = defineEmits(['toggle-checked-option']);
+
+const toggleCheckedOption = (filterId: string, optionValue: string) => {
+  emit('toggle-checked-option', filterId, optionValue);
+};
+
+const getCheckedCount = (filter: Filter) => {
+  return filter.options.filter((f) => f.checked).length;
+};
 </script>

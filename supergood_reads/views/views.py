@@ -25,7 +25,7 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView, UpdateView
 from queryset_sequence import QuerySetSequence
-from rest_framework import generics, pagination, serializers
+from rest_framework import generics, pagination, serializers, views
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -40,11 +40,14 @@ from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
 from supergood_reads.media_types.models import (
     AbstractMediaType,
     Book,
+    Country,
     Film,
+    Genre,
     MediaTypeQuerySet,
 )
 from supergood_reads.reviews.forms import InvalidContentTypeError, ReviewFormGroup
 from supergood_reads.reviews.models import Review
+from supergood_reads.utils import ContentTypeUtils
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.forms import get_initial_field_value
 from supergood_reads.utils.json import UUIDEncoder
@@ -280,19 +283,6 @@ class MediaTypeAutocompleteView(View):
         )
 
 
-class MediaTypeSerializer(serializers.BaseSerializer):
-    """DRF Serializers don't work with Abstract Model Classes."""
-
-    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
-        return {
-            "id": obj.id,
-            "title": obj.title,
-            "year": obj.year,
-            "creator": obj.creator,
-            "icon": obj.icon(),
-        }
-
-
 class SupergoodPagination(pagination.PageNumberPagination):
     page_query_param = "page"
     page_size = 40
@@ -326,6 +316,62 @@ class SupergoodPagination(pagination.PageNumberPagination):
         )
 
 
+class MediaTypeOptionSerializer(serializers.BaseSerializer):
+    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
+        return {
+            "id": ContentTypeUtils().get_content_type_id(obj),
+            "name": obj._meta.verbose_name,
+        }
+
+
+class MediaTypeChoicesApiView(views.APIView):
+    def get(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        media_type_options = supergood_reads_engine.media_type_model_classes
+        serializer = MediaTypeOptionSerializer(
+            media_type_options, many=True
+        )  # Serialize the list
+        return Response(serializer.data)
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ["name"]
+
+
+class GenreApiView(generics.ListAPIView):
+    serializer_class = GenreSerializer
+
+    def get_queryset(self) -> QuerySet[Genre]:
+        return Genre.objects.all().order_by("name")
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ["name"]
+
+
+class CountryApiView(generics.ListAPIView):
+    serializer_class = CountrySerializer
+
+    def get_queryset(self) -> QuerySet[Country]:
+        return Country.objects.all()
+
+
+class MediaTypeSerializer(serializers.BaseSerializer):
+    """DRF Serializers don't work with Abstract Model Classes."""
+
+    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
+        return {
+            "id": obj.id,
+            "title": obj.title,
+            "year": obj.year,
+            "creator": obj.creator,
+            "icon": obj.icon(),
+        }
+
+
 class MediaTypeSearchView(generics.ListAPIView):
     serializer_class = MediaTypeSerializer
     pagination_class = SupergoodPagination
@@ -336,11 +382,27 @@ class MediaTypeSearchView(generics.ListAPIView):
         editable_only = query_params.get("showEditableOnly", "false") == "true"
         genres = query_params.getlist("genres")
         countries = query_params.getlist("countries")
+        media_type_ids = query_params.getlist("media_types")
+
+        media_type_models = [
+            ContentTypeUtils().get_model(m_id) for m_id in media_type_ids
+        ]
+        searchable_media_types = [
+            m for m in self.all_media_types if m in media_type_models
+        ]
+        if genres:
+            searchable_media_types = list(
+                set(self.media_types_with_genres) & set(searchable_media_types)
+            )
+        if countries:
+            searchable_media_types = list(
+                set(self.media_types_with_countries) & set(searchable_media_types)
+            )
 
         if editable_only:
-            qs = self._editable_qs()
+            qs = self._editable_qs(searchable_media_types)
         else:
-            qs = self._all_media_types_qs().filter(validated=True)
+            qs = self._qs_for_media_types(searchable_media_types).filter(validated=True)
 
         qs.prefetch_related("genres", "countries")
 
@@ -350,9 +412,9 @@ class MediaTypeSearchView(generics.ListAPIView):
             qs = qs.filter(title__icontains=q)
 
         if genres:
-            qs = qs.filter(genres__name__in=[genres])
+            qs = qs.filter(genres__name__in=genres)
         if countries:
-            qs = qs.filter(countries__name__in=[countries])
+            qs = qs.filter(countries__name__in=countries)
 
         qs = qs.order_by("-updated_at")
         return qs
@@ -361,7 +423,24 @@ class MediaTypeSearchView(generics.ListAPIView):
     def all_media_types(self) -> list[type[AbstractMediaType]]:
         return supergood_reads_engine.media_type_model_classes
 
-    def _editable_qs(self) -> QuerySetSequence:
+    @property
+    def media_types_with_genres(self) -> list[type[AbstractMediaType]]:
+        return self._media_types_with_field("genres")
+
+    @property
+    def media_types_with_countries(self) -> list[type[AbstractMediaType]]:
+        return self._media_types_with_field("countries")
+
+    def _media_types_with_field(self, field_name: str) -> list[type[AbstractMediaType]]:
+        return [
+            m
+            for m in supergood_reads_engine.media_type_model_classes
+            if field_name in [f.name for f in m._meta.get_fields()]
+        ]
+
+    def _editable_qs(
+        self, searchable_media_types: list[type[AbstractMediaType]]
+    ) -> QuerySetSequence:
         """
         Return queryset combining all child content_types of AbstractMediaType.
         Ex: by default, this will return both Books and Films, ordered by "updated_at"
@@ -372,17 +451,16 @@ class MediaTypeSearchView(generics.ListAPIView):
             editable_media_types = [
                 mt for mt in self.all_media_types if mt().can_user_change(user)
             ]
-            qs = self._qs_for_media_types(editable_media_types)
+            searchable_media_types = list(
+                set(editable_media_types) & set(searchable_media_types)
+            )
+            qs = self._qs_for_media_types(searchable_media_types)
         elif user.is_authenticated:
-            all_media_types_qs = self._qs_for_media_types(self.all_media_types)
+            all_media_types_qs = self._qs_for_media_types(searchable_media_types)
             qs = all_media_types_qs.filter(owner=self.request.user)
         else:
             qs = Book.objects.none()
         return qs
-
-    def _all_media_types_qs(self) -> QuerySetSequence:
-        all_media_types_qs = self._qs_for_media_types(self.all_media_types)
-        return all_media_types_qs
 
     def _qs_for_media_types(
         self, media_types: list[Type[AbstractMediaType]]

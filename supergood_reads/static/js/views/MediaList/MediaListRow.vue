@@ -54,7 +54,7 @@
 
 <script lang="ts" setup>
 import { PropType } from 'vue';
-import Button from '@/static/js/components/Button.vue';
+import Button from '@/js/components/Button.vue';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },
@@ -64,6 +64,4 @@ const props = defineProps({
   icon: { type: String as PropType<string>, required: false },
   editableResults: { type: Boolean as PropType<boolean>, default: false },
 });
-
-console.log('~~~ thems props.editableResults?', props.editableResults);
 </script>

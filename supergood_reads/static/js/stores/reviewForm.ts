@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { parseJsonScript } from '@/static/js/utils/parseJsonScript';
+import { parseJsonScript } from '@/js/utils/parseJsonScript';
 import { ref, onMounted, watch, computed } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 
