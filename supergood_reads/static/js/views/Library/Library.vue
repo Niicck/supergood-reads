@@ -80,10 +80,6 @@
             >
               <span class="sr-only">Actions</span>
             </th>
-            <th v-if="showEditableOnly" scope="col" class="py-3.5">
-              <span class="sr-only">Edit</span>
-            </th>
-            <th v-else></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">

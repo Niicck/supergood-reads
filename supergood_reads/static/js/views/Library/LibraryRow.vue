@@ -68,12 +68,6 @@
         <Button v-if="props.editable" title="Edit" />
       </div>
     </td>
-    <!-- Edit Button -->
-    <!-- <td
-      class="py-4 text-right text-sm font-medium align-top sm:pr-0"
-    >
-      <Button title="Edit" /> <span class="sr-only">, {{ props.title }}</span>
-    </td> -->
   </tr>
 </template>
 
