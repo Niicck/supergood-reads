@@ -19,12 +19,12 @@
         <!-- Creator (small screens) -->
         <div class="lg:hidden">
           <dt class="sr-only">Creator</dt>
-          <dd class="truncate text-gray-700">{{ props.creator }}</dd>
+          <dd class="text-gray-700">{{ props.creator }}</dd>
         </div>
         <!-- Genres (small screens) -->
         <div class="md:hidden">
           <dt class="sr-only">Genres</dt>
-          <dd class="truncate text-gray-700">
+          <dd class="text-gray-700">
             <GenreCell
               :genres="genres"
               :selectedGenres="selectedGenres"
@@ -38,6 +38,7 @@
             <div class="flex flex-row space-x-3">
               <Button title="Write Review" />
               <Button title="Add to Wishlist" />
+              <Button v-if="props.editable" title="Edit" />
             </div>
           </dd>
         </div>
@@ -61,18 +62,18 @@
     <td
       class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right sm:table-cell"
     >
-      <div class="flex flex-row justify-end space-x-3">
+      <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
         <Button title="Write Review" />
         <Button title="Add to Wishlist" />
+        <Button v-if="props.editable" title="Edit" />
       </div>
     </td>
     <!-- Edit Button -->
-    <td
-      v-if="props.editableResults"
+    <!-- <td
       class="py-4 text-right text-sm font-medium align-top sm:pr-0"
     >
       <Button title="Edit" /> <span class="sr-only">, {{ props.title }}</span>
-    </td>
+    </td> -->
   </tr>
 </template>
 
@@ -88,7 +89,7 @@ const props = defineProps({
   creator: { type: String as PropType<string>, required: false },
   icon: { type: String as PropType<string>, required: false },
   genres: { type: Array as PropType<string[]>, required: false },
-  editableResults: { type: Boolean as PropType<boolean>, default: false },
+  editable: { type: Boolean as PropType<boolean>, default: false },
   selectedGenres: { type: Array as PropType<string[]>, required: true },
 });
 

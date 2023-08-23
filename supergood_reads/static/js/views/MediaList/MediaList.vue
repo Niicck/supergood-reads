@@ -90,7 +90,6 @@
           <template v-for="result in results">
             <MediaListRow
               v-bind="result"
-              :editableResults="editableResults"
               :selectedGenres="selectedGenres"
               @toggle-checked-genre="
                 (optionValue) => toggleCheckedFilterOption(genreFilterId, optionValue)
@@ -115,7 +114,7 @@ import type { Ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
 import _ from 'lodash';
 
-import type { Filter, FilterOption } from '@/js/types';
+import type { Filter, FilterOption, MediaListResult } from '@/js/types';
 import Pagination from '@/js/components/Pagination.vue';
 import MediaListRow from '@/js/views/MediaList/MediaListRow.vue';
 import MediaListFilters from '@/js/views/MediaList/MediaListFilters.vue';
@@ -155,10 +154,9 @@ let searchAbortController: AbortController | null = null;
 
 const query = ref('');
 const pagination: Ref<Pagination | null> = ref(null);
-const results = ref([]);
+const results: Ref<MediaListResult[]> = ref([]);
 const page = ref(1);
 const showEditableOnly = ref(false);
-const editableResults = ref(false);
 const tableTop: Ref<HTMLElement | null> = ref(null);
 
 const genreFilterId = 'genre';
@@ -277,7 +275,6 @@ const search = async () => {
   if (res) {
     results.value = res.data.results;
     pagination.value = res.data.pagination;
-    editableResults.value = showEditableOnly.value;
   }
 };
 

@@ -370,6 +370,7 @@ class MediaTypeSerializer(serializers.BaseSerializer):
             "creator": obj.creator,
             "genres": list(obj.genres.all().values_list("name", flat=True)),
             "icon": obj.icon(),
+            "editable": obj.can_user_change(self.context["request"].user),
         }
 
 
