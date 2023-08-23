@@ -32,6 +32,7 @@ type Filter = {
   id: string;
   name: string;
   options: Array<FilterOption>;
+  clear: boolean;
 };
 
 export type { FieldData, NavBarLink, MyReviewRowInitialData, Filter, FilterOption };

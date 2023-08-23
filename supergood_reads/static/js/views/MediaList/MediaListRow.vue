@@ -12,15 +12,26 @@
         </p>
       </div>
       <!-- On smaller screens, collapse data into first column -->
-      <dl class="font-normal space-y-1 md:hidden">
+      <dl class="font-normal space-y-2 lg:hidden">
         <!-- Creator (small screens) -->
-        <div>
+        <div class="lg:hidden">
           <dt class="sr-only">Creator</dt>
-          <dd class="mt-1 truncate text-gray-700">{{ props.creator }}</dd>
+          <dd class="truncate text-gray-700">{{ props.creator }}</dd>
+        </div>
+        <!-- Genres (small screens) -->
+        <div class="md:hidden">
+          <dt class="sr-only">Genres</dt>
+          <dd class="truncate text-gray-700">
+            <GenreCell
+              :genres="genres"
+              :selectedGenres="selectedGenres"
+              @toggle-checked-genre="toggleSelectedGenre"
+            />
+          </dd>
         </div>
         <!-- Actions (small screens) -->
         <div class="sm:hidden">
-          <dd class="mt-1 truncate text-gray-700">
+          <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
               <Button title="Write Review" />
               <Button title="Add to Wishlist" />
@@ -30,8 +41,18 @@
       </dl>
     </td>
     <!-- Creator (large screens) -->
-    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top md:table-cell">
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top lg:table-cell">
       {{ props.creator }}
+    </td>
+    <!-- Genre (large screens) -->
+    <td class="hidden px-3 py-4 text-sm text-gray-500 align-top md:table-cell">
+      <div class="space-y-1">
+        <GenreCell
+          :genres="genres"
+          :selectedGenres="selectedGenres"
+          @toggle-checked-genre="toggleSelectedGenre"
+        />
+      </div>
     </td>
     <!-- Actions (large screens) -->
     <td
@@ -55,6 +76,7 @@
 <script lang="ts" setup>
 import { PropType } from 'vue';
 import Button from '@/js/components/Button.vue';
+import GenreCell from '@/js/views/MediaList/GenreCell.vue';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },
@@ -62,6 +84,19 @@ const props = defineProps({
   year: { type: Number as PropType<number>, required: false },
   creator: { type: String as PropType<string>, required: false },
   icon: { type: String as PropType<string>, required: false },
+  genres: { type: Array as PropType<string[]>, required: false },
   editableResults: { type: Boolean as PropType<boolean>, default: false },
+  selectedGenres: { type: Array as PropType<string[]>, required: true },
 });
+
+const emit = defineEmits(['toggle-checked-genre']);
+
+const toggleSelectedGenre = (genre: string) => {
+  emit('toggle-checked-genre', genre);
+};
 </script>
+<style>
+.selected-genre {
+  @apply bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
+}
+</style>

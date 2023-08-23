@@ -26,6 +26,7 @@
         <MediaListFilters
           :filters="filters"
           @toggle-checked-option="toggleCheckedFilterOption"
+          @clear-filter="clearFilter"
         />
       </div>
       <!-- Editable Checkbox -->
@@ -63,9 +64,15 @@
             </th>
             <th
               scope="col"
-              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell"
+              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
             >
               Creator
+            </th>
+            <th
+              scope="col"
+              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 md:table-cell"
+            >
+              Genre
             </th>
             <th
               scope="col"
@@ -81,7 +88,14 @@
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <template v-for="result in results">
-            <MediaListRow v-bind="result" :editableResults="editableResults" />
+            <MediaListRow
+              v-bind="result"
+              :editableResults="editableResults"
+              :selectedGenres="selectedGenres"
+              @toggle-checked-genre="
+                (optionValue) => toggleCheckedFilterOption(genreFilterId, optionValue)
+              "
+            />
           </template>
         </tbody>
       </table>
@@ -155,11 +169,13 @@ const filters: Ref<Filter[]> = ref([
     id: mediaTypeFilterId,
     name: 'Media Type',
     options: [],
+    clear: false,
   },
   {
     id: genreFilterId,
     name: 'Genre',
     options: [],
+    clear: true,
   },
 ]);
 
@@ -170,6 +186,13 @@ const toggleCheckedFilterOption = (filterId: string, optionValue: string) => {
     if (foundOption) {
       foundOption.checked = !foundOption.checked;
     }
+  }
+};
+
+const clearFilter = (filterId: string) => {
+  const foundFilter = getFilter(filterId);
+  if (foundFilter) {
+    foundFilter.options.forEach((o) => (o.checked = false));
   }
 };
 

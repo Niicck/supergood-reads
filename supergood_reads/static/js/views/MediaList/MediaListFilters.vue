@@ -37,6 +37,16 @@
                   class="absolute left-0 sm:left-auto sm:right-0 z-10 mt-2 origin-top-left sm:origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none"
                 >
                   <form class="space-y-4">
+                    <button
+                      v-if="filter.clear && getCheckedCount(filter)"
+                      @click="clearFilter(filter.id)"
+                      class="rounded bg-white px-2 py-1 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 flex flex-row"
+                    >
+                      <span>Clear Selected</span
+                      ><span
+                        ><XMarkIcon class="h-5 w-5 text-red-500" aria-hidden="true"
+                      /></span>
+                    </button>
                     <div
                       v-for="(option, optionIdx) in filter.options"
                       :key="option.value"
@@ -70,7 +80,7 @@
 
 <script lang="ts" setup>
 import { Popover, PopoverButton, PopoverGroup, PopoverPanel } from '@headlessui/vue';
-import { ChevronDownIcon } from '@heroicons/vue/20/solid';
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import type { Filter } from '@/js/types';
 
 const { filters } = defineProps({
@@ -80,10 +90,14 @@ const { filters } = defineProps({
   },
 });
 
-const emit = defineEmits(['toggle-checked-option']);
+const emit = defineEmits(['toggle-checked-option', 'clear-filter']);
 
 const toggleCheckedOption = (filterId: string, optionValue: string) => {
   emit('toggle-checked-option', filterId, optionValue);
+};
+
+const clearFilter = (filterId: string) => {
+  emit('clear-filter', filterId);
 };
 
 const getCheckedCount = (filter: Filter) => {

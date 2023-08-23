@@ -368,6 +368,7 @@ class MediaTypeSerializer(serializers.BaseSerializer):
             "title": obj.title,
             "year": obj.year,
             "creator": obj.creator,
+            "genres": list(obj.genres.all().values_list("name", flat=True)),
             "icon": obj.icon(),
         }
 
