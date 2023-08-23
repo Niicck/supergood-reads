@@ -12,24 +12,18 @@
 {% endblock header %}
 
 {% block content %}
-    <div id="review-form-vue-app">
+    {% vite_asset 'js/apps/mediaForm.ts' %}
+    <div id="media-form-vue-app">
         <div class="space-y-12 divide-y divide-gray-200 mx-auto max-w-2xl">
             {% comment %} Handle MediaType Selection {% endcomment %}
             <div class="my-12">
                 {% form_subheading title="Select a Media Type" text="What do you want to create?" %}
                 {% comment %} Select MediaType Type {% endcomment %}
-                {% with field=review_form.media_type_content_type field_data_json_script_id="media_type_content_type_field_data" %}
-                    <field-wrapper
-                        field-data-json-script-id="{{ field_data_json_script_id }}"
+                {% with field=media_mgmt_form.media_type_content_type %}
+                    <radio-cards
+                        v-model="selectedMediaTypeContentType"
+                        :choices="{{ field.field.choices }}"
                     >
-                        <template #field="{fieldData}">
-                            <radio-cards
-                                v-model="selectedMediaTypeContentType"
-                                :field-data="fieldData"
-                            >
-                            </radio-cards>
-                        </template>
-                    </field-wrapper>
                 {% endwith %}
             </div>
             <form method="post">
@@ -48,7 +42,7 @@
                 {% block submit %}
                     <div class="pt-5">
                         <div class="flex justify-start">
-                            <input type="submit" class="cursor-pointer ml-3 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" value="Submit"/>
+                            <input type="submit" class="cursor-pointer inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" value="Submit"/>
                         </div>
                     </div>
                 {% endblock submit %}

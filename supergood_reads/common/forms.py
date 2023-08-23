@@ -31,9 +31,10 @@ class GenericRelationFormGroup:
         self.instance = instance
         self.by_content_type_id = self.instantiate_forms_by_content_type_id()
         self.selected_form = self.get_selected_form()
+        self.as_form_choices = self.get_form_choices()
 
     def instantiate_forms_by_content_type_id(self) -> Dict[str, ModelForm[Any]]:
-        """ "Organize forms by their content_type_id.
+        """Organize forms by their content_type_id.
 
         This is useful in template rendering. A field can select a Model's
         content_type_id (like "7") and it can be connected to the desired ModelForm
@@ -96,3 +97,14 @@ class GenericRelationFormGroup:
         if self.selected_form_id:
             return self.by_content_type_id[str(self.selected_form_id)]
         return None
+
+    def get_form_choices(self) -> list[dict[str, str]]:
+        """Returns list of lists specifying choices for a ChoiceField
+
+        Example:
+            [["7", "Ebert"], ["8", "Goodreads"], ["9", "Maximus"]]
+        """
+        return [
+            [id, form._meta.model._meta.model_name]
+            for id, form in self.by_content_type_id.items()
+        ]

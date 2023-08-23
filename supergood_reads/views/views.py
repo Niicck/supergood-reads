@@ -37,7 +37,11 @@ from supergood_reads.auth import (
     UpdateReviewPermissionMixin,
 )
 from supergood_reads.common.forms import GenericRelationFormGroup
-from supergood_reads.media_types.forms import LibraryBookForm, LibraryFilmForm
+from supergood_reads.media_types.forms import (
+    LibraryBookForm,
+    LibraryFilmForm,
+    MediaMgmtForm,
+)
 from supergood_reads.media_types.models import (
     AbstractMediaType,
     Book,
@@ -600,11 +604,16 @@ class MediaFormView(TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-
         media_type_forms = GenericRelationFormGroup(
             supergood_reads_engine.media_type_form_classes
         )
+        media_mgmt_form = MediaMgmtForm(media_type_forms)
 
-        context.update({"media_type_forms": media_type_forms})
+        context.update(
+            {
+                "media_type_forms_by_id": media_type_forms.by_content_type_id,
+                "media_mgmt_form": media_mgmt_form,
+            }
+        )
 
         return context
