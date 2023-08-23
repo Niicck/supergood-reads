@@ -7,12 +7,15 @@
       <!-- Title -->
       <div>
         <p class="flex flex-row items-center">
-          <span class="pr-1" v-html="props.icon"></span>{{ props.title
-          }}<span class="pl-1 text-gray-700">({{ props.year }})</span>
+          <span class="pr-1" v-html="props.icon"></span>
+          <span
+            >{{ props.title
+            }}<span class="text-gray-700"> ({{ props.year }})</span></span
+          >
         </p>
       </div>
       <!-- On smaller screens, collapse data into first column -->
-      <dl class="font-normal space-y-2 lg:hidden">
+      <dl class="font-normal space-y-3 lg:hidden">
         <!-- Creator (small screens) -->
         <div class="lg:hidden">
           <dt class="sr-only">Creator</dt>

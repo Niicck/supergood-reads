@@ -58,13 +58,13 @@
           <tr>
             <th
               scope="col"
-              class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+              class="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0 w-96"
             >
               Title
             </th>
             <th
               scope="col"
-              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell"
+              class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell w-64"
             >
               Creator
             </th>
