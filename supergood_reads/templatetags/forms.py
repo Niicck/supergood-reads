@@ -17,10 +17,11 @@ def field_to_dict(field: BoundField) -> Dict[str, Any]:
         choices = []
     errors_html = str(field.errors)
     field_data = {
-        "errors": errors_html,
-        "html_name": field.html_name,
+        "errorsHtml": errors_html,
+        "htmlName": field.html_name,
         "label": field.label,
-        "id_for_label": field.id_for_label,
+        "idForLabel": field.id_for_label,
+        "helpText": field.help_text,
         "choices": choices,
     }
     return field_data

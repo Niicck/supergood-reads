@@ -88,7 +88,7 @@
               v-bind="result"
               :selectedGenres="selectedGenres"
               @toggle-checked-genre="
-                (optionValue) => toggleCheckedFilterOption(genreFilterId, optionValue)
+                (optionValue: string) => toggleCheckedFilterOption(genreFilterId, optionValue)
               "
             />
           </template>

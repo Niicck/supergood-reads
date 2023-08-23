@@ -1,9 +1,9 @@
 /* eslint vue/no-v-html: "off" */
 <template>
-  <div class="mt-5">
-    <div v-html="fieldData.errors_html"></div>
+  <div v-if="fieldData" class="mt-5">
+    <div v-html="fieldData.errorsHtml"></div>
     <label
-      :for="fieldData.id_for_label"
+      :for="fieldData.idForLabel"
       class="block text-sm font-medium leading-6 text-gray-900"
     >
       {{ fieldData.label }}
@@ -11,8 +11,8 @@
     <div class="mt-2">
       <slot name="field" :field-data="fieldData"></slot>
     </div>
-    <p v-if="fieldData.help_text" class="mt-2 text-sm text-gray-500">
-      <span v-html="fieldData.help_text"></span>
+    <p v-if="fieldData.helpText" class="mt-2 text-sm text-gray-500">
+      <span v-html="fieldData.helpText"></span>
     </p>
   </div>
 </template>
@@ -33,13 +33,7 @@ const props = defineProps({
   },
 });
 
-const fieldData = ref<FieldData>({
-  errors_html: '',
-  html_name: '',
-  label: '',
-  id_for_label: '',
-  choices: [],
-});
+const fieldData = ref<FieldData | null>(null);
 
 /**
  * Retrieve the fieldData value from the json data embedded into a <script> tag by the

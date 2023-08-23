@@ -33,7 +33,7 @@
                             <template #field="{fieldData}">
                                 <radio-cards
                                     v-model="selectedMediaTypeContentType"
-                                    :field-data="fieldData"
+                                    v-bind="fieldData"
                                 >
                                 </radio-cards>
                             </template>
@@ -49,7 +49,7 @@
                                 <template #field="{fieldData}">
                                     <radio-cards
                                         v-model="createNewMediaTypeObject"
-                                        :field-data="fieldData"
+                                        v-bind="fieldData"
                                     >
                                     </radio-cards>
                                 </template>
@@ -67,7 +67,7 @@
                                             <template #field="{fieldData}">
                                                 <autocomplete
                                                     v-model="selectedMediaTypeObjectId"
-                                                    :field-data="fieldData"
+                                                    v-bind="fieldData"
                                                     {% if initial_media_type_content_type == media_type_id %}
                                                         initial-value-id="{{ initial_media_type_object_id }}"
                                                     {% endif %}

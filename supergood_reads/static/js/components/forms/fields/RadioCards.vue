@@ -1,15 +1,22 @@
 <template>
   <div>
-    <input :value="modelValue" :name="props.fieldData.html_name" type="hidden" />
+    <input
+      v-if="props.htmlName"
+      :value="modelValue"
+      :name="props.htmlName"
+      type="hidden"
+    />
     <RadioGroup
       :modelValue="modelValue"
       @update:modelValue="(newValue) => emit('update:modelValue', newValue)"
       class="mt-2"
     >
-      <RadioGroupLabel class="sr-only"> {{ props.fieldData.label }} </RadioGroupLabel>
+      <RadioGroupLabel :id="props.idForLabel" class="sr-only">
+        {{ props.label }}
+      </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 lg:grid-cols-4">
         <RadioGroupOption
-          v-for="choice in props.fieldData.choices"
+          v-for="choice in props.choices"
           :key="choice[0]"
           v-slot="{ active, checked }"
           as="template"
@@ -34,7 +41,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { PropType } from 'vue';
+import type { Prop, PropType } from 'vue';
 import type { FieldData } from '@/js/types';
 import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue';
 
@@ -44,13 +51,23 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  /**
-   * The id attribute of the <script> element where the django field's metadata was
-   * was stored as an output of the django json_script filter.
-   */
-  fieldData: {
-    type: Object as PropType<FieldData>,
-    required: true,
+  // If you want this Field's value to be dynamically bound to a Form input named
+  // "html_name".
+  htmlName: {
+    type: String as PropType<FieldData['htmlName']>,
+    required: false,
+  },
+  choices: {
+    type: Array as PropType<FieldData['choices']>,
+    default: [],
+  },
+  idForLabel: {
+    type: String as PropType<FieldData['idForLabel']>,
+    default: '',
+  },
+  label: {
+    type: String as PropType<FieldData['label']>,
+    default: '',
   },
 });
 

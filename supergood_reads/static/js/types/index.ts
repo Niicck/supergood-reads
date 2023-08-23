@@ -1,11 +1,11 @@
 // The output of the "field_to_dict" django filter.
 export type FieldData = {
-  errors_html: string;
-  html_name: string;
+  errorsHtml: string;
+  htmlName: string;
   label: string;
-  id_for_label: string;
-  help_text: string;
-  choices: Array<Array<string | number | boolean>>;
+  idForLabel: string;
+  helpText: string;
+  choices: Array<Array<string | number>>;
 };
 
 export type NavBarLink = {

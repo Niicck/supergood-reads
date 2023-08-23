@@ -1,11 +1,17 @@
 <template>
-  <input :value="modelValue" :name="props.fieldData.html_name" type="hidden" />
+  <input
+    v-if="props.htmlName"
+    :value="modelValue"
+    :name="props.htmlName"
+    type="hidden"
+  />
   <Combobox v-model="selectedResult" by="id">
     <div class="relative mt-1">
       <div
         class="relative w-full cursor-default overflow-hidden bg-white text-left rounded-md border-gray-300 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
       >
         <ComboboxInput
+          :id="props.idForLabel"
           class="w-full rounded-md border-gray-300 shadow-sm py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
           :display-value="(result) => (result ? (result as Result).title : query)"
           @change="query = $event.target.value"
@@ -76,8 +82,9 @@ import {
   TransitionRoot,
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import axios from 'axios';
 import type { FieldData } from '@/js/types';
+
+import { createApiClient } from '@/js/utils/apiClient.ts';
 
 type Result = {
   id: string;
@@ -91,10 +98,15 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // The output of the "field_to_dict" django filter.
-  fieldData: {
-    type: Object as PropType<FieldData>,
-    required: true,
+  // If you want this Field's value to be dynamically bound to a Form input named
+  // "html_name".
+  htmlName: {
+    type: String as PropType<FieldData['htmlName']>,
+    required: false,
+  },
+  idForLabel: {
+    type: String as PropType<FieldData['idForLabel']>,
+    default: '',
   },
   // The url of the autocomplete endpoint to query for eligible results.
   url: {
@@ -115,6 +127,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
+const apiClient = createApiClient(props.csrfToken);
+
 let query = ref('');
 let results = ref<Array<Result>>([]);
 let selectedResult = ref<Result | null>(null);
@@ -128,15 +142,15 @@ const selectedResultId = computed((): string => {
 });
 
 // Query server for new results whenever the querystring changes.
-watch(query, () => {
-  getResults();
+watch(query, async () => {
+  await getResults();
 });
 
 /**
  * Update root state with the id of the selected result.
  * We don't want to save the entire selectedResult in the state, only the id.
  * That id is also bound to a hidden input field. It will be bound to to the django
- * form field specified by fieldData.html_name.
+ * form field specified by props.html_name.
  */
 watch(selectedResultId, (newValue) => {
   if (newValue) {
@@ -150,9 +164,9 @@ watch(selectedResultId, (newValue) => {
  * Query for the complete data of the initial value using the provided initial ID.
  * Executes the query only if an initial ID is present.
  */
-onMounted(() => {
+onMounted(async () => {
   if (props.initialValueId) {
-    getInitial(props.initialValueId);
+    await getInitial(props.initialValueId);
   }
 });
 
@@ -160,53 +174,31 @@ onMounted(() => {
  * Query the props.url autocomplete django view endpoint for elements that match the
  * query value.
  */
-const getResults = () => {
-  return axios({
-    method: 'get',
-    url: props.url,
-    params: {
-      q: query.value,
-    },
-    timeout: 5000,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': props.csrfToken,
-    },
-  })
-    .then((res) => {
-      results.value = res.data.results;
-    })
-    .catch((error) => {
-      console.log('Error:', error);
-    });
+const getResults = async () => {
+  const params = {
+    q: query.value,
+  };
+  const res = await apiClient.get(props.url, { params });
+  if (res) {
+    results.value = res.data.results;
+  }
 };
 
 /**
  * Fetch complete data for initial selected object.
  * @param id The UUID of the initial selected object.
  */
-const getInitial = (id: string) => {
-  return axios({
-    method: 'get',
-    url: props.url,
-    params: {
-      q: id,
-    },
-    timeout: 5000,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': props.csrfToken,
-    },
-  })
-    .then((res) => {
-      const responseResults = res.data.results;
-      if (responseResults.length) {
-        results.value = responseResults;
-        selectedResult.value = responseResults[0];
-      }
-    })
-    .catch((error) => {
-      console.log('Error:', error);
-    });
+const getInitial = async (id: string) => {
+  const params = {
+    q: id,
+  };
+  const res = await apiClient.get(props.url, { params });
+  if (res) {
+    const responseResults = res.data.results;
+    if (responseResults.length) {
+      results.value = responseResults;
+      selectedResult.value = responseResults[0];
+    }
+  }
 };
 </script>

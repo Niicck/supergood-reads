@@ -36,6 +36,7 @@ from supergood_reads.auth import (
     UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
+from supergood_reads.common.forms import GenericRelationFormGroup
 from supergood_reads.media_types.forms import LibraryBookForm, LibraryFilmForm
 from supergood_reads.media_types.models import (
     AbstractMediaType,
@@ -591,3 +592,19 @@ class Handle403View(StatusTemplateView):
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         return self.get(request, *args, **kwargs)
+
+
+class MediaFormView(TemplateView):
+    template_name = "supergood_reads/views/media_type_form/create_media_type.html"
+    object: AbstractMediaType | None = None
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        media_type_forms = GenericRelationFormGroup(
+            supergood_reads_engine.media_type_form_classes
+        )
+
+        context.update({"media_type_forms": media_type_forms})
+
+        return context

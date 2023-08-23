@@ -55,6 +55,7 @@ urlpatterns = [
         views.MyReviewsView.as_view(),
         name="reviews",
     ),
+    path("media/new/", views.MediaFormView.as_view(), name="create_media"),
     path(
         "media/book/<uuid:pk>/update",
         views.UpdateBookView.as_view(),
