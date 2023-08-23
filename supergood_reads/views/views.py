@@ -466,41 +466,8 @@ class MediaTypeSearchView(generics.ListAPIView):
         )
 
 
-class LibraryView(ListView[AbstractMediaType]):
-    model = AbstractMediaType
-    paginate_by = 20
-    context_object_name = "media_list"
+class LibraryView(TemplateView):
     template_name = "supergood_reads/views/library/library.html"
-
-    def get_queryset(self) -> QuerySetSequence:
-        """
-        Return queryset combining all child content_types of AbstractMediaType.
-        Ex: by default, this will return both Books and Films, ordered by "updated_at"
-        in descending order.
-        """
-        all_media_types = AbstractMediaType.__subclasses__()
-        user = self.request.user
-        all_media_types_qs = self._media_type_queryset(all_media_types)
-
-        if user.is_staff:
-            editable_media_types = [
-                mt for mt in all_media_types if mt().can_user_change(user)
-            ]
-            qs = self._media_type_queryset(editable_media_types)
-        elif user.is_authenticated:
-            qs = all_media_types_qs.filter(owner=self.request.user)
-        else:
-            qs = all_media_types_qs.filter(validated=True)
-
-        return qs.order_by("-updated_at")
-
-    def _media_type_queryset(
-        self, media_types: list[Type[AbstractMediaType]]
-    ) -> QuerySetSequence:
-        return QuerySetSequence(
-            *[media_type.objects.all() for media_type in media_types],
-            model=AbstractMediaType,
-        )
 
 
 class MyReviewsView(ListView[Review]):

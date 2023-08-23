@@ -41,7 +41,7 @@ export default defineConfig((mode) => {
           reviewForm: resolve('./supergood_reads/static/js/apps/reviewForm.ts'),
           messages: resolve('./supergood_reads/static/js/apps/messages.ts'),
           navBar: resolve('./supergood_reads/static/js/apps/navBar.ts'),
-          myMedia: resolve('./supergood_reads/static/js/apps/myMedia.ts'),
+          library: resolve('./supergood_reads/static/js/apps/library.ts'),
           reviewList: resolve('./supergood_reads/static/js/apps/reviewList.ts'),
           css: resolve('./supergood_reads/static/css/main.css.js'),
         },
