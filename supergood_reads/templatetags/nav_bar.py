@@ -28,7 +28,7 @@ def nav_bar(context: Context) -> Context:
 
     primary_links_data = [
         ("Reviews", reverse("reviews")),
-        ("Media", reverse("media")),
+        ("Library", reverse("library")),
     ]
 
     account_links_data = [("Settings", "#"), ("Sign out", reverse("logout"))]

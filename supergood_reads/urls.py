@@ -26,9 +26,9 @@ urlpatterns = [
         name="media_type_autocomplete",
     ),
     path(
-        "media/",
-        views.MyMediaView.as_view(),
-        name="media",
+        "library/",
+        views.LibraryView.as_view(),
+        name="library",
     ),
     path(
         "media/search/",
@@ -57,22 +57,22 @@ urlpatterns = [
     ),
     path(
         "media/book/<uuid:pk>/update",
-        views.UpdateMyMediaBookView.as_view(),
+        views.UpdateBookView.as_view(),
         name="update_book",
     ),
     path(
         "media/film/<uuid:pk>/update",
-        views.UpdateMyMediaFilmView.as_view(),
+        views.UpdateFilmView.as_view(),
         name="update_film",
     ),
     path(
         "media/book/<uuid:pk>/delete/",
-        views.DeleteMyMediaBookView.as_view(),
+        views.DeleteBookView.as_view(),
         name="delete_book",
     ),
     path(
         "media/film/<uuid:pk>/delete/",
-        views.DeleteMyMediaFilmView.as_view(),
+        views.DeleteFilmView.as_view(),
         name="delete_film",
     ),
     path(

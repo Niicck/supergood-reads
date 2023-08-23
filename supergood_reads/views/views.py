@@ -36,7 +36,7 @@ from supergood_reads.auth import (
     UpdateMediaPermissionMixin,
     UpdateReviewPermissionMixin,
 )
-from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.forms import LibraryBookForm, LibraryFilmForm
 from supergood_reads.media_types.models import (
     AbstractMediaType,
     Book,
@@ -466,11 +466,11 @@ class MediaTypeSearchView(generics.ListAPIView):
         )
 
 
-class MyMediaView(ListView[AbstractMediaType]):
+class LibraryView(ListView[AbstractMediaType]):
     model = AbstractMediaType
     paginate_by = 20
     context_object_name = "media_list"
-    template_name = "supergood_reads/views/media_list/media_list.html"
+    template_name = "supergood_reads/views/library/library.html"
 
     def get_queryset(self) -> QuerySetSequence:
         """
@@ -543,9 +543,9 @@ class JsonableResponseMixin:
         return JsonResponse({"data": data})
 
 
-class DeleteMyMediaMixin:
+class DeleteMediaMixin:
     def get_success_url(self: FormViewMixinProtocol) -> str:
-        return reverse("media")
+        return reverse("library")
 
     def form_invalid(
         self: FormViewMixinProtocol, form: ModelForm[Any]
@@ -572,39 +572,39 @@ class DeleteMyMediaMixin:
         return super().form_valid(form)  # type: ignore[safe-super]
 
 
-class UpdateMyMediaBookView(
-    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Book, MyMediaBookForm]
+class UpdateBookView(
+    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Book, LibraryBookForm]
 ):
     """Update Book via ajax request."""
 
     object: Book
     model = Book
-    form_class = MyMediaBookForm
+    form_class = LibraryBookForm
 
 
-class UpdateMyMediaFilmView(
-    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Film, MyMediaFilmForm]
+class UpdateFilmView(
+    UpdateMediaPermissionMixin, JsonableResponseMixin, UpdateView[Film, LibraryFilmForm]
 ):
     """Update Film via ajax request."""
 
     object: Film
     model = Film
-    form_class = MyMediaFilmForm
+    form_class = LibraryFilmForm
 
 
-class DeleteMyMediaBookView(
-    DeleteMediaPermissionMixin, DeleteMyMediaMixin, DeleteView[Book, ModelForm[Book]]
+class DeleteBookView(
+    DeleteMediaPermissionMixin, DeleteMediaMixin, DeleteView[Book, ModelForm[Book]]
 ):
-    """Delete Book, add message, refresh MyMedia page."""
+    """Delete Book, add message, refresh Library page."""
 
     object: Book
     model = Book
 
 
-class DeleteMyMediaFilmView(
-    DeleteMediaPermissionMixin, DeleteMyMediaMixin, DeleteView[Film, ModelForm[Film]]
+class DeleteFilmView(
+    DeleteMediaPermissionMixin, DeleteMediaMixin, DeleteView[Film, ModelForm[Film]]
 ):
-    """Delete Film, add message, refresh MyMedia page."""
+    """Delete Film, add message, refresh Library page."""
 
     object: Film
     model = Film

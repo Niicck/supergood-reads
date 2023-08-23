@@ -24,11 +24,11 @@ class FilmForm(forms.ModelForm[Film]):
         ]
 
 
-class MyMediaBookForm(BookForm):
+class LibraryBookForm(BookForm):
     class Meta:
         model = Book
         fields = ["title", "author", "year"]
 
 
-class MyMediaFilmForm(FilmForm):
+class LibraryFilmForm(FilmForm):
     pass

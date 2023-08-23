@@ -80,7 +80,7 @@
 <script lang="ts" setup>
 import { PropType } from 'vue';
 import Button from '@/js/components/Button.vue';
-import GenreCell from '@/js/views/MediaList/GenreCell.vue';
+import GenreCell from '@/js/views/Library/GenreCell.vue';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },

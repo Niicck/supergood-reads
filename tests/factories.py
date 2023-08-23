@@ -109,13 +109,13 @@ class FilmFactory(factory.django.DjangoModelFactory):
 
 
 class GenreFactory(factory.django.DjangoModelFactory):
-    genre = factory.fuzzy.FuzzyChoice(
+    name = factory.fuzzy.FuzzyChoice(
         ["Drama", "Comedy", "Horror", "Documentary", "Action"]
     )
 
     class Meta:
         model = models.Genre
-        django_get_or_create = ("genre",)
+        django_get_or_create = ("name",)
 
 
 class CountryFactory(factory.django.DjangoModelFactory):

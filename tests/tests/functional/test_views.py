@@ -439,7 +439,7 @@ class TestCreateReviewView:
 
 
 @pytest.mark.django_db
-class TestUpdateMyMediaBookView:
+class TestUpdateBookView:
     def get_url(self, book_id: UUID) -> str:
         return reverse("update_book", args=[book_id])
 
@@ -490,7 +490,7 @@ class TestUpdateMyMediaBookView:
 
 
 @pytest.mark.django_db
-class TestUpdateMyMediaFilmView:
+class TestUpdateFilmView:
     def get_url(self, film_id: UUID) -> str:
         return reverse("update_film", args=[film_id])
 
@@ -541,7 +541,7 @@ class TestUpdateMyMediaFilmView:
 
 
 @pytest.mark.django_db
-class TestDeleteMyMediaBookView:
+class TestDeleteBookView:
     def get_url(self, book_id: UUID) -> str:
         return reverse("delete_book", args=[book_id])
 
@@ -593,7 +593,7 @@ class TestDeleteMyMediaBookView:
 
 
 @pytest.mark.django_db
-class TestDeleteMyMediaFilmView:
+class TestDeleteFilmView:
     def get_url(self, film_id: UUID) -> str:
         return reverse("delete_film", args=[film_id])
 

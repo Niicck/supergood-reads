@@ -4,17 +4,17 @@
 {% load django_vite %}
 
 {% block header %}
-    {% basic_header "Media" %}
+    {% basic_header "Library" %}
 {% endblock header %}
 
 {% block content %}
-    {% vite_asset 'js/apps/myMedia.ts' %}
-    <div id="my-media-app">
-        <media-list
+    {% vite_asset 'js/apps/library.ts' %}
+    <div id="library-app">
+        <library
             search-url={% url 'media_search' %}
             genres-api-url={% url 'genres_api' %}
             media-type-choices-api-url={% url 'media_type_choices_api' %}
             csrf-token={{csrf_token}}
-        ></media-list>
+        ></library>
     </div>
 {% endblock content %}

@@ -35,7 +35,7 @@ export type Filter = {
   clear: boolean;
 };
 
-export type MediaListResult = {
+export type MediaSearchResult = {
   id: string;
   title: string;
   year: number;
@@ -45,4 +45,4 @@ export type MediaListResult = {
   editable: boolean;
 };
 
-// export type { FieldData, NavBarLink, MyReviewRowInitialData, Filter, FilterOption, MediaListResult };
+// export type { FieldData, NavBarLink, MyReviewRowInitialData, Filter, FilterOption, MediaSearchResult };

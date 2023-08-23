@@ -5,7 +5,7 @@ from django.forms import ModelForm
 from django.http import HttpRequest
 from django.template import Context
 
-from supergood_reads.media_types.forms import MyMediaBookForm, MyMediaFilmForm
+from supergood_reads.media_types.forms import LibraryBookForm, LibraryFilmForm
 from supergood_reads.media_types.models import AbstractMediaType, Book, Film
 
 register = template.Library()
@@ -22,9 +22,9 @@ def media_list_row(context: Context, item: AbstractMediaType) -> Context:
 
     form_class: type[ModelForm[Any]]
     if isinstance(item, Book):
-        form_class = MyMediaBookForm
+        form_class = LibraryBookForm
     elif isinstance(item, Film):
-        form_class = MyMediaFilmForm
+        form_class = LibraryFilmForm
     else:
         raise NotImplementedError(
             f"{type(item)} is not supported by media_row inclusion_tag"

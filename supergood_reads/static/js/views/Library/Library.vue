@@ -23,7 +23,7 @@
           </div>
         </div>
         <!-- Filters -->
-        <MediaListFilters
+        <LibraryFilters
           :filters="filters"
           @toggle-checked-option="toggleCheckedFilterOption"
           @clear-filter="clearFilter"
@@ -34,15 +34,15 @@
         <div class="flex h-6 items-center">
           <input
             v-model="showEditableOnly"
-            id="my-media-only"
-            aria-describedby="my-media-only-description"
-            name="my-media-only"
+            id="library-only"
+            aria-describedby="library-only-description"
+            name="library-only"
             type="checkbox"
             class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
           />
         </div>
         <div class="ml-3 text-sm leading-6">
-          <label for="my-media-only" class="font-medium text-gray-900"
+          <label for="library-only" class="font-medium text-gray-900"
             >Show Editable Titles Only</label
           >
         </div>
@@ -88,7 +88,7 @@
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <template v-for="result in results">
-            <MediaListRow
+            <LibraryRow
               v-bind="result"
               :selectedGenres="selectedGenres"
               @toggle-checked-genre="
@@ -114,10 +114,10 @@ import type { Ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
 import _ from 'lodash';
 
-import type { Filter, FilterOption, MediaListResult } from '@/js/types';
+import type { Filter, FilterOption, MediaSearchResult } from '@/js/types';
 import Pagination from '@/js/components/Pagination.vue';
-import MediaListRow from '@/js/views/MediaList/MediaListRow.vue';
-import MediaListFilters from '@/js/views/MediaList/MediaListFilters.vue';
+import LibraryRow from '@/js/views/Library/LibraryRow.vue';
+import LibraryFilters from '@/js/views/Library/LibraryFilters.vue';
 import { createApiClient } from '@/js/utils/apiClient.ts';
 
 type Pagination = {
@@ -154,7 +154,7 @@ let searchAbortController: AbortController | null = null;
 
 const query = ref('');
 const pagination: Ref<Pagination | null> = ref(null);
-const results: Ref<MediaListResult[]> = ref([]);
+const results: Ref<MediaSearchResult[]> = ref([]);
 const page = ref(1);
 const showEditableOnly = ref(false);
 const tableTop: Ref<HTMLElement | null> = ref(null);
