@@ -142,9 +142,6 @@ watch(query, async () => {
  * form field specified by props.html_name.
  */
 watch(selectedResultId, (newValue) => {
-  if (props.modelValue === null) {
-    return;
-  }
   if (newValue) {
     emit('update:modelValue', newValue);
   } else {
@@ -187,10 +184,6 @@ const getInitial = async (id: string) => {
 watch(
   () => props.modelValue,
   async (newValue) => {
-    // If no modelValue was provided, then skip
-    if (newValue === null) {
-      return;
-    }
     if (props.modelValue !== selectedResultId.value) {
       if (!newValue) {
         // If modelValue is unset to "", then unset selectedResult

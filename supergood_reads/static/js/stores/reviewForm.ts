@@ -79,22 +79,20 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
    */
   watch(
     selectedMediaTypeContentType,
-    (current, old) => {
-      if (current !== old) {
-        const cache = selectedMediaTypeObjectIdCache.value;
+    (newValue, oldValue) => {
+      const cache = selectedMediaTypeObjectIdCache.value;
 
-        // Save ObjectId into cache for the old active ContentType
-        if (selectedMediaTypeObjectId.value) {
-          cache[old] = selectedMediaTypeObjectId.value;
-        }
+      // Save ObjectId into cache for the old active ContentType
+      if (selectedMediaTypeObjectId.value) {
+        cache[oldValue] = selectedMediaTypeObjectId.value;
+      }
 
-        // If there's an existing ObjectId in the cache for the new ContentType, then
-        // apply it. Otherwise, reset it.
-        if (cache[current]) {
-          selectedMediaTypeObjectId.value = cache[current];
-        } else {
-          selectedMediaTypeObjectId.value = '';
-        }
+      // If there's an existing ObjectId in the cache for the new ContentType, then
+      // apply it. Otherwise, reset it.
+      if (cache[newValue]) {
+        selectedMediaTypeObjectId.value = cache[newValue];
+      } else {
+        selectedMediaTypeObjectId.value = '';
       }
     },
     { flush: 'sync' },

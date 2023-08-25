@@ -84,8 +84,6 @@ watch(
 
 // If bound to a v-model, update it when the selectedValue changes.
 watch(selectedValue, (newValue) => {
-  if (props.modelValue !== null) {
-    emit('update:modelValue', newValue);
-  }
+  emit('update:modelValue', newValue);
 });
 </script>

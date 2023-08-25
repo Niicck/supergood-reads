@@ -21,6 +21,7 @@ def vue_field_interface(field: BoundField) -> dict[str, Any]:
         choices = []
 
     errors_html = str(field.errors)
+    initial_value = field.value() if field.value() is not None else ""
 
     field_data = {
         "errorsHtml": errors_html,
@@ -28,7 +29,7 @@ def vue_field_interface(field: BoundField) -> dict[str, Any]:
         "label": field.label,
         "id": field.id_for_label,
         "helpText": field.help_text,
-        "initialValue": field.value(),
+        "initialValue": initial_value,
         "choices": json.dumps(choices),
     }
     return field_data
