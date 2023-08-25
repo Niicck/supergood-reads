@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-const createApiClient = (csrfToken: string, baseURL: string = ''): AxiosInstance => {
+const createApiClient = (csrfToken: string, baseURL = ''): AxiosInstance => {
   const client = axios.create({
     baseURL: baseURL,
     timeout: 5000,

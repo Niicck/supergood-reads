@@ -1,8 +1,8 @@
 <template>
   <input
-    v-if="props.htmlName"
-    :value="modelValue"
-    :name="props.htmlName"
+    v-if="props.field.name"
+    :value="selectedResultId"
+    :name="props.field.name"
     type="hidden"
   />
   <Combobox v-model="selectedResult" by="id">
@@ -11,7 +11,7 @@
         class="relative w-full cursor-default overflow-hidden bg-white text-left rounded-md border-gray-300 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
       >
         <ComboboxInput
-          :id="props.idForLabel"
+          :id="props.field.id"
           class="w-full rounded-md border-gray-300 shadow-sm py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
           :display-value="(result) => (result ? (result as Result).title : query)"
           @change="query = $event.target.value"
@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { PropType } from 'vue';
 import {
   Combobox,
@@ -82,7 +82,7 @@ import {
   TransitionRoot,
 } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid';
-import type { FieldData } from '@/js/types';
+import type { VueFieldInterface } from '@/js/types';
 
 import { createApiClient } from '@/js/utils/apiClient.ts';
 
@@ -95,33 +95,22 @@ type Result = {
 const props = defineProps({
   // v-model bound to the id of the selectedResult.
   modelValue: {
-    type: String,
-    default: '',
+    type: String as PropType<string | null>,
+    default: null,
   },
-  // If you want this Field's value to be dynamically bound to a Form input named
-  // "html_name".
-  htmlName: {
-    type: String as PropType<FieldData['htmlName']>,
-    required: false,
-  },
-  idForLabel: {
-    type: String as PropType<FieldData['idForLabel']>,
-    default: '',
+  field: {
+    type: Object as PropType<VueFieldInterface>,
+    required: true,
   },
   // The url of the autocomplete endpoint to query for eligible results.
   url: {
-    type: String,
+    type: String as PropType<string>,
     default: null,
   },
   // The django csrfToken to authenticate queries to props.url.
   csrfToken: {
-    type: String,
-    default: '',
-  },
-  // Id of the initialValue, if it exists.
-  initialValueId: {
-    type: String,
-    default: '',
+    type: String as PropType<string>,
+    required: true,
   },
 });
 
@@ -153,20 +142,13 @@ watch(query, async () => {
  * form field specified by props.html_name.
  */
 watch(selectedResultId, (newValue) => {
+  if (props.modelValue === null) {
+    return;
+  }
   if (newValue) {
     emit('update:modelValue', newValue);
   } else {
     emit('update:modelValue', '');
-  }
-});
-
-/**
- * Query for the complete data of the initial value using the provided initial ID.
- * Executes the query only if an initial ID is present.
- */
-onMounted(async () => {
-  if (props.initialValueId) {
-    await getInitial(props.initialValueId);
   }
 });
 
@@ -201,4 +183,24 @@ const getInitial = async (id: string) => {
     }
   }
 };
+
+watch(
+  () => props.modelValue,
+  async (newValue) => {
+    // If no modelValue was provided, then skip
+    if (newValue === null) {
+      return;
+    }
+    if (props.modelValue !== selectedResultId.value) {
+      if (!newValue) {
+        // If modelValue is unset to "", then unset selectedResult
+        selectedResult.value = null;
+      } else {
+        // If modelValue exists, then fetch it's selectedResult by id
+        await getInitial(newValue);
+      }
+    }
+  },
+  { immediate: true },
+);
 </script>

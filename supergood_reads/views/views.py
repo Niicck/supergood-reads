@@ -54,7 +54,6 @@ from supergood_reads.reviews.forms import InvalidContentTypeError, ReviewFormGro
 from supergood_reads.reviews.models import Review
 from supergood_reads.utils import ContentTypeUtils
 from supergood_reads.utils.engine import supergood_reads_engine
-from supergood_reads.utils.forms import get_initial_field_value
 from supergood_reads.utils.json import UUIDEncoder
 from supergood_reads.utils.uuid import is_uuid
 
@@ -110,18 +109,13 @@ class ReviewFormView(TemplateView):
         )
 
         # Initial Values for Vue Components
-        initial_strategy_content_type = str(
-            get_initial_field_value(review_form, "strategy_content_type") or ""
-        )
-        initial_media_type_content_type = str(
-            get_initial_field_value(review_form, "media_type_content_type") or ""
-        )
-        initial_media_type_object_id = get_initial_field_value(
-            review_form, "media_type_object_id"
-        )
-        initial_create_new_media_type_object = get_initial_field_value(
-            review_form_group.review_mgmt_form, "create_new_media_type_object"
-        )
+        initial_strategy_content_type = review_form["strategy_content_type"].value()
+        initial_media_type_content_type = review_form["media_type_content_type"].value()
+        initial_media_type_object_id = review_form["media_type_object_id"].value()
+        initial_create_new_media_type_object = review_mgmt_form[
+            "create_new_media_type_object"
+        ].value()
+
         context_data.update(
             {
                 "initial_strategy_content_type": initial_strategy_content_type,
@@ -137,6 +131,7 @@ class ReviewFormView(TemplateView):
             "selectedMediaTypeContentType": initial_media_type_content_type,
             "selectedMediaTypeObjectId": initial_media_type_object_id,
             "createNewMediaTypeObject": initial_create_new_media_type_object,
+            "autocompleteUrlBase": reverse("media_type_autocomplete"),
         }
         context_data.update(
             {

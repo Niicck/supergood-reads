@@ -24,11 +24,11 @@
 {% block content %}
     {% vite_asset 'js/apps/library.ts' %}
     <div id="library-app">
-        <library
+        <library-view
             search-url={% url 'media_search' %}
             genres-api-url={% url 'genres_api' %}
             media-type-choices-api-url={% url 'media_type_choices_api' %}
             csrf-token={{csrf_token}}
-        ></library>
+        ></library-view>
     </div>
 {% endblock content %}

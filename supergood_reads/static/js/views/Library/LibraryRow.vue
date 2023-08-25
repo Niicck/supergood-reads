@@ -1,4 +1,4 @@
-/* eslint vue/no-v-html: "off" */
+<!-- eslint-disable vue/no-v-html -->
 <template>
   <tr class="align-text-top">
     <td
@@ -27,7 +27,7 @@
           <dd class="text-gray-700">
             <GenreCell
               :genres="genres"
-              :selectedGenres="selectedGenres"
+              :selected-genres="selectedGenres"
               @toggle-checked-genre="toggleSelectedGenre"
             />
           </dd>
@@ -36,9 +36,9 @@
         <div class="sm:hidden">
           <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
-              <Button title="Write Review" />
-              <Button title="Add to Wishlist" />
-              <Button v-if="props.editable" title="Edit" />
+              <DefaultButton title="Write Review" />
+              <DefaultButton title="Add to Wishlist" />
+              <DefaultButton v-if="props.editable" title="Edit" />
             </div>
           </dd>
         </div>
@@ -53,7 +53,7 @@
       <div class="space-y-1">
         <GenreCell
           :genres="genres"
-          :selectedGenres="selectedGenres"
+          :selected-genres="selectedGenres"
           @toggle-checked-genre="toggleSelectedGenre"
         />
       </div>
@@ -63,9 +63,9 @@
       class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right sm:table-cell"
     >
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
-        <Button title="Write Review" />
-        <Button title="Add to Wishlist" />
-        <Button v-if="props.editable" title="Edit" />
+        <DefaultButton title="Write Review" />
+        <DefaultButton title="Add to Wishlist" />
+        <DefaultButton v-if="props.editable" title="Edit" />
       </div>
     </td>
   </tr>
@@ -73,16 +73,16 @@
 
 <script lang="ts" setup>
 import { PropType } from 'vue';
-import Button from '@/js/components/Button.vue';
+import DefaultButton from '@/js/components/DefaultButton.vue';
 import GenreCell from '@/js/views/Library/GenreCell.vue';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },
   title: { type: String as PropType<string>, required: true },
-  year: { type: Number as PropType<number>, required: false },
-  creator: { type: String as PropType<string>, required: false },
-  icon: { type: String as PropType<string>, required: false },
-  genres: { type: Array as PropType<string[]>, required: false },
+  year: { type: Number as PropType<number | null>, default: null },
+  creator: { type: String as PropType<string>, default: '' },
+  icon: { type: String as PropType<string>, default: '' },
+  genres: { type: Array as PropType<string[]>, default: () => [] },
   editable: { type: Boolean as PropType<boolean>, default: false },
   selectedGenres: { type: Array as PropType<string[]>, required: true },
 });

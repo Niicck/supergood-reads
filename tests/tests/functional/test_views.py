@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from typing import Any, TypeAlias, cast
+from urllib.parse import urlencode
 from uuid import UUID, uuid4
 
 import django
@@ -16,7 +17,6 @@ from django.urls import reverse
 
 from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
 from supergood_reads.reviews.forms import CreateNewMediaOption, ReviewForm
-from supergood_reads.templatetags.review_form import media_type_autocomplete_url
 from supergood_reads.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
@@ -106,6 +106,12 @@ def is_redirected_to_login(res: Any) -> bool:
     """Check if response will redirect to login page."""
     res_url_root: str = res.url.split("?")[0]
     return res.status_code == 302 and res_url_root == settings.LOGIN_URL
+
+
+def media_type_autocomplete_url(content_type_id: int | str) -> str:
+    base_url = reverse("media_type_autocomplete")
+    query_params = urlencode({"content_type_id": content_type_id})
+    return f"{base_url}?{query_params}"
 
 
 @pytest.mark.django_db

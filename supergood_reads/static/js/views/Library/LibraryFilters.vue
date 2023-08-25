@@ -6,8 +6,8 @@
         <div class="flow-root">
           <PopoverGroup class="flex items-center divide-x space-x-4 divide-gray-200">
             <Popover
-              v-for="(filter, sectionIdx) in filters"
-              :key="filter.name"
+              v-for="(filter, sectionIdx) in props.filters"
+              :key="sectionIdx"
               class="relative inline-block text-left first:pl-0 sm:first:pl-4 pl-4"
             >
               <PopoverButton
@@ -39,8 +39,8 @@
                   <form class="space-y-4">
                     <button
                       v-if="filter.clear && getCheckedCount(filter)"
-                      @click="clearFilter(filter.id)"
                       class="rounded bg-white px-2 py-1 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 flex flex-row"
+                      @click="clearFilter(filter.id)"
                     >
                       <span>Clear Selected</span
                       ><span
@@ -58,8 +58,8 @@
                         :value="option.value"
                         type="checkbox"
                         :checked="option.checked"
-                        @input="toggleCheckedOption(filter.id, option.value)"
                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        @input="toggleCheckedOption(filter.id, option.value)"
                       />
                       <label
                         :for="`filter-${filter.id}-${optionIdx}`"
@@ -83,7 +83,7 @@ import { Popover, PopoverButton, PopoverGroup, PopoverPanel } from '@headlessui/
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/vue/20/solid';
 import type { Filter } from '@/js/types';
 
-const { filters } = defineProps({
+const props = defineProps({
   filters: {
     type: Array<Filter>,
     required: true,

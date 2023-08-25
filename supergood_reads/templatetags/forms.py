@@ -1,28 +1,35 @@
+import json
 from typing import Any, Dict
 
 from django import template
-from django.forms.boundfield import BoundField
+from django.forms import BoundField, ModelChoiceField
 from django.forms.fields import ChoiceField
 from django.template.loader import render_to_string
 
 register = template.Library()
 
 
-@register.filter(is_safe=True)
-def field_to_dict(field: BoundField) -> Dict[str, Any]:
-    """Convert django field into dict consumable by vue Component props."""
-    if isinstance(field.field, ChoiceField):
+@register.simple_tag
+def vue_field_interface(field: BoundField) -> dict[str, Any]:
+    if isinstance(field.field, ModelChoiceField):
+        choices = [
+            (obj.value if obj else obj, label) for obj, label in field.field.choices
+        ]
+    elif isinstance(field.field, ChoiceField):
         choices = field.field.choices
     else:
         choices = []
+
     errors_html = str(field.errors)
+
     field_data = {
         "errorsHtml": errors_html,
-        "htmlName": field.html_name,
+        "name": field.html_name,
         "label": field.label,
-        "idForLabel": field.id_for_label,
+        "id": field.id_for_label,
         "helpText": field.help_text,
-        "choices": choices,
+        "initialValue": field.value(),
+        "choices": json.dumps(choices),
     }
     return field_data
 

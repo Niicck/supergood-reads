@@ -2,7 +2,6 @@
 
 {% load django_vite %}
 {% load widget_tweaks %}
-{% load review_form %}
 {% load forms %}
 {% load basic_header %}
 {% load vue_tags %}
@@ -25,67 +24,45 @@
                 <div class="my-12">
                     {% form_subheading title="Select a Media Type" text="What do you want to review?" %}
                     {% comment %} Select MediaType Type {% endcomment %}
-                    {% with field=review_form.media_type_content_type field_data_json_script_id="media_type_content_type_field_data" %}
-                        {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
-                        <field-wrapper
-                            field-data-json-script-id="{{ field_data_json_script_id }}"
-                        >
-                            <template #field="{fieldData}">
-                                <radio-cards
-                                    v-model="selectedMediaTypeContentType"
-                                    v-bind="fieldData"
-                                >
-                                </radio-cards>
-                            </template>
-                        </field-wrapper>
-                    {% endwith %}
+                    {% vue_field_interface review_form.media_type_content_type as media_type_content_type_vue_field %}
+                    <field-wrapper :field="{{media_type_content_type_vue_field}}">
+                        <radio-cards
+                            v-model="selectedMediaTypeContentType"
+                            :field="{{media_type_content_type_vue_field}}"
+                        ></radio-cards>
+                    </field-wrapper>
                     <div v-show="selectedMediaTypeContentType">
                         {% comment %} Create New MediaType or Select Existing {% endcomment %}
-                        {% with field=review_mgmt_form.create_new_media_type_object field_data_json_script_id="field_data_create_new" %}
-                            {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
-                            <field-wrapper
-                                field-data-json-script-id="{{ field_data_json_script_id }}"
-                            >
-                                <template #field="{fieldData}">
-                                    <radio-cards
-                                        v-model="createNewMediaTypeObject"
-                                        v-bind="fieldData"
-                                    >
-                                    </radio-cards>
-                                </template>
+                        {% vue_field_interface review_mgmt_form.create_new_media_type_object as create_new_media_type_object_vue_field %}
+                        <field-wrapper :field="{{create_new_media_type_object_vue_field}}">
+                            <radio-cards
+                                v-model="createNewMediaTypeObject"
+                                :field="{{create_new_media_type_object_vue_field}}"
+                            ></radio-cards>
+                        </field-wrapper>
+                        {% comment %} Autocomplete to select existing MediaType {% endcomment %}
+                        <div v-show="!shouldCreateNewMediaTypeObject" v-if="autocompleteUrl">
+                            {% vue_field_interface review_form.media_type_object_id as media_type_object_id_vue_field %}
+                            <field-wrapper :field="{{media_type_object_id_vue_field}}">
+                                <autocomplete
+                                    v-model="selectedMediaTypeObjectId"
+                                    :field="{{media_type_object_id_vue_field}}"
+                                    :url="autocompleteUrl"
+                                    csrf-token={{ csrf_token }}
+                                >
+                                </autocomplete>
                             </field-wrapper>
-                        {% endwith %}
-                        {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
-                            <div v-show="{{media_type_id}} == selectedMediaTypeContentType">
-                                <div v-show="!shouldCreateNewMediaTypeObject">
-                                    {% comment %} MediaType Autocomplete {% endcomment %}
-                                    {% with field=review_form.media_type_object_id field_data_json_script_id="media_type_object_id_field_data" %}
-                                        {{field|field_to_dict|vue_json_script:field_data_json_script_id}}
-                                        <field-wrapper
-                                            field-data-json-script-id="{{ field_data_json_script_id }}"
-                                        >
-                                            <template #field="{fieldData}">
-                                                <autocomplete
-                                                    v-model="selectedMediaTypeObjectId"
-                                                    v-bind="fieldData"
-                                                    {% if initial_media_type_content_type == media_type_id %}
-                                                        initial-value-id="{{ initial_media_type_object_id }}"
-                                                    {% endif %}
-                                                    csrf-token={{ csrf_token }}
-                                                    url={% media_type_autocomplete_url media_type_id %}
-                                                >
-                                                </autocomplete>
-                                            </template>
-                                        </field-wrapper>
-                                    {% endwith %}
-                                </div>
-                                <div v-show="shouldCreateNewMediaTypeObject" ref={{media_type_id|get_media_type_form_ref}}>
+                        </div>
+                        {% comment %} Forms to create new MediaType {% endcomment %}
+                        <div v-if="shouldCreateNewMediaTypeObject">
+                            {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
+                                <div v-if="{{media_type_id}} == selectedMediaTypeContentType">
                                     {% for field in media_type_form %}
                                         {% supergood_field field %}
                                     {% endfor %}
                                 </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
@@ -101,7 +78,7 @@
                     {% form_subheading title="Rating" text="What kind of rating strategy do you want to use?" %}
                     {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms_by_id.items %}
-                        <div v-show="{{strategy_id}} == selectedStrategyId" ref={{strategy_id|get_strategy_form_ref}}>
+                        <div v-if="{{strategy_id}} == selectedStrategyId">
                             {% for field in strategy_form %}
                                 {% supergood_field field %}
                             {% endfor %}

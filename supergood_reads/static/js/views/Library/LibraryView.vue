@@ -12,8 +12,8 @@
               <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
             </div>
             <input
-              v-model="query"
               id="search"
+              v-model="query"
               class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-1.5 pl-10 pr-3 text-gray-900 sm:leading-6"
               placeholder="Search"
               type="search"
@@ -33,8 +33,8 @@
       <div class="relative flex items-start">
         <div class="flex h-6 items-center">
           <input
-            v-model="showEditableOnly"
             id="library-only"
+            v-model="showEditableOnly"
             aria-describedby="library-only-description"
             name="library-only"
             type="checkbox"
@@ -83,10 +83,10 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
-          <template v-for="result in results">
+          <template v-for="result in results" :key="result.id">
             <LibraryRow
               v-bind="result"
-              :selectedGenres="selectedGenres"
+              :selected-genres="selectedGenres"
               @toggle-checked-genre="
                 (optionValue: string) => toggleCheckedFilterOption(genreFilterId, optionValue)
               "
@@ -94,7 +94,7 @@
           </template>
         </tbody>
       </table>
-      <Pagination
+      <PaginationNav
         v-if="pagination"
         v-bind="pagination"
         @next="nextPage"
@@ -105,13 +105,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import type { Ref } from 'vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/20/solid';
 import _ from 'lodash';
 
 import type { Filter, FilterOption, MediaSearchResult } from '@/js/types';
-import Pagination from '@/js/components/Pagination.vue';
+import PaginationNav from '@/js/components/PaginationNav.vue';
 import LibraryRow from '@/js/views/Library/LibraryRow.vue';
 import LibraryFilters from '@/js/views/Library/LibraryFilters.vue';
 import { createApiClient } from '@/js/utils/apiClient.ts';
@@ -213,7 +213,7 @@ const nextPage = () => {
 
 const previousPage = () => {
   const previousPageNumber = pagination?.value?.previousPageNumber;
-  if (pagination && previousPageNumber) {
+  if (pagination.value && previousPageNumber) {
     page.value = previousPageNumber;
     if (tableTop.value) {
       tableTop.value.scrollIntoView();

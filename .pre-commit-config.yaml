@@ -48,6 +48,7 @@ repos:
     rev: v8.34.0
     hooks:
       - id: eslint
+        types: [file]
         files: \.(js|jsx|ts|tsx|vue)$
         args: ['--fix']
         additional_dependencies:

@@ -1,12 +1,12 @@
-// The output of the "field_to_dict" django filter.
-export type FieldData = {
-  errorsHtml: string;
-  htmlName: string;
+export interface VueFieldInterface {
+  errorsHtml?: string;
+  name: string;
   label: string;
-  idForLabel: string;
-  helpText: string;
-  choices: Array<Array<string | number>>;
-};
+  id: string;
+  helpText?: string;
+  initialValue?: string | number;
+  choices?: string | Array<Array<string | number>>;
+}
 
 export type NavBarLink = {
   href: string;
@@ -44,5 +44,3 @@ export type MediaSearchResult = {
   icon: string;
   editable: boolean;
 };
-
-// export type { FieldData, NavBarLink, MyReviewRowInitialData, Filter, FilterOption, MediaSearchResult };

@@ -5,11 +5,12 @@ import type { Ref, ComputedRef } from 'vue';
 
 interface State {
   selectedStrategyId: Ref<string>;
-  selectedMediaTypeContentType: Ref<string>;
+  selectedMediaTypeContentType: Ref<number>;
   selectedMediaTypeObjectId: Ref<string>;
   createNewMediaTypeObject: Ref<CreateNewMediaOption>;
   shouldCreateNewMediaTypeObject: ComputedRef<boolean>;
   showDeleteReviewModal: Ref<boolean>;
+  autocompleteUrl: Ref<string>;
   setShowDeleteReviewModal: (value: boolean) => void;
 }
 
@@ -18,6 +19,7 @@ interface InitialData {
   selectedMediaTypeContentType: string;
   selectedMediaTypeObjectId: string;
   createNewMediaTypeObject: CreateNewMediaOption;
+  autocompleteUrlBase: string;
 }
 
 enum CreateNewMediaOption {
@@ -26,14 +28,42 @@ enum CreateNewMediaOption {
 }
 
 const useReviewFormStore = defineStore('reviewForm', (): State => {
-  const selectedStrategyId = ref('');
-  const selectedMediaTypeContentType = ref('');
-  const selectedMediaTypeObjectId = ref('');
+  /**
+   * Handle initial values for django fields bound to v-models.
+   */
   const createNewMediaTypeObject = ref(CreateNewMediaOption.SELECT_EXISTING);
-  const showDeleteReviewModal = ref(false);
-
-  // Cache saved values when switching between MediaTypes
+  const selectedStrategyId = ref();
+  const selectedMediaTypeContentType = ref();
+  const selectedMediaTypeObjectId = ref();
+  // Cache the selectedMediaTypeObjectId for each MediaType.
   const selectedMediaTypeObjectIdCache = ref<{ [key: string]: string }>({});
+  const autocompleteUrlBase = ref('');
+  const autocompleteUrl = computed((): string => {
+    if (autocompleteUrlBase.value && selectedMediaTypeContentType.value) {
+      let url = autocompleteUrlBase.value;
+      url += `?content_type_id=${selectedMediaTypeContentType.value}`;
+      return url;
+    }
+    return '';
+  });
+
+  onMounted(() => {
+    /* Load initial data from django data loaded into "json_script".*/
+    const initialData = parseJsonScript('initialDataForVueStore') as InitialData;
+    createNewMediaTypeObject.value = initialData.createNewMediaTypeObject;
+    selectedStrategyId.value = initialData.selectedStrategyId;
+    selectedMediaTypeContentType.value = initialData.selectedMediaTypeContentType;
+    selectedMediaTypeObjectId.value = initialData.selectedMediaTypeObjectId;
+    autocompleteUrlBase.value = initialData.autocompleteUrlBase;
+  });
+
+  /**
+   * Handle Delete Modal
+   */
+  const showDeleteReviewModal = ref(false);
+  const setShowDeleteReviewModal = (value: boolean): void => {
+    showDeleteReviewModal.value = value;
+  };
 
   // Inform UI that we want to create a new MediaType object instead of selecting an
   // existing one.
@@ -41,40 +71,34 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
     return createNewMediaTypeObject.value === CreateNewMediaOption.CREATE_NEW;
   });
 
-  // Turn showDeleteReviewModal on or off.
-  const setShowDeleteReviewModal = (value: boolean): void => {
-    showDeleteReviewModal.value = value;
-  };
+  /**
+   * Handle selectedMediaTypeObjectId caching when switching between
+   * selectedMediaTypeContentTypes.
+   *
+   * Save and retrieve ObjectId values from cache if we switch between ContentTypes.
+   */
+  watch(
+    selectedMediaTypeContentType,
+    (current, old) => {
+      if (current !== old) {
+        const cache = selectedMediaTypeObjectIdCache.value;
 
-  // Save and retrieve ObjectId values from cache if we switch between ContentTypes.
-  watch(selectedMediaTypeContentType, (current, old) => {
-    if (current !== old) {
-      const cache = selectedMediaTypeObjectIdCache.value;
+        // Save ObjectId into cache for the old active ContentType
+        if (selectedMediaTypeObjectId.value) {
+          cache[old] = selectedMediaTypeObjectId.value;
+        }
 
-      // Save ObjectId into cache for the old active ContentType
-      if (selectedMediaTypeObjectId.value) {
-        cache[old] = selectedMediaTypeObjectId.value;
+        // If there's an existing ObjectId in the cache for the new ContentType, then
+        // apply it. Otherwise, reset it.
+        if (cache[current]) {
+          selectedMediaTypeObjectId.value = cache[current];
+        } else {
+          selectedMediaTypeObjectId.value = '';
+        }
       }
-
-      // If there's an existing ObjectId in the cache for the new ContentType, then
-      // apply it. Otherwise, reset it.
-      if (cache[current]) {
-        selectedMediaTypeObjectId.value = cache[current];
-      } else {
-        selectedMediaTypeObjectId.value = '';
-      }
-    }
-  });
-
-  onMounted(() => {
-    /* Load initial data from django data loaded into "json_script".*/
-    const initialData = parseJsonScript('initialDataForVueStore') as InitialData;
-
-    selectedStrategyId.value = initialData.selectedStrategyId;
-    selectedMediaTypeContentType.value = initialData.selectedMediaTypeContentType;
-    selectedMediaTypeObjectId.value = initialData.selectedMediaTypeObjectId;
-    createNewMediaTypeObject.value = initialData.createNewMediaTypeObject;
-  });
+    },
+    { flush: 'sync' },
+  );
 
   return {
     selectedStrategyId,
@@ -83,6 +107,7 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
     createNewMediaTypeObject,
     shouldCreateNewMediaTypeObject,
     showDeleteReviewModal,
+    autocompleteUrl,
     setShowDeleteReviewModal,
   };
 });

@@ -1,45 +1,30 @@
-/* eslint vue/no-v-html: "off" */
+<!-- eslint-disable vue/no-v-html -->
 <template>
-  <div v-if="fieldData" class="mt-5">
-    <div v-html="fieldData.errorsHtml"></div>
+  <div class="mt-5">
+    <div v-if="props.field.errorsHtml" v-html="props.field.errorsHtml"></div>
     <label
-      :for="fieldData.idForLabel"
+      :for="props.field.id"
       class="block text-sm font-medium leading-6 text-gray-900"
     >
-      {{ fieldData.label }}
+      {{ props.field.label }}
     </label>
     <div class="mt-2">
-      <slot name="field" :field-data="fieldData"></slot>
+      <slot></slot>
     </div>
-    <p v-if="fieldData.helpText" class="mt-2 text-sm text-gray-500">
-      <span v-html="fieldData.helpText"></span>
+    <p v-if="props.field.helpText" class="mt-2 text-sm text-gray-500">
+      <span v-html="props.field.helpText"></span>
     </p>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import type { FieldData } from '@/js/types';
-import { parseJsonScript } from '@/js/utils/parseJsonScript';
+import type { PropType } from 'vue';
+import type { VueFieldInterface } from '@/js/types';
 
 const props = defineProps({
-  /**
-   * The id attribute of the <script> element where the django field's metadata was
-   * was stored as an output of the django json_script filter.
-   */
-  fieldDataJsonScriptId: {
-    type: String,
-    default: null,
+  field: {
+    type: Object as PropType<VueFieldInterface>,
+    required: true,
   },
-});
-
-const fieldData = ref<FieldData | null>(null);
-
-/**
- * Retrieve the fieldData value from the json data embedded into a <script> tag by the
- * json_script django filter.
- */
-onMounted(() => {
-  fieldData.value = parseJsonScript(props.fieldDataJsonScriptId) as FieldData;
 });
 </script>

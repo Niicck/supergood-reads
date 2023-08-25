@@ -1,7 +1,9 @@
 from typing import Any, Dict, List, Optional, Type
 
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import Model
-from django.forms import ModelForm
+from django.forms import ModelChoiceField, ModelForm
 
 from supergood_reads.utils import ContentTypeUtils
 
@@ -108,3 +110,44 @@ class GenericRelationFormGroup:
             [id, form._meta.model._meta.model_name]
             for id, form in self.by_content_type_id.items()
         ]
+
+
+class ContentTypeChoiceField(ModelChoiceField):
+    """Choose a ContentType instance from a list of Models."""
+
+    def label_from_instance(self, obj: ContentType):
+        return obj.name
+
+    def __init__(
+        self,
+        parent_model: type[Model],
+        *args,
+        models: list[Model | type[Model]] | None = None,
+        **kwargs,
+    ):
+        super().__init__(queryset=ContentType.objects.none(), *args, **kwargs)
+        self.parent_model = parent_model
+        if models:
+            self.set_models(models)
+
+    def set_models(self, models: list[Model | type[Model]]):
+        """Set ContentType queryset based on Models."""
+        content_types = ContentType.objects.get_for_models(*models).values()
+        self.queryset = ContentType.objects.filter(
+            pk__in=[ct.pk for ct in content_types]
+        )
+
+    def validate(self, value: ContentType | None):
+        super().validate(value)
+        self._validate_parent_model(value)
+
+    def _validate_parent_model(self, value: ContentType | None):
+        if not value or not self.parent_model:
+            return
+
+        model_class = value.model_class()
+        if not (model_class and issubclass(model_class, self.parent_model)):
+            raise ValidationError(
+                f"{value.name} is not a valid {self.parent_model}.",
+                code="invalid",
+            )

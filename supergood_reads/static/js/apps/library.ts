@@ -1,13 +1,12 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
 import MyMediaRow from '@/js/components/MyMediaRow.vue';
-import Library from '@/js/views/Library/Library.vue';
+import LibraryView from '@/js/views/Library/LibraryView.vue';
 
 const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],
   components: {
-    'my-media-row': MyMediaRow,
-    'library': Library,
+    'library-view': LibraryView,
   },
 });
 

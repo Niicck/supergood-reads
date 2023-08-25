@@ -4,17 +4,18 @@ from typing import Any, List, Optional, Type, cast
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Model
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
-from supergood_reads.common.forms import GenericRelationFormGroup
+from supergood_reads.common.forms import (
+    ContentTypeChoiceField,
+    GenericRelationFormGroup,
+)
 from supergood_reads.media_types.models import AbstractMediaType
 from supergood_reads.reviews.models import Review
 from supergood_reads.strategies.models import AbstractStrategy
-from supergood_reads.utils import ContentTypeUtils
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.forms import get_initial_field_value
 
@@ -97,11 +98,17 @@ class ReviewForm(forms.ModelForm[Review]):
             "media_type_object_id": "Title",
         }
 
-    media_type_content_type = forms.TypedChoiceField(
-        label="Media Type", choices=[], required=True, coerce=int
+    media_type_content_type = ContentTypeChoiceField(
+        label="Media Type",
+        parent_model=AbstractMediaType,
+        required=True,
+        empty_label=None,
     )
-    strategy_content_type = forms.TypedChoiceField(
-        label="Rating Strategy", choices=[], required=True, coerce=int
+    strategy_content_type = ContentTypeChoiceField(
+        label="Rating Strategy",
+        parent_model=AbstractStrategy,
+        required=True,
+        empty_label=None,
     )
 
     completed_at_day = forms.TypedChoiceField(
@@ -141,85 +148,15 @@ class ReviewForm(forms.ModelForm[Review]):
         self.strategy_choices = strategy_choices or []
         self.media_type_choices = media_type_choices or []
 
-        self.populate_generic_foreign_key_choice_field(
-            "strategy_content_type", self.strategy_choices
+        media_type_choice_field = cast(
+            ContentTypeChoiceField, self.fields["media_type_content_type"]
         )
-        self.populate_generic_foreign_key_choice_field(
-            "media_type_content_type", self.media_type_choices
+        media_type_choice_field.set_models(self.media_type_choices)
+
+        strategy_choice_field = cast(
+            ContentTypeChoiceField, self.fields["strategy_content_type"]
         )
-
-    def populate_generic_foreign_key_choice_field(
-        self,
-        choice_field_name: str,
-        models: List[Type[Model]],
-    ) -> None:
-        """Add models as choices to a ChoiceField for a GenericForeignKey.
-
-        This allows users to select the ContentType model they want to use for a
-        GenericForeignKey.
-
-        This ChoiceField functions very similarly to a ModelChoiceField, except that it
-        is json serializable and can easily be injected into vue templates.
-
-        Example:
-            self.add_models_to_choice_field(
-                "strategy_content_type",
-                [EbertStrategy, GoodreadsStrategy, MaximusStrategy]
-            )
-
-            Will add:
-              ("7", "Ebert"),
-              ("8", "Goodreads"),
-              ("9", "Maximus")
-            To:
-              self.strategy_content_type ChoiceField
-
-        Args:
-          choice_field_name:
-            Name of a ChoiceField for a ForeignKey to the ContentType table.
-          models:
-            List of models whose content_type_ids will be added as choices.
-        """
-        field = self.fields[choice_field_name]
-        assert isinstance(field, ChoiceField)
-
-        field.choices = []
-        for model in models:
-            model_content_type_id = ContentTypeUtils.get_content_type_id(model)
-            stringified_model_content_type_id = str(model_content_type_id)
-            model_name = model._meta.verbose_name
-            choice = (stringified_model_content_type_id, model_name)
-            field.choices.append(choice)
-
-    def clean_strategy_content_type(self) -> ContentType:
-        """Convert content_type_id into actual ContentType model."""
-        data = self.cleaned_data["strategy_content_type"]
-        return self._clean_content_type(data, parent=AbstractStrategy)
-
-    def clean_media_type_content_type(self) -> ContentType:
-        """Convert content_type_id into actual ContentType model."""
-        data = self.cleaned_data["media_type_content_type"]
-        return self._clean_content_type(data, parent=AbstractMediaType)
-
-    def _clean_content_type(self, data: Any, parent: Type[Model]) -> ContentType:
-        """
-        If form data was submitted with just the id of a ContentType, then convert it to
-        a proper ContentType instance. Validate that ContentType model is a valid
-        subclass of given parent."""
-        parent_name = parent.__name__
-        try:
-            if isinstance(data, ContentType):
-                content_type = data
-                content_type_id = content_type.id
-            else:
-                content_type_id = int(data)
-                content_type = ContentType.objects.get_for_id(content_type_id)
-            model_class = content_type.model_class()
-            if not (model_class and issubclass(model_class, parent)):
-                raise InvalidContentTypeError()
-        except (ContentType.DoesNotExist, InvalidContentTypeError):
-            raise ValidationError(f"{content_type_id} is not a valid {parent_name}.")
-        return content_type
+        strategy_choice_field.set_models(self.strategy_choices)
 
 
 class CreateNewMediaOption(Enum):
