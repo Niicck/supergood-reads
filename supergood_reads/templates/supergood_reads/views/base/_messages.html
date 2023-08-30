@@ -2,21 +2,28 @@
 {% vite_asset 'js/apps/messages.ts' %}
 
 <div id="messages-vue-app">
-    {% if messages %}
-        <!-- Global notification live region, render this permanently at the end of the document -->
-        <div
-            aria-live="assertive"
-            class="pointer-events-none z-10 fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6"
-        >
-            <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
-                {% for message in messages %}
-                    <simple-notification
-                        message="{{message.message}}"
-                        level-tag="{{message.level_tag}}"
-                    >
-                    </simple-notification>
-                {% endfor %}
-            </div>
+    <!-- Global notification live region, render this permanently at the end of the document -->
+    <div
+        aria-live="assertive"
+        class="pointer-events-none z-10 fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6"
+    >
+        <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+            {% comment %} Notifications from django messages {% endcomment %}
+            {% for message in messages %}
+                <simple-notification
+                    message="{{message.message}}"
+                    level-tag="{{message.level_tag}}"
+                >
+                </simple-notification>
+            {% endfor %}
+            {% comment %} Notifications from vue store {% endcomment %}
+            <simple-notification
+                v-for="(msg, idx) in messages"
+                :key="idx"
+                :message="msg.message"
+                :level-tag="msg.levelTag"
+            >
+            </simple-notification>
         </div>
-    {% endif %}
+    </div>
 </div>

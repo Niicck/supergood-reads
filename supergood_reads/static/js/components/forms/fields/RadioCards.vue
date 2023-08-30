@@ -78,7 +78,7 @@ watch(selectedValue, (newValue) => {
 });
 </script>
 
-<style>
+<style scoped>
 .disabled {
   @apply cursor-not-allowed;
 }

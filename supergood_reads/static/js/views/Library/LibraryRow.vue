@@ -37,7 +37,7 @@
           <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
               <DefaultButton title="Write Review" />
-              <DefaultButton title="Add to Wishlist" />
+              <DefaultButton title="Add to Wishlist" @click="addToWishList" />
               <DefaultButton
                 v-if="props.updateUrl"
                 title="Edit"
@@ -68,7 +68,7 @@
     >
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
         <DefaultButton title="Write Review" />
-        <DefaultButton title="Add to Wishlist" />
+        <DefaultButton title="Add to Wishlist" @click="addToWishList" />
         <DefaultButton
           v-if="props.updateUrl"
           title="Edit"
@@ -83,6 +83,7 @@
 import { PropType } from 'vue';
 import DefaultButton from '@/js/components/DefaultButton.vue';
 import GenreCell from '@/js/views/Library/GenreCell.vue';
+import { useMessagesStore } from '@/js/stores/messages';
 
 const props = defineProps({
   id: { type: String as PropType<string>, required: true },
@@ -97,6 +98,8 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-checked-genre']);
 
+const { sendMessage } = useMessagesStore();
+
 const toggleSelectedGenre = (genre: string) => {
   emit('toggle-checked-genre', genre);
 };
@@ -104,9 +107,13 @@ const toggleSelectedGenre = (genre: string) => {
 const navigateToEditPage = () => {
   window.location.href = props.updateUrl;
 };
+
+const addToWishList = () => {
+  sendMessage('Wish List Coming Soon!', 'info');
+};
 </script>
 
-<style>
+<style scoped>
 .selected-genre {
   @apply bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;
 }

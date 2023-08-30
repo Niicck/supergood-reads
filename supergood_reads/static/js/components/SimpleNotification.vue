@@ -13,26 +13,26 @@
       class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5"
     >
       <div class="p-4 flex items-start">
-        <div v-if="levelTag == 'error'" class="flex items-start flex-1">
+        <div v-if="props.levelTag == 'error'" class="flex items-start flex-1">
           <div class="flex-shrink-0">
             <ExclamationTriangleIcon class="h-6 w-6 text-red-400" aria-hidden="true" />
           </div>
           <div class="ml-3 pt-0.5 flex-1">
             <p class="capitalize text-sm font-medium text-gray-900">
-              {{ levelTag }}
+              {{ props.levelTag }}
             </p>
-            <p class="mt-1 text-sm text-gray-500">{{ message }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ props.message }}</p>
           </div>
         </div>
-        <div v-else-if="levelTag == 'success'" class="flex items-start flex-1">
+        <div v-else-if="props.levelTag == 'success'" class="flex items-start flex-1">
           <div class="flex-shrink-0">
             <CheckCircleIcon class="h-6 w-6 text-green-400" aria-hidden="true" />
           </div>
           <div class="ml-3 pt-0.5 flex-1">
             <p class="capitalize text-sm font-medium text-gray-900">
-              {{ levelTag }}
+              {{ props.levelTag }}
             </p>
-            <p class="mt-1 text-sm text-gray-500">{{ message }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ props.message }}</p>
           </div>
         </div>
         <div v-else class="flex items-start flex-1">
@@ -44,9 +44,9 @@
           </div>
           <div class="ml-3 pt-0.5 flex-1">
             <p class="capitalize text-sm font-medium text-gray-900">
-              {{ levelTag }}
+              {{ props.levelTag }}
             </p>
-            <p class="mt-1 text-sm text-gray-500">{{ message }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ props.message }}</p>
           </div>
         </div>
         <div class="ml-4 flex flex-shrink-0">
@@ -66,7 +66,9 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+import type { PropType } from 'vue';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
+import type { MessageLevelTag } from '@/js/stores/messages';
 import { XMarkIcon } from '@heroicons/vue/20/solid';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,8 +86,8 @@ const props = defineProps({
    * https://docs.djangoproject.com/en/4.1/ref/contrib/messages/#the-message-class
    */
   levelTag: {
-    type: String,
-    default: null,
+    type: String as PropType<MessageLevelTag>,
+    default: '',
   },
 });
 
