@@ -1,11 +1,10 @@
 from enum import Enum
-from typing import Any, List, Optional, Type, cast
+from typing import Any, Optional, cast
 
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Model
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
@@ -78,8 +77,8 @@ def validate_generic_foreign_key(
 
 
 class ReviewForm(forms.ModelForm[Review]):
-    strategy_choices: Optional[List[Type[Model]]]
-    media_type_choices: Optional[List[Type[Model]]]
+    strategy_choices: list[type[AbstractStrategy]]
+    media_type_choices: list[type[AbstractMediaType]]
 
     class Meta:
         model = Review
@@ -132,8 +131,8 @@ class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
-        strategy_choices: Optional[List[Type[Model]]] = None,
-        media_type_choices: Optional[List[Type[Model]]] = None,
+        strategy_choices: Optional[list[type[AbstractStrategy]]] = None,
+        media_type_choices: Optional[list[type[AbstractMediaType]]] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -298,7 +297,7 @@ class ReviewFormGroup:
         if self.valid is None:
             self.is_valid()
         if not self.valid:
-            raise Exception("Failed to save Review. At least one form is invalid.")
+            raise ValueError("Failed to save Review. At least one form is invalid.")
 
         review = self.review_form.save(commit=False)
 

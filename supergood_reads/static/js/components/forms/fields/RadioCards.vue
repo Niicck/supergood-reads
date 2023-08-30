@@ -6,27 +6,29 @@
       :name="props.field.name"
       type="hidden"
     />
-    <RadioGroup v-model="selectedValue" :disabled="props.disabled" class="mt-2">
+    <RadioGroup v-model="selectedValue" :disabled="props.field.disabled" class="mt-2">
       <RadioGroupLabel class="sr-only">
         {{ props.field.label }}
       </RadioGroupLabel>
       <div class="grid grid-cols-3 gap-3 lg:grid-cols-4">
         <RadioGroupOption
-          v-for="choice in choices"
+          v-for="choice in props.field.choices"
           :key="choice[0]"
           v-slot="{ active, checked }"
           :value="choice[0]"
           as="template"
         >
           <div
-            :class="[
-              'cursor-pointer focus:outline-none',
-              active ? 'ring-2 ring-indigo-600 ring-offset-2' : '',
-              checked
-                ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                : 'ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50',
-              'flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold capitalize sm:flex-1',
-            ]"
+            class="flex items-center justify-center rounded-md py-3 px-3 text-sm font-semibold capitalize sm:flex-1"
+            :class="{
+              'disabled': props.field.disabled,
+              'enabled': !props.field.disabled,
+              'active': active,
+              'checked-enabled': checked && !props.field.disabled,
+              'checked-disabled': checked && props.field.disabled,
+              'unchecked-enabled': !checked && !props.field.disabled,
+              'unchecked-disabled': !checked && props.field.disabled,
+            }"
           >
             <RadioGroupLabel as="span">{{ choice[1] }}</RadioGroupLabel>
           </div>
@@ -52,21 +54,9 @@ const props = defineProps({
     type: Object as PropType<VueFieldInterface>,
     required: true,
   },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 const emit = defineEmits(['update:modelValue']);
-
-const choices = computed((): (string | number)[][] => {
-  // if field.choices is a dumped JSON string, then parse it
-  if (typeof props.field.choices === 'string') {
-    return JSON.parse(props.field.choices);
-  }
-  return props.field.choices || [];
-});
 
 // Bind selectedValue to the optional v-model, or set it to the initialValue of
 // the field.
@@ -87,3 +77,30 @@ watch(selectedValue, (newValue) => {
   emit('update:modelValue', newValue);
 });
 </script>
+
+<style>
+.disabled {
+  @apply cursor-not-allowed;
+}
+.enabled {
+  @apply cursor-pointer focus:outline-none;
+}
+.active {
+  @apply ring-2 ring-indigo-600 ring-offset-2;
+}
+.checked {
+  @apply bg-indigo-600 text-white;
+}
+.checked-enabled {
+  @apply checked hover:bg-indigo-500;
+}
+.checked-disabled {
+  @apply checked;
+}
+.unchecked-enabled {
+  @apply ring-1 ring-inset ring-gray-300 bg-white text-gray-900 hover:bg-gray-50;
+}
+.unchecked-disabled {
+  @apply bg-gray-200 text-gray-400;
+}
+</style>

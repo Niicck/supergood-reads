@@ -1,38 +1,10 @@
-import json
 from typing import Any, Dict
 
 from django import template
-from django.forms import BoundField, ModelChoiceField
-from django.forms.fields import ChoiceField
+from django.forms import BoundField
 from django.template.loader import render_to_string
 
 register = template.Library()
-
-
-@register.simple_tag
-def vue_field_interface(field: BoundField) -> dict[str, Any]:
-    if isinstance(field.field, ModelChoiceField):
-        choices = [
-            (obj.value if obj else obj, label) for obj, label in field.field.choices
-        ]
-    elif isinstance(field.field, ChoiceField):
-        choices = field.field.choices
-    else:
-        choices = []
-
-    errors_html = str(field.errors)
-    initial_value = field.value() if field.value() is not None else ""
-
-    field_data = {
-        "errorsHtml": errors_html,
-        "name": field.html_name,
-        "label": field.label,
-        "id": field.id_for_label,
-        "helpText": field.help_text,
-        "initialValue": initial_value,
-        "choices": json.dumps(choices),
-    }
-    return field_data
 
 
 @register.simple_tag

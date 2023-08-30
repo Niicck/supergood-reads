@@ -135,25 +135,76 @@ class DeleteReviewPermissionMixin(BasePermissionMixin):
         )
 
 
-class BaseJsonPermissionMixin(BasePermissionMixin):
-    pass
+class CreateMediaItemPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
 
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        # TODO: check permissions on MediaItem
+        if not request.user.is_authenticated:
+            self.send_demo_notification()
+        return super().get(request, *args, **kwargs)  # type: ignore
 
-class UpdateMediaPermissionMixin(BaseJsonPermissionMixin):
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        """Check if user is allowed to change MediaType instance."""
-        user = request.user
-        obj = self.get_object()  # type: ignore
-        if not obj.can_user_change(user):
+        """Only allow authenticated users to create new Reviews."""
+        # TODO: check permissions on MediaItem
+        if not request.user.is_authenticated:
             return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
 
 
-class DeleteMediaPermissionMixin(BaseJsonPermissionMixin):
+class UpdateMediaItemPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        if not self.has_get_permission():
+            return self.handle_unauthorized()
+
+        if not self.has_post_permission():
+            self.send_demo_notification()
+
+        return super().get(request, *args, **kwargs)  # type: ignore
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        """Check if user is allowed to change MediaType instance."""
-        user = request.user
-        obj = self.get_object()  # type: ignore
-        if not obj.can_user_delete(user):
+        if not self.has_post_permission():
             return self.handle_unauthorized()
         return super().post(request, *args, **kwargs)  # type: ignore
+
+    def has_get_permission(self) -> bool:
+        """
+        A user can only view the update page for a review only if one of these
+        conditions is met:
+          - The review is a validated demo Media Item
+          - The user owns the Media Item
+        """
+        user = self.request.user
+        obj = self.get_object()  # type: ignore
+        return obj.validated or has_owner_permission(user, obj)
+
+    def has_post_permission(self) -> bool:
+        """
+        A user can only update a MediaItem if one of these conditions is met:
+          - The user has global "change_media_item" permission
+          - The user owns the Media Item
+        """
+        user = self.request.user
+        obj = self.get_object()  # type: ignore
+        return has_owner_permission(user, obj) or user.has_perm(
+            "supergood_reads.change_book"
+        )
+
+
+class DeleteMediaPermissionMixin(BasePermissionMixin):
+    request: HttpRequest
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        if not self.has_post_permission():
+            return self.handle_unauthorized()
+        return super().post(request, *args, **kwargs)  # type: ignore
+
+    def has_post_permission(self) -> bool:
+        """Check if user is allowed to change MediaType instance."""
+        user = self.request.user
+        obj = self.get_object()  # type: ignore
+        return has_owner_permission(user, obj) or user.has_perm(
+            "supergood_reads.delete_book"
+        )

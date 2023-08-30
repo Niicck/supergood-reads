@@ -18,7 +18,7 @@
         <form method="post">
             <div class="space-y-12 divide-y divide-gray-200 mx-auto max-w-2xl">
                 {% csrf_token %}
-                {{ form.non_field_errors }}
+                {{ review_form.non_field_errors }}
 
                 {% comment %} Handle MediaType Selection {% endcomment %}
                 <div class="my-12">
@@ -57,6 +57,7 @@
                         <div v-if="shouldCreateNewMediaTypeObject">
                             {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
                                 <div v-if="{{media_type_id}} == selectedMediaTypeContentType">
+                                    {{ media_type_form.non_field_errors }}
                                     {% for field in media_type_form %}
                                         {% supergood_field field %}
                                     {% endfor %}
@@ -79,6 +80,7 @@
                     {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
                     {% for strategy_id, strategy_form in strategy_forms_by_id.items %}
                         <div v-if="{{strategy_id}} == selectedStrategyId">
+                            {{ strategy_form.non_field_errors }}
                             {% for field in strategy_form %}
                                 {% supergood_field field %}
                             {% endfor %}

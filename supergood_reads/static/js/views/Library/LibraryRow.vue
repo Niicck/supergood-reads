@@ -38,7 +38,11 @@
             <div class="flex flex-row space-x-3">
               <DefaultButton title="Write Review" />
               <DefaultButton title="Add to Wishlist" />
-              <DefaultButton v-if="props.editable" title="Edit" />
+              <DefaultButton
+                v-if="props.updateUrl"
+                title="Edit"
+                @click="navigateToEditPage"
+              />
             </div>
           </dd>
         </div>
@@ -65,7 +69,11 @@
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
         <DefaultButton title="Write Review" />
         <DefaultButton title="Add to Wishlist" />
-        <DefaultButton v-if="props.editable" title="Edit" />
+        <DefaultButton
+          v-if="props.updateUrl"
+          title="Edit"
+          @click="navigateToEditPage"
+        />
       </div>
     </td>
   </tr>
@@ -83,7 +91,7 @@ const props = defineProps({
   creator: { type: String as PropType<string>, default: '' },
   icon: { type: String as PropType<string>, default: '' },
   genres: { type: Array as PropType<string[]>, default: () => [] },
-  editable: { type: Boolean as PropType<boolean>, default: false },
+  updateUrl: { type: String as PropType<string>, default: '' },
   selectedGenres: { type: Array as PropType<string[]>, required: true },
 });
 
@@ -92,7 +100,12 @@ const emit = defineEmits(['toggle-checked-genre']);
 const toggleSelectedGenre = (genre: string) => {
   emit('toggle-checked-genre', genre);
 };
+
+const navigateToEditPage = () => {
+  window.location.href = props.updateUrl;
+};
 </script>
+
 <style>
 .selected-genre {
   @apply bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600;

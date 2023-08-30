@@ -2,6 +2,8 @@ import json
 from typing import no_type_check
 
 from django import template
+from django.forms import BoundField, ModelChoiceField
+from django.forms.fields import ChoiceField
 from django.utils.html import (  # type: ignore [attr-defined]
     _json_script_escapes,
     format_html,
@@ -9,6 +11,37 @@ from django.utils.html import (  # type: ignore [attr-defined]
 from django.utils.safestring import SafeText, mark_safe
 
 register = template.Library()
+
+
+@register.simple_tag
+def vue_field_interface(field: BoundField) -> str:
+    """
+    Convert Field into a json dump of all attributes required to render that field in
+    a vue Component.
+    """
+    if isinstance(field.field, ModelChoiceField):
+        choices = [
+            (obj.value if obj else obj, label) for obj, label in field.field.choices  # type: ignore[union-attr]
+        ]
+    elif isinstance(field.field, ChoiceField):
+        choices = field.field.choices  # type: ignore[assignment]
+    else:
+        choices = []
+
+    errors_html = str(field.errors)
+    initial_value = field.value() if field.value() is not None else ""
+
+    field_data = {
+        "errorsHtml": errors_html,
+        "name": field.html_name,
+        "label": field.label,
+        "id": field.id_for_label,
+        "helpText": field.help_text,
+        "initialValue": initial_value,
+        "choices": choices,
+        "disabled": field.field.disabled,
+    }
+    return json.dumps(field_data)
 
 
 @no_type_check

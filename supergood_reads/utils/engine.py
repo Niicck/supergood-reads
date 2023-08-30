@@ -65,10 +65,10 @@ class SupergoodReadsEngine:
         self.media_type_form_classes = self.config.media_type_form_classes
         self.validate_strategy_form_classes()
         self.validate_media_type_form_classes()
-        self.strategy_model_classes = [
+        self.strategy_model_classes: list[type[AbstractStrategy]] = [
             form._meta.model for form in self.strategy_form_classes
         ]
-        self.media_type_model_classes = [
+        self.media_type_model_classes: list[type[AbstractMediaType]] = [
             form._meta.model for form in self.media_type_form_classes
         ]
 

@@ -5,7 +5,8 @@ export interface VueFieldInterface {
   id: string;
   helpText?: string;
   initialValue?: string | number;
-  choices?: string | Array<Array<string | number>>;
+  choices?: Array<Array<string | number>>;
+  disabled?: boolean;
 }
 
 export type NavBarLink = {
@@ -42,5 +43,5 @@ export type MediaSearchResult = {
   creator: string;
   genres: string[];
   icon: string;
-  editable: boolean;
+  UpdateUrl: string;
 };

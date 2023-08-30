@@ -16,7 +16,7 @@ urlpatterns = [
     ),
     path("reviews/new/", views.CreateReviewView.as_view(), name="create_review"),
     path(
-        "reviews/<uuid:pk>/update",
+        "reviews/<uuid:pk>/update/",
         views.UpdateReviewView.as_view(),
         name="update_review",
     ),
@@ -55,26 +55,16 @@ urlpatterns = [
         views.MyReviewsView.as_view(),
         name="reviews",
     ),
-    path("media/new/", views.MediaFormView.as_view(), name="create_media"),
+    path("media/new/", views.CreateMediaItemView.as_view(), name="create_media_item"),
     path(
-        "media/book/<uuid:pk>/update",
-        views.UpdateBookView.as_view(),
-        name="update_book",
+        "media/<uuid:pk>/update/",
+        views.UpdateMediaItemView.as_view(),
+        name="update_media_item",
     ),
     path(
-        "media/film/<uuid:pk>/update",
-        views.UpdateFilmView.as_view(),
-        name="update_film",
-    ),
-    path(
-        "media/book/<uuid:pk>/delete/",
-        views.DeleteBookView.as_view(),
-        name="delete_book",
-    ),
-    path(
-        "media/film/<uuid:pk>/delete/",
-        views.DeleteFilmView.as_view(),
-        name="delete_film",
+        "media/<uuid:pk>/delete/",
+        views.DeleteMediaItemView.as_view(),
+        name="delete_media_item",
     ),
     path(
         "reviews/<uuid:pk>/delete/",

@@ -43,13 +43,13 @@ class TestReviewForm:
         form_data["strategy_content_type"] = invalid_content_type_id
         form = ReviewForm(
             form_data,
-            strategy_choices=[Book],
+            strategy_choices=[Book],  # type: ignore[list-item]
             media_type_choices=[Book, Film],
         )
         assert not form.is_valid()
         assert (
             form.errors["strategy_content_type"][0]
-            == f"{invalid_content_type_id} is not a valid AbstractStrategy."
+            == "Book is not a valid AbstractStrategy."
         )
 
     def test_valid_media_type_content_type(self, form_data: Dict[str, Any]) -> None:
@@ -68,10 +68,10 @@ class TestReviewForm:
         form = ReviewForm(
             form_data,
             strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
-            media_type_choices=[EbertStrategy],
+            media_type_choices=[EbertStrategy],  # type: ignore[list-item]
         )
         assert not form.is_valid()
         assert (
             form.errors["media_type_content_type"][0]
-            == f"{invalid_content_type_id} is not a valid AbstractMediaType."
+            == "Ebert is not a valid AbstractMediaType."
         )

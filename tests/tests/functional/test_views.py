@@ -23,6 +23,7 @@ from tests.factories import (
     EbertStrategyFactory,
     FilmFactory,
     GoodreadsStrategyFactory,
+    MediaFormDataFactory,
     ReviewFactory,
     ReviewFormDataFactory,
     UserFactory,
@@ -348,14 +349,8 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
         # Check that book autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
-        autocomplete_tag = soup.find(
-            "autocomplete",
-            attrs={
-                "url": f"/reads-app/media-type-autocomplete/?content_type_id={self.book_content_type}"
-            },
-        )
-        autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
-        assert "This field is required." in str(autocomplete_tag_container)
+        autocomplete_tag = soup.find("autocomplete")
+        assert "This field is required." in str(autocomplete_tag)
 
     def test_missing_selected_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -370,14 +365,8 @@ class TestCreateReviewView:
         assert Review.objects.count() == 0
         # Check that film autocomplete field has error message above it.
         soup = BeautifulSoup(response.content, "html.parser")
-        autocomplete_tag = soup.find(
-            "autocomplete",
-            attrs={
-                "url": f"/reads-app/media-type-autocomplete/?content_type_id={self.film_content_type}"
-            },
-        )
-        autocomplete_tag_container = autocomplete_tag.parent.parent.parent  # type: ignore[union-attr]
-        assert "This field is required." in str(autocomplete_tag_container)
+        autocomplete_tag = soup.find("autocomplete")
+        assert "This field is required." in str(autocomplete_tag)
 
     def test_missing_new_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -447,44 +436,38 @@ class TestCreateReviewView:
 @pytest.mark.django_db
 class TestUpdateBookView:
     def get_url(self, book_id: UUID) -> str:
-        return reverse("update_book", args=[book_id])
+        return reverse("update_media_item", args=[book_id])
 
     def test_update_title(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory()
         url = self.get_url(book.id)
         new_title = "This is a new title"
-        data = {
-            "title": new_title,
-            "author": book.author,
-            "year": book.year,
-        }
+        data = MediaFormDataFactory(instance=book).data
+        data["book-title"] = new_title
         res = client.post(url, data)
         assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
         res = client.post(url, data)
+        assert res.status_code == 403
         book.owner = reviewer_user
         book.save()
-        assert res.status_code == 403
-        res = client.post(url, data)
+        res = client.post(url, data, follow=True)
         assert res.status_code == 200
-        assert res.json()["data"] == {
-            "id": str(book.id),
-            **data,
-        }
         book.refresh_from_db()
         assert book.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
+        book_content_type_id = str(ContentTypeUtils.get_content_type_id(Book))
         book = BookFactory(owner=reviewer_user)
         url = self.get_url(book.id)
         new_title = "This is a new title"
-        data = {
-            "title": new_title,
-        }
+        data = MediaFormDataFactory(instance=book).data
+        data["book-title"] = new_title
+        del data["book-author"]
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 400
-        assert res.json()["fieldErrors"]["author"][0] == "This field is required."
+        assert res.context.get("media_type_forms_by_id")[book_content_type_id].errors["author"][0] == "This field is required."  # type: ignore[index]
         book.refresh_from_db()
         assert book.title != new_title
 
@@ -492,23 +475,21 @@ class TestUpdateBookView:
         url = self.get_url(uuid4())
         client.force_login(reviewer_user)
         res = client.post(url)
-        assert res.status_code == 404
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "error"
 
 
 @pytest.mark.django_db
 class TestUpdateFilmView:
     def get_url(self, film_id: UUID) -> str:
-        return reverse("update_film", args=[film_id])
+        return reverse("update_media_item", args=[film_id])
 
     def test_update_title(self, client: Client, reviewer_user: User) -> None:
         film = FilmFactory()
         url = self.get_url(film.id)
         new_title = "This is a new title"
-        data = {
-            "title": new_title,
-            "director": film.director,
-            "year": film.year,
-        }
+        data = MediaFormDataFactory(instance=film).data
+        data["film-title"] = new_title
         res = client.post(url, data)
         assert is_redirected_to_login(res)
         client.force_login(reviewer_user)
@@ -516,26 +497,23 @@ class TestUpdateFilmView:
         assert res.status_code == 403
         film.owner = reviewer_user
         film.save()
-        res = client.post(url, data)
+        res = client.post(url, data, follow=True)
         assert res.status_code == 200
-        assert res.json()["data"] == {
-            "id": str(film.id),
-            **data,
-        }
         film.refresh_from_db()
         assert film.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
+        film_content_type_id = str(ContentTypeUtils.get_content_type_id(Film))
         film = FilmFactory(owner=reviewer_user)
         url = self.get_url(film.id)
         new_title = "This is a new title"
-        data = {
-            "title": new_title,
-        }
+        data = MediaFormDataFactory(instance=film).data
+        data["film-title"] = new_title
+        del data["film-director"]
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 400
-        assert res.json()["fieldErrors"]["director"][0] == "This field is required."
+        assert res.context.get("media_type_forms_by_id")[film_content_type_id].errors["director"][0] == "This field is required."  # type: ignore[index]
         film.refresh_from_db()
         assert film.title != new_title
 
@@ -543,13 +521,14 @@ class TestUpdateFilmView:
         url = self.get_url(uuid4())
         client.force_login(reviewer_user)
         res = client.post(url)
-        assert res.status_code == 404
+        messages = list(get_messages(res.wsgi_request))
+        assert messages[-1].level_tag == "error"
 
 
 @pytest.mark.django_db
-class TestDeleteBookView:
+class TestDeleteBook:
     def get_url(self, book_id: UUID) -> str:
-        return reverse("delete_book", args=[book_id])
+        return reverse("delete_media_item", args=[book_id])
 
     def test_delete(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory()
@@ -599,9 +578,9 @@ class TestDeleteBookView:
 
 
 @pytest.mark.django_db
-class TestDeleteFilmView:
+class TestDeleteFilm:
     def get_url(self, film_id: UUID) -> str:
-        return reverse("delete_film", args=[film_id])
+        return reverse("delete_media_item", args=[film_id])
 
     def test_delete(self, client: Client, reviewer_user: User) -> None:
         film = FilmFactory()
