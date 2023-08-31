@@ -25,7 +25,7 @@
         <div class="md:hidden">
           <dt class="sr-only">Genres</dt>
           <dd class="text-gray-700">
-            <GenreCell
+            <LibraryViewRowGenreCell
               :genres="genres"
               :selected-genres="selectedGenres"
               @toggle-checked-genre="toggleSelectedGenre"
@@ -36,9 +36,9 @@
         <div class="sm:hidden">
           <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
-              <DefaultButton title="Write Review" />
-              <DefaultButton title="Add to Wishlist" @click="addToWishList" />
-              <DefaultButton
+              <BaseButton title="Write Review" />
+              <BaseButton title="Add to Wishlist" @click="addToWishList" />
+              <BaseButton
                 v-if="props.updateUrl"
                 title="Edit"
                 @click="navigateToEditPage"
@@ -55,7 +55,7 @@
     <!-- Genre (large screens) -->
     <td class="hidden px-3 py-4 text-sm text-gray-500 align-top md:table-cell">
       <div class="space-y-1">
-        <GenreCell
+        <LibraryViewRowGenreCell
           :genres="genres"
           :selected-genres="selectedGenres"
           @toggle-checked-genre="toggleSelectedGenre"
@@ -67,13 +67,9 @@
       class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right sm:table-cell"
     >
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
-        <DefaultButton title="Write Review" />
-        <DefaultButton title="Add to Wishlist" @click="addToWishList" />
-        <DefaultButton
-          v-if="props.updateUrl"
-          title="Edit"
-          @click="navigateToEditPage"
-        />
+        <BaseButton title="Write Review" />
+        <BaseButton title="Add to Wishlist" @click="addToWishList" />
+        <BaseButton v-if="props.updateUrl" title="Edit" @click="navigateToEditPage" />
       </div>
     </td>
   </tr>
@@ -81,8 +77,8 @@
 
 <script lang="ts" setup>
 import { PropType } from 'vue';
-import DefaultButton from '@/js/components/DefaultButton.vue';
-import GenreCell from '@/js/views/Library/GenreCell.vue';
+import BaseButton from '@/js/components/BaseButton.vue';
+import LibraryViewRowGenreCell from './LibraryViewRowGenreCell.vue';
 import { useMessagesStore } from '@/js/stores/messages';
 
 const props = defineProps({

@@ -1,11 +1,11 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
-import ReviewRowText from '@/js/views/ReviewList/ReviewRowText.vue';
+import ReviewListRowText from '@/js/components/ReviewListRowText.vue';
 
 const RootComponent = defineComponent({
   delimiters: ['[[', ']]'],
   components: {
-    'review-row-text': ReviewRowText,
+    'review-list-row-text': ReviewListRowText,
   },
 });
 

@@ -39,6 +39,7 @@ export default defineConfig((mode) => {
       rollupOptions: {
         input: {
           reviewForm: resolve('./supergood_reads/static/js/apps/reviewForm.ts'),
+          mediaForm: resolve('./supergood_reads/static/js/apps/mediaForm.ts'),
           messages: resolve('./supergood_reads/static/js/apps/messages.ts'),
           navBar: resolve('./supergood_reads/static/js/apps/navBar.ts'),
           library: resolve('./supergood_reads/static/js/apps/library.ts'),

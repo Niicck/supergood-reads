@@ -2,7 +2,7 @@
   <tr class="border-none review-row-vue-app">
     <td class="pb-4" colspan="2" aria-label="Review Text">
       <div class="grid">
-        <p ref="textContainer" :class="{ truncate: !expanded }">{{ text }}</p>
+        <p ref="textContainer" :class="{ truncate: !expanded }">{{ props.text }}</p>
         <span v-if="hasMore">
           <button
             type="button"

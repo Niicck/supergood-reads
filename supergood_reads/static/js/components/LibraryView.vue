@@ -23,7 +23,7 @@
           </div>
         </div>
         <!-- Filters -->
-        <LibraryFilters
+        <LibraryViewFilters
           :filters="filters"
           @toggle-checked-option="toggleCheckedFilterOption"
           @clear-filter="clearFilter"
@@ -84,7 +84,7 @@
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <template v-for="result in results" :key="result.id">
-            <LibraryRow
+            <LibraryViewRow
               v-bind="result"
               :selected-genres="selectedGenres"
               @toggle-checked-genre="
@@ -112,8 +112,8 @@ import _ from 'lodash';
 
 import type { Filter, FilterOption, MediaSearchResult } from '@/js/types';
 import PaginationNav from '@/js/components/PaginationNav.vue';
-import LibraryRow from '@/js/views/Library/LibraryRow.vue';
-import LibraryFilters from '@/js/views/Library/LibraryFilters.vue';
+import LibraryViewRow from './LibraryViewRow.vue';
+import LibraryViewFilters from './LibraryViewFilters.vue';
 import { createApiClient } from '@/js/utils/apiClient.ts';
 
 type Pagination = {
