@@ -53,7 +53,7 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
         if not rating:
             instance.stars = None
             instance.great_film = False
-        elif rating is GREAT_FILM:
+        elif rating == GREAT_FILM:
             instance.stars = Decimal("4.0")
             instance.great_film = True
         else:

@@ -11,7 +11,6 @@ from django.forms.fields import ChoiceField
 from supergood_reads.forms.base import ContentTypeChoiceField, GenericRelationFormGroup
 from supergood_reads.models import AbstractReviewStrategy, BaseMediaItem, Review
 from supergood_reads.utils.engine import supergood_reads_engine
-from supergood_reads.utils.forms import get_initial_field_value
 
 MONTH_CHOICES = (
     (1, "Jan"),
@@ -212,22 +211,24 @@ class ReviewFormGroup:
             media_item_choices=supergood_reads_engine.media_item_model_classes,
         )
 
-        selected_strategy_id = self._get_content_type_id("strategy_content_type")
-        selected_media_item_id = self._get_content_type_id("media_item_content_type")
-
         self.review_mgmt_form = ReviewMgmtForm(
             prefix="review_mgmt",
             data=self.data,
         )
 
-        strategy_instance = self.instance and self.instance.strategy
+        selected_strategy_id: Optional[int] = self._get_content_type_id(
+            "strategy_content_type"
+        )
         self.strategy_forms = GenericRelationFormGroup(
             supergood_reads_engine.strategy_form_classes,
             selected_form_id=selected_strategy_id,
             data=self.data,
-            instance=strategy_instance,
+            instance=self.original_strategy,
         )
 
+        selected_media_item_id: Optional[int] = self._get_content_type_id(
+            "media_item_content_type"
+        )
         self.media_item_forms = GenericRelationFormGroup(
             supergood_reads_engine.media_item_form_classes,
             selected_form_id=selected_media_item_id,
@@ -235,18 +236,17 @@ class ReviewFormGroup:
         )
 
     def _get_content_type_id(self, field_name: str) -> int | None:
-        """
-        Retrieve the content type ID associated with the specified form field.
-        """
-        selected_content_type_id: str | int | None = get_initial_field_value(
-            self.review_form, field_name
-        )
-        if isinstance(selected_content_type_id, str):
+        """Get content_type_id value from ContentTypeChoiceField."""
+        field = self.review_form[field_name]
+        if not type(field.field) == ContentTypeChoiceField:
+            return None
+        content_type_id: str | int | None = field.value()
+        if isinstance(content_type_id, str):
             try:
-                selected_content_type_id = int(selected_content_type_id)
+                content_type_id = int(content_type_id)
             except ValueError:
-                selected_content_type_id = None
-        return selected_content_type_id
+                content_type_id = None
+        return content_type_id
 
     @transaction.atomic
     def is_valid(self) -> bool:
@@ -259,10 +259,12 @@ class ReviewFormGroup:
             self.valid = False
 
         if self.review_mgmt_form.should_create_new_media_item_object:
+            # Check that form for new MediaItem is valid
             selected_media_item_form = self.media_item_forms.selected_form
             if not selected_media_item_form or not selected_media_item_form.is_valid():
                 self.valid = False
         else:
+            # Check that selected existing MediaItem is valid
             media_item_object_id = self.review_form.cleaned_data.get(
                 "media_item_object_id"
             )

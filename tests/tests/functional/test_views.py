@@ -446,7 +446,7 @@ class TestUpdateBookView:
         assert book.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
-        book_content_type_id = str(model_to_content_type_id(Book))
+        book_content_type_id = model_to_content_type_id(Book)
         book = BookFactory(owner=reviewer_user)
         url = self.get_url(book.id)
         new_title = "This is a new title"
@@ -492,7 +492,7 @@ class TestUpdateFilmView:
         assert film.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
-        film_content_type_id = str(model_to_content_type_id(Film))
+        film_content_type_id = model_to_content_type_id(Film)
         film = FilmFactory(owner=reviewer_user)
         url = self.get_url(film.id)
         new_title = "This is a new title"

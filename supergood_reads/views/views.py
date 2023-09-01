@@ -122,7 +122,7 @@ class ReviewFormView(TemplateView):
 
         # Initial Data for Vue Store
         initial_data_for_vue_store = {
-            "selectedStrategyId": initial_strategy_content_type,
+            "selectedStrategyContentType": initial_strategy_content_type,
             "selectedMediaItemContentType": initial_media_item_content_type,
             "selectedMediaItemObjectId": initial_media_item_object_id,
             "createNewMediaItemObject": initial_create_new_media_item_object,

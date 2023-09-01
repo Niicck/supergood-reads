@@ -3,7 +3,6 @@ from decimal import Decimal
 import pytest
 
 from supergood_reads.forms.strategy_forms import GREAT_FILM, EbertStrategyForm
-from supergood_reads.utils.forms import get_initial_field_value
 
 
 @pytest.mark.django_db
@@ -15,7 +14,7 @@ class TestEbertStrategyForm:
         assert strategy.stars == Decimal("4.0")
 
         update_form = EbertStrategyForm(instance=strategy)
-        assert get_initial_field_value(update_form, "rating") == GREAT_FILM
+        assert update_form["rating"].value() == GREAT_FILM
 
     def test_star_rating(self) -> None:
         form = EbertStrategyForm({"rating": "3.5"})
@@ -24,7 +23,7 @@ class TestEbertStrategyForm:
         assert strategy.stars == Decimal("3.5")
 
         update_form = EbertStrategyForm(instance=strategy)
-        assert get_initial_field_value(update_form, "rating") == "3.5"
+        assert update_form["rating"].value() == "3.5"
 
     def test_none(self) -> None:
         form = EbertStrategyForm({"rating": None})
@@ -33,7 +32,7 @@ class TestEbertStrategyForm:
         assert strategy.stars is None
 
         update_form = EbertStrategyForm(instance=strategy)
-        assert get_initial_field_value(update_form, "rating") is None
+        assert update_form["rating"].value() is None
 
     def test_zero(self) -> None:
         form = EbertStrategyForm({"rating": "0.0"})
@@ -42,4 +41,4 @@ class TestEbertStrategyForm:
         assert strategy.stars == Decimal("0.0")
 
         update_form = EbertStrategyForm(instance=strategy)
-        assert get_initial_field_value(update_form, "rating") == "0.0"
+        assert update_form["rating"].value() == "0.0"

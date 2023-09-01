@@ -2,10 +2,11 @@ import { defineStore } from 'pinia';
 import { parseJsonScript } from '@/js/utils/parseJsonScript';
 import { ref, onMounted, watch, computed } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
+import { safeParseInt } from '@/js/utils/parseInt';
 
 interface State {
-  selectedStrategyId: Ref<string>;
-  selectedMediaItemContentType: Ref<number>;
+  selectedStrategyContentType: Ref<number | null>;
+  selectedMediaItemContentType: Ref<number | null>;
   selectedMediaItemObjectId: Ref<string>;
   createNewMediaItemObject: Ref<CreateNewMediaOption>;
   shouldCreateNewMediaItemObject: ComputedRef<boolean>;
@@ -15,8 +16,8 @@ interface State {
 }
 
 interface InitialData {
-  selectedStrategyId: string;
-  selectedMediaItemContentType: string;
+  selectedStrategyContentType: number | null;
+  selectedMediaItemContentType: number | null;
   selectedMediaItemObjectId: string;
   createNewMediaItemObject: CreateNewMediaOption;
   autocompleteUrlBase: string;
@@ -32,7 +33,7 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
    * Handle initial values for django fields bound to v-models.
    */
   const createNewMediaItemObject = ref(CreateNewMediaOption.SELECT_EXISTING);
-  const selectedStrategyId = ref();
+  const selectedStrategyContentType = ref();
   const selectedMediaItemContentType = ref();
   const selectedMediaItemObjectId = ref();
   // Cache the selectedMediaItemObjectId for each MediaItem.
@@ -51,8 +52,12 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
     /* Load initial data from django data loaded into "json_script".*/
     const initialData = parseJsonScript('initialDataForVueStore') as InitialData;
     createNewMediaItemObject.value = initialData.createNewMediaItemObject;
-    selectedStrategyId.value = initialData.selectedStrategyId;
-    selectedMediaItemContentType.value = initialData.selectedMediaItemContentType;
+    selectedStrategyContentType.value = safeParseInt(
+      initialData.selectedStrategyContentType,
+    );
+    selectedMediaItemContentType.value = safeParseInt(
+      initialData.selectedMediaItemContentType,
+    );
     selectedMediaItemObjectId.value = initialData.selectedMediaItemObjectId;
     autocompleteUrlBase.value = initialData.autocompleteUrlBase;
   });
@@ -92,14 +97,14 @@ const useReviewFormStore = defineStore('reviewForm', (): State => {
       if (cache[newValue]) {
         selectedMediaItemObjectId.value = cache[newValue];
       } else {
-        selectedMediaItemObjectId.value = '';
+        selectedMediaItemObjectId.value = null;
       }
     },
     { flush: 'sync' },
   );
 
   return {
-    selectedStrategyId,
+    selectedStrategyContentType,
     selectedMediaItemContentType,
     selectedMediaItemObjectId,
     createNewMediaItemObject,

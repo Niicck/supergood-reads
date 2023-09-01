@@ -36,19 +36,19 @@ class GenericRelationFormGroup:
         self.by_content_type_id = self.instantiate_forms_by_content_type_id()
         self.selected_form = self.get_selected_form()
 
-    def instantiate_forms_by_content_type_id(self) -> Dict[str, ModelForm[Any]]:
+    def instantiate_forms_by_content_type_id(self) -> Dict[int, ModelForm[Any]]:
         """Organize forms by their content_type_id.
 
         This is useful in template rendering. A field can select a Model's
-        content_type_id (like "7") and it can be connected to the desired ModelForm
-        ("EbertStrategyForm").
+        content_type_id (7) and it can be connected to the desired ModelForm
+        (EbertStrategyForm).
 
         Example:
             self.forms = [EbertStrategyForm, GoodreadsStrategyForm, MaximusStrategyForm]
             self.forms_by_content_type_id -> {
-                "7": EbertStrategyForm(),
-                "8": GoodreadsStrategyForm(),
-                "9": MaximusStrategyForm(),
+                7: EbertStrategyForm(),
+                8: GoodreadsStrategyForm(),
+                9: MaximusStrategyForm(),
             }
         """
         forms_by_content_type_id = {}
@@ -79,7 +79,7 @@ class GenericRelationFormGroup:
             else:
                 instantiated_form = form_class(prefix=model_name)
 
-            forms_by_content_type_id[str(model_content_type_id)] = instantiated_form
+            forms_by_content_type_id[model_content_type_id] = instantiated_form
 
         return forms_by_content_type_id
 
@@ -89,14 +89,14 @@ class GenericRelationFormGroup:
         Example:
             self.selected_form_id = 7
             self.forms_by_content_type_id = {
-                "7": EbertStrategyForm(),
-                "8": GoodreadsStrategyForm(),
-                "9": MaximusStrategyForm(),
+                7: EbertStrategyForm(),
+                8: GoodreadsStrategyForm(),
+                9: MaximusStrategyForm(),
             }
             self.selected_form -> EbertStrategyForm()
         """
         if self.selected_form_id:
-            return self.by_content_type_id[str(self.selected_form_id)]
+            return self.by_content_type_id[self.selected_form_id]
         return None
 
 

@@ -77,9 +77,9 @@
                 {% comment %} Handle Rating Strategy {% endcomment %}
                 <div class="my-12">
                     {% form_subheading title="Rating" text="What kind of rating strategy do you want to use?" %}
-                    {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyId" %}
+                    {% supergood_field field=review_form.strategy_content_type|attr:"v-model:selectedStrategyContentType" %}
                     {% for strategy_id, strategy_form in strategy_forms_by_id.items %}
-                        <div v-if="{{strategy_id}} == selectedStrategyId">
+                        <div v-if="{{strategy_id}} == selectedStrategyContentType">
                             {{ strategy_form.non_field_errors }}
                             {% for field in strategy_form %}
                                 {% supergood_field field %}
