@@ -37,7 +37,7 @@ class Command(BaseCommand):
         self.load_films("bfi_2022")
         self.load_films("bfi_2022_directors")
         self.load_films("imdb_top_1000")
-        self.load_books("goodreads")
+        self.load_books("7k_books")
         self.success()
 
     def add_arguments(self, parser: CommandParser) -> None:

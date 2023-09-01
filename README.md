@@ -12,6 +12,7 @@ Unlike every other review site, the *Supergood Review Site™* allows users to c
   - [Installation](#installation)
   - [Running Locally](#running-locally)
   - [Development Guide](#development-guide)
+  - [Thanks](#thanks)
 
 ## What features does this app have?
 
@@ -93,3 +94,12 @@ And now you have access to these additonal commands:
    - `make safety`
 5. Check for type errors in python code.
    - `make mypy`
+
+
+### Thanks
+
+Test data was provided by these datasets:
+- ["7k books" from Kaggle](https://www.kaggle.com/datasets/dylanjcastillo/7k-books-with-metadata)
+- ["IMDB Top 1000 movies" from Kaggle](https://www.kaggle.com/datasets/arthurchongg/imdb-top-1000-movies)
+- [BFI 2022 Greatest Films of All Time](https://www.bfi.org.uk/sight-and-sound/greatest-films-all-time)
+- [BFI 2022 Greatest Films of All Time (Director's Poll)](https://www.bfi.org.uk/sight-and-sound/directors-100-greatest-films-all-time)
