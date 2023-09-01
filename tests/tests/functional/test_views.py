@@ -6,7 +6,6 @@ from uuid import UUID, uuid4
 
 import django
 import pytest
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.messages import get_messages
@@ -341,10 +340,8 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Check that book autocomplete field has error message above it.
-        soup = BeautifulSoup(response.content, "html.parser")
-        autocomplete_tag = soup.find("autocomplete")
-        assert "This field is required." in str(autocomplete_tag)
+        errors = response.context["review_form"]["media_item_object_id"].errors
+        assert "This field is required." in errors
 
     def test_missing_selected_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
@@ -357,10 +354,8 @@ class TestCreateReviewView:
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
         assert Review.objects.count() == 0
-        # Check that film autocomplete field has error message above it.
-        soup = BeautifulSoup(response.content, "html.parser")
-        autocomplete_tag = soup.find("autocomplete")
-        assert "This field is required." in str(autocomplete_tag)
+        errors = response.context["review_form"]["media_item_object_id"].errors
+        assert "This field is required." in errors
 
     def test_missing_new_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
