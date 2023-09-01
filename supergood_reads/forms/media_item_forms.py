@@ -6,7 +6,7 @@ from django.db import transaction
 
 from supergood_reads.forms.base import ContentTypeChoiceField, GenericRelationFormGroup
 from supergood_reads.models import BaseMediaItem, Book, Film
-from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.content_type import model_to_content_type_id
 
 
 class BookForm(forms.ModelForm[Book]):
@@ -68,7 +68,7 @@ class MediaMgmtForm(forms.Form):
 
         if instance:
             media_item_field.disabled = True
-            media_item_field.initial = ContentTypeUtils.get_content_type_id(instance)
+            media_item_field.initial = model_to_content_type_id(instance)
 
 
 class MediaItemFormGroup:

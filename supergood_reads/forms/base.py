@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Model
 from django.forms import ModelChoiceField, ModelForm
 
-from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.content_type import model_to_content_type_id
 
 _M = TypeVar("_M", bound=Model)
 
@@ -54,16 +54,14 @@ class GenericRelationFormGroup:
         forms_by_content_type_id = {}
 
         if self.instance:
-            instance_content_type_id = ContentTypeUtils.get_content_type_id(
-                self.instance
-            )
+            instance_content_type_id = model_to_content_type_id(self.instance)
         else:
             instance_content_type_id = None
 
         for form_class in self.form_classes:
             form_model = form_class()._meta.model
             model_name = form_model._meta.model_name
-            model_content_type_id = ContentTypeUtils.get_content_type_id(form_model)
+            model_content_type_id = model_to_content_type_id(form_model)
 
             # Plug in instance or data into selected_form
             if (

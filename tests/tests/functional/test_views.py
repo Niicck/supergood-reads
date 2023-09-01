@@ -17,7 +17,7 @@ from django.urls import reverse
 
 from supergood_reads.forms.review_forms import CreateNewMediaOption, ReviewForm
 from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
-from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.content_type import model_to_content_type_id
 from tests.factories import (
     BookFactory,
     EbertStrategyFactory,
@@ -111,9 +111,9 @@ def media_item_autocomplete_url(content_type_id: int | str) -> str:
 class TestMediaItemAutocompleteView:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        book_content_type = ContentTypeUtils.get_content_type_id(Book)
+        book_content_type = model_to_content_type_id(Book)
         self.book_autocomplete_url = media_item_autocomplete_url(book_content_type)
-        film_content_type = ContentTypeUtils.get_content_type_id(Film)
+        film_content_type = model_to_content_type_id(Film)
         self.film_autocomplete_url = media_item_autocomplete_url(film_content_type)
 
     def test_film_without_q(
@@ -182,14 +182,14 @@ class TestCreateReviewView:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.url = reverse("create_review")
-        self.book_content_type = ContentTypeUtils.get_content_type_id(Book)
-        self.film_content_type = ContentTypeUtils.get_content_type_id(Film)
+        self.book_content_type = model_to_content_type_id(Book)
+        self.film_content_type = model_to_content_type_id(Film)
 
     @pytest.fixture
     def create_review_data(self) -> ReviewFormData:
         """dict(request.POST.items()) from CreateReviewView.post"""
         data = ReviewFormDataFactory().data
-        data["review-strategy_content_type"] = ContentTypeUtils.get_content_type_id(
+        data["review-strategy_content_type"] = model_to_content_type_id(
             GoodreadsStrategy
         )
         data["goodreadsstrategy-stars"] = "5"
@@ -451,7 +451,7 @@ class TestUpdateBookView:
         assert book.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
-        book_content_type_id = str(ContentTypeUtils.get_content_type_id(Book))
+        book_content_type_id = str(model_to_content_type_id(Book))
         book = BookFactory(owner=reviewer_user)
         url = self.get_url(book.id)
         new_title = "This is a new title"
@@ -497,7 +497,7 @@ class TestUpdateFilmView:
         assert film.title == new_title
 
     def test_missing_required_field(self, client: Client, reviewer_user: User) -> None:
-        film_content_type_id = str(ContentTypeUtils.get_content_type_id(Film))
+        film_content_type_id = str(model_to_content_type_id(Film))
         film = FilmFactory(owner=reviewer_user)
         url = self.get_url(film.id)
         new_title = "This is a new title"
@@ -705,7 +705,7 @@ class TestUpdateReviewView:
         strategy = EbertStrategyFactory()
         review = ReviewFactory(strategy=strategy, owner=reviewer_user)
         data = ReviewFormDataFactory(instance=review).data
-        data["review-strategy_content_type"] = ContentTypeUtils.get_content_type_id(
+        data["review-strategy_content_type"] = model_to_content_type_id(
             GoodreadsStrategy
         )
         data["goodreadsstrategy-stars"] = 4

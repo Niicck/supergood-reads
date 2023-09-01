@@ -44,7 +44,10 @@ from supergood_reads.models.media_items import (
     GenreMixin,
     MediaItemQuerySet,
 )
-from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.content_type import (
+    content_type_id_to_model,
+    model_to_content_type_id,
+)
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.json import UUIDEncoder
 from supergood_reads.utils.uuid import is_uuid
@@ -311,7 +314,7 @@ class SupergoodPagination(pagination.PageNumberPagination):
 class MediaTypeOptionSerializer(serializers.BaseSerializer):
     def to_representation(self, obj: BaseMediaItem) -> dict[str, Any]:
         return {
-            "id": ContentTypeUtils().get_content_type_id(obj),
+            "id": model_to_content_type_id(obj),
             "name": obj._meta.verbose_name,
         }
 
@@ -386,7 +389,7 @@ class MediaItemSearchView(generics.ListAPIView):
         genres = query_params.getlist("genres")
         media_type_ids = query_params.getlist("mediaTypes")
 
-        media_types = [ContentTypeUtils().get_model(m_id) for m_id in media_type_ids]
+        media_types = [content_type_id_to_model(m_id) for m_id in media_type_ids]
         searchable_media_types = [m for m in self.all_media_types if m in media_types]
         if genres:
             searchable_media_types = list(

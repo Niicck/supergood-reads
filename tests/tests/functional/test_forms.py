@@ -10,7 +10,7 @@ from supergood_reads.models import (
     GoodreadsStrategy,
     MaximusStrategy,
 )
-from supergood_reads.utils import ContentTypeUtils
+from supergood_reads.utils.content_type import model_to_content_type_id
 
 
 @pytest.mark.django_db
@@ -22,15 +22,13 @@ class TestReviewForm:
             "completed_at_month": "",
             "completed_at_year": "",
             "text": "It was good.",
-            "media_item_content_type": ContentTypeUtils.get_content_type_id(Book),
+            "media_item_content_type": model_to_content_type_id(Book),
             "media_item_object_id": "",
-            "strategy_content_type": ContentTypeUtils.get_content_type_id(
-                EbertStrategy
-            ),
+            "strategy_content_type": model_to_content_type_id(EbertStrategy),
         }
 
     def test_valid_strategy_content_type(self, form_data: Dict[str, Any]) -> None:
-        valid_content_type_id = ContentTypeUtils.get_content_type_id(MaximusStrategy)
+        valid_content_type_id = model_to_content_type_id(MaximusStrategy)
         form_data["strategy_content_type"] = valid_content_type_id
         form = ReviewForm(
             form_data,
@@ -40,7 +38,7 @@ class TestReviewForm:
         assert form.is_valid()
 
     def test_invalid_strategy_content_type(self, form_data: Dict[str, Any]) -> None:
-        invalid_content_type_id = ContentTypeUtils.get_content_type_id(Book)
+        invalid_content_type_id = model_to_content_type_id(Book)
         form_data["strategy_content_type"] = invalid_content_type_id
         form = ReviewForm(
             form_data,
@@ -54,7 +52,7 @@ class TestReviewForm:
         )
 
     def test_valid_media_item(self, form_data: Dict[str, Any]) -> None:
-        valid_content_type_id = ContentTypeUtils.get_content_type_id(Book)
+        valid_content_type_id = model_to_content_type_id(Book)
         form_data["media_item_content_type"] = valid_content_type_id
         form = ReviewForm(
             form_data,
@@ -64,7 +62,7 @@ class TestReviewForm:
         assert form.is_valid()
 
     def test_invalid_media_item(self, form_data: Dict[str, Any]) -> None:
-        invalid_content_type_id = ContentTypeUtils.get_content_type_id(EbertStrategy)
+        invalid_content_type_id = model_to_content_type_id(EbertStrategy)
         form_data["media_item_content_type"] = invalid_content_type_id
         form = ReviewForm(
             form_data,
