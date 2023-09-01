@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from supergood_reads.strategies.forms import GREAT_FILM, EbertStrategyForm
+from supergood_reads.forms.strategy_forms import GREAT_FILM, EbertStrategyForm
 from supergood_reads.utils.forms import get_initial_field_value
 
 

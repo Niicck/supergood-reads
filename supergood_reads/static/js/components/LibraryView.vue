@@ -34,7 +34,7 @@
         <div class="flex h-6 items-center">
           <input
             id="library-only"
-            v-model="showEditableOnly"
+            v-model="myMediaOnly"
             aria-describedby="library-only-description"
             name="library-only"
             type="checkbox"
@@ -43,7 +43,7 @@
         </div>
         <div class="ml-3 text-sm leading-6">
           <label for="library-only" class="font-medium text-gray-900"
-            >Show Editable Titles Only</label
+            >Only display my media items</label
           >
         </div>
       </div>
@@ -152,11 +152,11 @@ const query = ref('');
 const pagination: Ref<Pagination | null> = ref(null);
 const results: Ref<MediaSearchResult[]> = ref([]);
 const page = ref(1);
-const showEditableOnly = ref(false);
+const myMediaOnly = ref(false);
 const tableTop: Ref<HTMLElement | null> = ref(null);
 
 const genreFilterId = 'genre';
-const mediaTypeFilterId = 'media_type';
+const mediaTypeFilterId = 'mediaType';
 
 const filters: Ref<Filter[]> = ref([
   {
@@ -226,7 +226,7 @@ const previousPage = () => {
 watch(
   () => [
     query.value,
-    showEditableOnly.value,
+    myMediaOnly.value,
     selectedGenres.value,
     selectedMediaTypes.value,
   ],
@@ -260,9 +260,9 @@ const search = async () => {
   const params = {
     q: query.value,
     page: page.value,
-    showEditableOnly: showEditableOnly.value,
+    myMediaOnly: myMediaOnly.value,
     genres: selectedGenres.value,
-    media_types: selectedMediaTypes.value,
+    mediaTypes: selectedMediaTypes.value,
   };
   const res = await apiClient.get(props.searchUrl, {
     params,

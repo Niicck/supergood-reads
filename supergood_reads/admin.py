@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.db import models
 from django.http import HttpRequest
 
-from supergood_reads.reviews.forms import ReviewForm
-from supergood_reads.reviews.models import Review
+from supergood_reads.forms.review_forms import ReviewForm
+from supergood_reads.models import Review
 
 
 class ReviewAdmin(admin.ModelAdmin[Review]):

@@ -11,7 +11,7 @@
             <!-- Creator (small screens) -->
             <div>
                 <dt class="sr-only">Creator</dt>
-                <dd class="mt-1 truncate text-gray-700">{{ review.media_type.creator }}</dd>
+                <dd class="mt-1 truncate text-gray-700">{{ review.media_item.creator }}</dd>
             </div>
             <!-- CompletedAt (small screens) -->
             <div class="md:hidden">
@@ -27,7 +27,7 @@
     </td>
     <!-- Creator (large screens) -->
     <td class="hidden px-3 py-4 text-sm text-gray-500 align-top lg:table-cell">
-        {{ review.media_type.creator }}
+        {{ review.media_item.creator }}
     </td>
     <!-- CompletedAt (large screens) -->
     <td class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right md:table-cell">
@@ -38,10 +38,10 @@
         {{ rating_html|safe }}
     </td>
     <!-- Edit Button -->
-    <td class="py-4 sm:pl-3 text-right text-sm font-medium align-top sm:pr-0 grid">
+    <td class="py-4 sm:pl-3 text-right text-sm font-medium align-top sm:pr-0 grid justify-end">
         <a
             type="button"
-            class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-fit"
             href="{% url 'update_review' review.id %}"
         >
             Edit <span class="sr-only">, Review of {{ title }}</span>

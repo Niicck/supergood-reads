@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
-from supergood_reads.media_types.models import Book, Country, Film, Genre
+from supergood_reads.models import Book, Country, Film, Genre
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +66,8 @@ class Command(BaseCommand):
                     year=int(row["year"]),
                     defaults={
                         "director": row["director"],
+                        "validated": True,
                     },
-                    validated=True,
                 )[0]
 
                 # Add genres
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                     if genre:
                         genre_instances.append(
                             Genre.objects.get_or_create(
-                                genre=genre,
+                                name=genre,
                             )[0]
                         )
                 film.genres.add(*genre_instances)
@@ -104,6 +104,7 @@ class Command(BaseCommand):
                     title=row["title"],
                     author=row["author"],
                     defaults={
+                        "validated": True,
                         "year": row["year"],
                         "pages": row["pages"] or None,
                     },
@@ -114,7 +115,7 @@ class Command(BaseCommand):
                     if genre:
                         genre_instances.append(
                             Genre.objects.get_or_create(
-                                genre=genre,
+                                name=genre,
                             )[0]
                         )
                 book.genres.add(*genre_instances)

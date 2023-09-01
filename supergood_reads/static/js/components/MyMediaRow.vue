@@ -76,7 +76,7 @@
       </div>
     </td>
     <!-- Media Type -->
-    <td class="px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ mediaType }}</td>
+    <td class="px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ mediaItem }}</td>
     <!-- Edit Button -->
     <td class="py-4 sm:pl-3 text-right text-sm font-medium sm:pr-0">
       <button
@@ -161,7 +161,7 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  mediaType: {
+  mediaItem: {
     type: String,
     default: null,
   },

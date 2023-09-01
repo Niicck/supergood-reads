@@ -8,13 +8,8 @@ from django.db import transaction
 from django.forms import ModelForm
 from django.forms.fields import ChoiceField
 
-from supergood_reads.common.forms import (
-    ContentTypeChoiceField,
-    GenericRelationFormGroup,
-)
-from supergood_reads.media_types.models import AbstractMediaType
-from supergood_reads.reviews.models import Review
-from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.forms.base import ContentTypeChoiceField, GenericRelationFormGroup
+from supergood_reads.models import AbstractReviewStrategy, BaseMediaItem, Review
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.forms import get_initial_field_value
 
@@ -58,11 +53,11 @@ def validate_generic_foreign_key(
         if not content_type:
             raise InvalidContentTypeError
 
-        MediaTypeModelClass = content_type.model_class()  # noqa: N806
-        if not MediaTypeModelClass:
+        MediaItemModelClass = content_type.model_class()  # noqa: N806
+        if not MediaItemModelClass:
             raise InvalidContentTypeError
 
-        # Raises MediaTypeModelClass.DoesNotExist if not foud
+        # Raises MediaItemModelClass.DoesNotExist if not foud
         content_type.get_object_for_this_type(id=object_id)
     except (ContentType.DoesNotExist, InvalidContentTypeError):
         form.add_error(
@@ -70,15 +65,15 @@ def validate_generic_foreign_key(
             "The selected content type does not exist.",
         )
         return False
-    except (MediaTypeModelClass.DoesNotExist, InvalidObjectIdError):
+    except (MediaItemModelClass.DoesNotExist, InvalidObjectIdError):
         form.add_error(object_id_field_name, "The selected object does not exist.")
         return False
     return True
 
 
 class ReviewForm(forms.ModelForm[Review]):
-    strategy_choices: list[type[AbstractStrategy]]
-    media_type_choices: list[type[AbstractMediaType]]
+    strategy_choices: list[type[AbstractReviewStrategy]]
+    media_item_choices: list[type[BaseMediaItem]]
 
     class Meta:
         model = Review
@@ -87,25 +82,25 @@ class ReviewForm(forms.ModelForm[Review]):
             "completed_at_month",
             "completed_at_year",
             "text",
-            "media_type_content_type",
-            "media_type_object_id",
+            "media_item_content_type",
+            "media_item_object_id",
             "strategy_content_type",
         ]
         labels = {
             "text": "Review",
             "completed_at_year": "Year",
-            "media_type_object_id": "Title",
+            "media_item_object_id": "Title",
         }
 
-    media_type_content_type = ContentTypeChoiceField(
+    media_item_content_type = ContentTypeChoiceField(
         label="Media Type",
-        parent_model=AbstractMediaType,
+        parent_model=BaseMediaItem,
         required=True,
         empty_label=None,
     )
     strategy_content_type = ContentTypeChoiceField(
         label="Rating Strategy",
-        parent_model=AbstractStrategy,
+        parent_model=AbstractReviewStrategy,
         required=True,
         empty_label=None,
     )
@@ -131,26 +126,26 @@ class ReviewForm(forms.ModelForm[Review]):
     def __init__(
         self,
         *args: Any,
-        strategy_choices: Optional[list[type[AbstractStrategy]]] = None,
-        media_type_choices: Optional[list[type[AbstractMediaType]]] = None,
+        strategy_choices: Optional[list[type[AbstractReviewStrategy]]] = None,
+        media_item_choices: Optional[list[type[BaseMediaItem]]] = None,
         **kwargs: Any,
     ) -> None:
         """
         Kwargs:
           strategy_choices:
             list of strategies to be used in strategy_content_type dropdown field
-          media_type_choices:
-            list of media_type models to be used in media_type_content_type dropdown field
+          media_item_choices:
+            list of media_item models to be used in media_item_content_type dropdown field
         """
         super().__init__(*args, **kwargs)
 
         self.strategy_choices = strategy_choices or []
-        self.media_type_choices = media_type_choices or []
+        self.media_item_choices = media_item_choices or []
 
-        media_type_choice_field = cast(
-            ContentTypeChoiceField, self.fields["media_type_content_type"]
+        media_item_choice_field = cast(
+            ContentTypeChoiceField, self.fields["media_item_content_type"]
         )
-        media_type_choice_field.set_models(self.media_type_choices)
+        media_item_choice_field.set_models(self.media_item_choices)
 
         strategy_choice_field = cast(
             ContentTypeChoiceField, self.fields["strategy_content_type"]
@@ -164,7 +159,7 @@ class CreateNewMediaOption(Enum):
 
 
 class ReviewMgmtForm(forms.Form):
-    create_new_media_type_object = ChoiceField(
+    create_new_media_item_object = ChoiceField(
         label="Select existing or create new?",
         choices=[
             (CreateNewMediaOption.SELECT_EXISTING.value, "Select Existing"),
@@ -173,21 +168,21 @@ class ReviewMgmtForm(forms.Form):
         initial=CreateNewMediaOption.SELECT_EXISTING.value,
     )
 
-    def clean_create_new_media_type_object(self) -> bool:
-        data = self.cleaned_data["create_new_media_type_object"]
+    def clean_create_new_media_item_object(self) -> bool:
+        data = self.cleaned_data["create_new_media_item_object"]
         should_create_new: bool = data == CreateNewMediaOption.CREATE_NEW.value
         return should_create_new
 
     @property
-    def should_create_new_media_type_object(self) -> bool:
-        return self.cleaned_data.get("create_new_media_type_object") or False
+    def should_create_new_media_item_object(self) -> bool:
+        return self.cleaned_data.get("create_new_media_item_object") or False
 
 
 class ReviewFormGroup:
     review_form: ReviewForm
     review_mgmt_form: ReviewMgmtForm
     strategy_forms: GenericRelationFormGroup
-    media_type_forms: GenericRelationFormGroup
+    media_item_forms: GenericRelationFormGroup
     review: Review
 
     def __init__(
@@ -203,9 +198,9 @@ class ReviewFormGroup:
         self.original_strategy = self._get_original_strategy()
         self.instantiate_forms()
 
-    def _get_original_strategy(self) -> AbstractStrategy | None:
+    def _get_original_strategy(self) -> AbstractReviewStrategy | None:
         if self.instance and self.instance.strategy:
-            return cast(AbstractStrategy, self.instance.strategy)
+            return cast(AbstractReviewStrategy, self.instance.strategy)
         return None
 
     def instantiate_forms(self) -> None:
@@ -214,11 +209,11 @@ class ReviewFormGroup:
             data=self.data,
             instance=self.instance,
             strategy_choices=supergood_reads_engine.strategy_model_classes,
-            media_type_choices=supergood_reads_engine.media_type_model_classes,
+            media_item_choices=supergood_reads_engine.media_item_model_classes,
         )
 
         selected_strategy_id = self._get_content_type_id("strategy_content_type")
-        selected_media_type_id = self._get_content_type_id("media_type_content_type")
+        selected_media_item_id = self._get_content_type_id("media_item_content_type")
 
         self.review_mgmt_form = ReviewMgmtForm(
             prefix="review_mgmt",
@@ -233,9 +228,9 @@ class ReviewFormGroup:
             instance=strategy_instance,
         )
 
-        self.media_type_forms = GenericRelationFormGroup(
-            supergood_reads_engine.media_type_form_classes,
-            selected_form_id=selected_media_type_id,
+        self.media_item_forms = GenericRelationFormGroup(
+            supergood_reads_engine.media_item_form_classes,
+            selected_form_id=selected_media_item_id,
             data=self.data,
         )
 
@@ -263,26 +258,26 @@ class ReviewFormGroup:
         if not self.review_mgmt_form.is_valid():
             self.valid = False
 
-        if self.review_mgmt_form.should_create_new_media_type_object:
-            selected_media_type_form = self.media_type_forms.selected_form
-            if not selected_media_type_form or not selected_media_type_form.is_valid():
+        if self.review_mgmt_form.should_create_new_media_item_object:
+            selected_media_item_form = self.media_item_forms.selected_form
+            if not selected_media_item_form or not selected_media_item_form.is_valid():
                 self.valid = False
         else:
-            media_type_object_id = self.review_form.cleaned_data.get(
-                "media_type_object_id"
+            media_item_object_id = self.review_form.cleaned_data.get(
+                "media_item_object_id"
             )
-            if not media_type_object_id:
-                # If we aren't creating a new media_type object, then an existing
-                # media_type object_id must be selected.
+            if not media_item_object_id:
+                # If we aren't creating a new media_item object, then an existing
+                # media_item object_id must be selected.
                 self.review_form.add_error(
-                    "media_type_object_id", "This field is required."
+                    "media_item_object_id", "This field is required."
                 )
                 self.valid = False
             else:
-                media_type_valid = validate_generic_foreign_key(
-                    self.review_form, "media_type_object_id", "media_type_content_type"
+                media_item_valid = validate_generic_foreign_key(
+                    self.review_form, "media_item_object_id", "media_item_content_type"
                 )
-                if not media_type_valid:
+                if not media_item_valid:
                     self.valid = False
 
         selected_strategy_form = self.strategy_forms.selected_form
@@ -301,13 +296,13 @@ class ReviewFormGroup:
 
         review = self.review_form.save(commit=False)
 
-        if self.review_mgmt_form.should_create_new_media_type_object:
-            selected_media_type_form = self.media_type_forms.selected_form
-            assert selected_media_type_form
-            media_type = selected_media_type_form.save(commit=False)
-            media_type.owner = self.user
-            media_type.save()
-            review.media_type = media_type
+        if self.review_mgmt_form.should_create_new_media_item_object:
+            selected_media_item_form = self.media_item_forms.selected_form
+            assert selected_media_item_form
+            media_item = selected_media_item_form.save(commit=False)
+            media_item.owner = self.user
+            media_item.save()
+            review.media_item = media_item
 
         # If we've chosen a new strategy, delete the old strategy instance.
         if self.original_strategy and (
@@ -319,7 +314,7 @@ class ReviewFormGroup:
         strategy = selected_strategy_form.save()
         review.strategy = strategy
 
-        if not review.owner and not review.demo:
+        if not review.owner and not review.validated:
             review.owner = self.user
 
         review.save()

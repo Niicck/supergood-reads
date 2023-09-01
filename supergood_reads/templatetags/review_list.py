@@ -3,9 +3,7 @@ from typing import Any, Dict
 from django import template
 from django.utils.safestring import SafeText
 
-from supergood_reads.media_types.models import AbstractMediaType
-from supergood_reads.reviews.models import Review
-from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.models import AbstractReviewStrategy, BaseMediaItem, Review
 
 register = template.Library()
 
@@ -14,19 +12,19 @@ register = template.Library()
 def review_list_row(
     review: Review,
 ) -> Dict[str, Any]:
-    if isinstance(review.media_type, AbstractMediaType):
-        title = review.media_type.title
-        year = review.media_type.year
+    if isinstance(review.media_item, BaseMediaItem):
+        title = review.media_item.title
+        year = review.media_item.year
         if year is None:
             year_str = "(unknown)"
         else:
             year_str = f"({str(year)})"
-        icon = review.media_type.icon()
+        icon = review.media_item.icon()
     else:
         icon = SafeText("")
         title = ""
         year_str = ""
-    if isinstance(review.strategy, AbstractStrategy):
+    if isinstance(review.strategy, AbstractReviewStrategy):
         rating_html = review.strategy.rating_html
     else:
         rating_html = SafeText("")

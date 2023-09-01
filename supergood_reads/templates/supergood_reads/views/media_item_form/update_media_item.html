@@ -1,4 +1,4 @@
-{% extends "supergood_reads/views/media_type_form/_media_type_form.html" %}
+{% extends "supergood_reads/views/media_item_form/_media_item_form.html" %}
 
 {% load basic_header %}
 {% load forms %}
@@ -14,16 +14,16 @@
     {{ block.super }}
 {% endblock %}
 
-{% block select_media_type %}
+{% block select_media_item %}
     <div >
         {% form_subheading title="Media Type" text="" %}
-        {% vue_field_interface media_mgmt_form.media_type_content_type as media_type_content_type_vue_field %}
+        {% vue_field_interface media_mgmt_form.media_item_content_type as media_item_content_type_vue_field %}
         <radio-cards
-            v-model="selectedMediaTypeContentType"
-            :field="{{ media_type_content_type_vue_field }}"
+            v-model="selectedMediaItemContentType"
+            :field="{{ media_item_content_type_vue_field }}"
         ></radio-cards>
     </div>
-{% endblock select_media_type %}
+{% endblock select_media_item %}
 
 {% block submit %}
     <div class="flex justify-start pt-5 pb-5 space-x-3">

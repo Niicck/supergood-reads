@@ -8,8 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Model
 from django.http import HttpRequest, HttpResponseRedirect
 
-from supergood_reads.media_types.models import AbstractMediaType
-from supergood_reads.reviews.models import Review
+from supergood_reads.models import BaseMediaItem, Review
 
 
 def has_perm_dynamic(
@@ -31,7 +30,7 @@ def has_perm_dynamic(
 
 def has_owner_permission(
     user: User | AnonymousUser,
-    obj: AbstractMediaType | Review,
+    obj: BaseMediaItem | Review,
 ) -> bool:
     return user.is_authenticated and obj.owner == user
 
@@ -79,7 +78,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
             return self.handle_unauthorized()
 
         obj = self.get_object()  # type: ignore
-        if obj.demo and not user.has_perm("supergood_reads.change_review"):
+        if obj.validated and not user.has_perm("supergood_reads.change_review"):
             self.send_demo_notification()
 
         return super().get(request, *args, **kwargs)  # type: ignore
@@ -100,7 +99,7 @@ class UpdateReviewPermissionMixin(BasePermissionMixin):
         user = self.request.user
         obj = self.get_object()  # type: ignore
         return (
-            obj.demo
+            obj.validated
             or user.has_perm("supergood_reads.view_review")
             or has_owner_permission(user, obj)
         )
@@ -127,7 +126,7 @@ class DeleteReviewPermissionMixin(BasePermissionMixin):
         return super().post(request, *args, **kwargs)  # type: ignore
 
     def has_post_permission(self) -> bool:
-        """Check if user is allowed to change MediaType instance."""
+        """Check if user is allowed to change MediaItem instance."""
         user = self.request.user
         obj = self.get_object()  # type: ignore
         return user.has_perm("supergood_reads.delete_review") or has_owner_permission(
@@ -202,7 +201,7 @@ class DeleteMediaPermissionMixin(BasePermissionMixin):
         return super().post(request, *args, **kwargs)  # type: ignore
 
     def has_post_permission(self) -> bool:
-        """Check if user is allowed to change MediaType instance."""
+        """Check if user is allowed to change MediaItem instance."""
         user = self.request.user
         obj = self.get_object()  # type: ignore
         return has_owner_permission(user, obj) or user.has_perm(

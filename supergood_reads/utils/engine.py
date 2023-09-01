@@ -5,14 +5,13 @@ from django.core.exceptions import ImproperlyConfigured
 from django.forms import ModelForm
 from django.utils.module_loading import import_string
 
-from supergood_reads.media_types.forms import BookForm, FilmForm
-from supergood_reads.media_types.models import AbstractMediaType
-from supergood_reads.strategies.forms import (
+from supergood_reads.forms.media_item_forms import BookForm, FilmForm
+from supergood_reads.forms.strategy_forms import (
     EbertStrategyForm,
     GoodreadsStrategyForm,
     MaximusStrategyForm,
 )
-from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.models import AbstractReviewStrategy, BaseMediaItem
 
 SUPERGOOD_READS_CONFIG = "SUPERGOOD_READS_CONFIG"
 
@@ -34,10 +33,10 @@ class SupergoodReadsConfig:
     strategy_form_classes: list[Type[ModelForm[Any]]] = []
 
     """
-    MediaTypes are eligible to be selected when creating a new Review.
-    Users can override this variable in a subclass to return their own media_types.
+    MediaItems are eligible to be selected when creating a new Review.
+    Users can override this variable in a subclass to return their own media_items.
     """
-    media_type_form_classes: list[Type[ModelForm[Any]]] = []
+    media_item_form_classes: list[Type[ModelForm[Any]]] = []
 
 
 class DefaultSupergoodReadsConfig(SupergoodReadsConfig):
@@ -46,7 +45,7 @@ class DefaultSupergoodReadsConfig(SupergoodReadsConfig):
         GoodreadsStrategyForm,
         MaximusStrategyForm,
     ]
-    media_type_form_classes = [
+    media_item_form_classes = [
         BookForm,
         FilmForm,
     ]
@@ -62,14 +61,14 @@ class SupergoodReadsEngine:
         self._config_cls = config_cls
         self.config = self.get_config()
         self.strategy_form_classes = self.config.strategy_form_classes
-        self.media_type_form_classes = self.config.media_type_form_classes
+        self.media_item_form_classes = self.config.media_item_form_classes
         self.validate_strategy_form_classes()
-        self.validate_media_type_form_classes()
-        self.strategy_model_classes: list[type[AbstractStrategy]] = [
+        self.validate_media_item_form_classes()
+        self.strategy_model_classes: list[type[AbstractReviewStrategy]] = [
             form._meta.model for form in self.strategy_form_classes
         ]
-        self.media_type_model_classes: list[type[AbstractMediaType]] = [
-            form._meta.model for form in self.media_type_form_classes
+        self.media_item_model_classes: list[type[BaseMediaItem]] = [
+            form._meta.model for form in self.media_item_form_classes
         ]
 
     def get_config(self) -> SupergoodReadsConfig:
@@ -107,35 +106,35 @@ class SupergoodReadsEngine:
                 raise InvalidSupergoodReadsConfigError(
                     "Expected an uninstantiated form class, but got an instance: "
                     f"{form_class}. Please ensure strategy_form_classes and "
-                    "media_type_form_classes in your configuration are populated with "
+                    "media_item_form_classes in your configuration are populated with "
                     "classes, not instances."
                 )
             if not issubclass(form_class, ModelForm):
                 raise InvalidSupergoodReadsConfigError(
                     f"{form_class} is not a ModelForm."
                 )
-            if not issubclass(form_class._meta.model, AbstractStrategy):
+            if not issubclass(form_class._meta.model, AbstractReviewStrategy):
                 raise InvalidSupergoodReadsConfigError(
-                    f"The Model for {form_class} is not a subclass of AbstractStrategy."
+                    f"The Model for {form_class} is not a subclass of AbstractReviewStrategy."
                 )
 
-    def validate_media_type_form_classes(self) -> None:
-        """Validate that media_type_form_classes are MediaTypes."""
-        for form_class in self.media_type_form_classes:
+    def validate_media_item_form_classes(self) -> None:
+        """Validate that media_item_form_classes are MediaItems."""
+        for form_class in self.media_item_form_classes:
             if not isinstance(form_class, type):
                 raise InvalidSupergoodReadsConfigError(
                     "Expected an uninstantiated form class, but got an instance: "
                     f"{form_class}. Please ensure strategy_form_classes and "
-                    "media_type_form_classes in your configuration are populated with "
+                    "media_item_form_classes in your configuration are populated with "
                     "classes, not instances."
                 )
             if not issubclass(form_class, ModelForm):
                 raise InvalidSupergoodReadsConfigError(
                     f"{form_class} is not a ModelForm."
                 )
-            if not issubclass(form_class._meta.model, AbstractMediaType):
+            if not issubclass(form_class._meta.model, BaseMediaItem):
                 raise InvalidSupergoodReadsConfigError(
-                    f"The Model for {form_class} is not a subclass of AbstractMediaType."
+                    f"The Model for {form_class} is not a subclass of BaseMediaItem."
                 )
 
 

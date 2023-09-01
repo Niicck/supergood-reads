@@ -23,7 +23,7 @@ describe('toggleRequiredFieldsOnReviewForm', () => {
     return optionValue;
   };
 
-  it('should toggle MediaType form fields "required" attribute', async () => {
+  it('should toggle MediaItem form fields "required" attribute', async () => {
     const bookTitleField = await page.$('#id_book-title');
     const filmTitleField = await page.$('#id_film-title');
     const bookButton = (await page.$x('//span[text()="Book"]'))[0];

@@ -4,11 +4,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from supergood_reads.common.forms import (
-    ContentTypeChoiceField,
-    GenericRelationFormGroup,
-)
-from supergood_reads.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.forms.base import ContentTypeChoiceField, GenericRelationFormGroup
+from supergood_reads.models import BaseMediaItem, Book, Film
 from supergood_reads.utils import ContentTypeUtils
 
 
@@ -44,11 +41,11 @@ class LibraryFilmForm(FilmForm):
 
 
 class MediaMgmtForm(forms.Form):
-    """Select which MediaType you want to create."""
+    """Select which MediaItem you want to create."""
 
-    media_type_content_type = ContentTypeChoiceField(
+    media_item_content_type = ContentTypeChoiceField(
         label="Media Type",
-        parent_model=AbstractMediaType,
+        parent_model=BaseMediaItem,
         required=True,
         empty_label=None,
     )
@@ -56,33 +53,33 @@ class MediaMgmtForm(forms.Form):
     def __init__(
         self,
         *args: Any,
-        instance: AbstractMediaType | None = None,
+        instance: BaseMediaItem | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        media_type_field = cast(
-            ContentTypeChoiceField, self.fields["media_type_content_type"]
+        media_item_field = cast(
+            ContentTypeChoiceField, self.fields["media_item_content_type"]
         )
 
         from supergood_reads.utils.engine import supergood_reads_engine
 
-        media_type_field.set_models(supergood_reads_engine.media_type_model_classes)
+        media_item_field.set_models(supergood_reads_engine.media_item_model_classes)
 
         if instance:
-            media_type_field.disabled = True
-            media_type_field.initial = ContentTypeUtils.get_content_type_id(instance)
+            media_item_field.disabled = True
+            media_item_field.initial = ContentTypeUtils.get_content_type_id(instance)
 
 
-class MediaTypeFormGroup:
-    media_type_forms: GenericRelationFormGroup
+class MediaItemFormGroup:
+    media_item_forms: GenericRelationFormGroup
     media_mgmt_form: MediaMgmtForm
-    media_item: AbstractMediaType
+    media_item: BaseMediaItem
 
     def __init__(
         self,
         data: Optional[Any] = None,
-        instance: Optional[AbstractMediaType] = None,
+        instance: Optional[BaseMediaItem] = None,
         user: Optional[User] = None,
     ) -> None:
         self.data = data
@@ -95,24 +92,24 @@ class MediaTypeFormGroup:
         from supergood_reads.utils.engine import supergood_reads_engine
 
         self.media_mgmt_form = MediaMgmtForm(
-            data=self.data, instance=self.instance, prefix="media_type_mgmt"
+            data=self.data, instance=self.instance, prefix="media_item_mgmt"
         )
 
-        selected_media_type_id: int | None = None
+        selected_media_item_id: int | None = None
         if self.media_mgmt_form.is_valid():
-            media_type_content_type = self.media_mgmt_form.cleaned_data.get(
-                "media_type_content_type"
+            media_item_content_type = self.media_mgmt_form.cleaned_data.get(
+                "media_item_content_type"
             )
-            if media_type_content_type:
-                selected_media_type_id = media_type_content_type.id
+            if media_item_content_type:
+                selected_media_item_id = media_item_content_type.id
         else:
-            selected_media_type_id = self.media_mgmt_form[
-                "media_type_content_type"
+            selected_media_item_id = self.media_mgmt_form[
+                "media_item_content_type"
             ].value()
 
-        self.media_type_forms = GenericRelationFormGroup(
-            supergood_reads_engine.media_type_form_classes,
-            selected_form_id=selected_media_type_id,
+        self.media_item_forms = GenericRelationFormGroup(
+            supergood_reads_engine.media_item_form_classes,
+            selected_form_id=selected_media_item_id,
             data=self.data,
             instance=self.instance,
         )
@@ -124,14 +121,14 @@ class MediaTypeFormGroup:
         if not self.media_mgmt_form.is_valid():
             self.valid = False
 
-        selected_media_type_form = self.media_type_forms.selected_form
-        if not selected_media_type_form or not selected_media_type_form.is_valid():
+        selected_media_item_form = self.media_item_forms.selected_form
+        if not selected_media_item_form or not selected_media_item_form.is_valid():
             self.valid = False
 
         return self.valid
 
     @transaction.atomic
-    def save(self) -> AbstractMediaType:
+    def save(self) -> BaseMediaItem:
         """Save the Review and any associated Foriegn Models"""
         if self.valid is None:
             self.is_valid()
@@ -140,10 +137,10 @@ class MediaTypeFormGroup:
                 "Media Form could not be saved because the data didn't validate."
             )
 
-        selected_media_type_form = self.media_type_forms.selected_form
-        assert selected_media_type_form
+        selected_media_item_form = self.media_item_forms.selected_form
+        assert selected_media_item_form
 
-        media_item: AbstractMediaType = selected_media_type_form.save(commit=False)
+        media_item: BaseMediaItem = selected_media_item_form.save(commit=False)
 
         if not media_item.owner:
             media_item.owner = self.user

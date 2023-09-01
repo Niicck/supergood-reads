@@ -6,10 +6,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import EmptyPage, Paginator
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import Model, Prefetch, Q, QuerySet
 from django.forms import ModelForm
 from django.http import (
     Http404,
@@ -25,7 +24,6 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import DeleteView
-from queryset_sequence import QuerySetSequence
 from rest_framework import generics, pagination, serializers, views
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -38,17 +36,14 @@ from supergood_reads.auth import (
     UpdateMediaItemPermissionMixin,
     UpdateReviewPermissionMixin,
 )
-from supergood_reads.media_types.forms import MediaTypeFormGroup
-from supergood_reads.media_types.models import (
-    AbstractMediaType,
-    Book,
-    Country,
-    Film,
-    Genre,
-    MediaTypeQuerySet,
+from supergood_reads.forms.media_item_forms import MediaItemFormGroup
+from supergood_reads.forms.review_forms import InvalidContentTypeError, ReviewFormGroup
+from supergood_reads.models import BaseMediaItem, Country, Genre, Review
+from supergood_reads.models.media_items import (
+    CountryMixin,
+    GenreMixin,
+    MediaItemQuerySet,
 )
-from supergood_reads.reviews.forms import InvalidContentTypeError, ReviewFormGroup
-from supergood_reads.reviews.models import Review
 from supergood_reads.utils import ContentTypeUtils
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.json import UUIDEncoder
@@ -95,40 +90,40 @@ class ReviewFormView(TemplateView):
         review_form = review_form_group.review_form
         review_mgmt_form = review_form_group.review_mgmt_form
         strategy_forms_by_id = review_form_group.strategy_forms.by_content_type_id
-        media_type_forms_by_id = review_form_group.media_type_forms.by_content_type_id
+        media_item_forms_by_id = review_form_group.media_item_forms.by_content_type_id
         context_data.update(
             {
                 "review_form": review_form,
                 "review_mgmt_form": review_mgmt_form,
                 "strategy_forms_by_id": strategy_forms_by_id,
-                "media_type_forms_by_id": media_type_forms_by_id,
+                "media_item_forms_by_id": media_item_forms_by_id,
             }
         )
 
         # Initial Values for Vue Components
         initial_strategy_content_type = review_form["strategy_content_type"].value()
-        initial_media_type_content_type = review_form["media_type_content_type"].value()
-        initial_media_type_object_id = review_form["media_type_object_id"].value()
-        initial_create_new_media_type_object = review_mgmt_form[
-            "create_new_media_type_object"
+        initial_media_item_content_type = review_form["media_item_content_type"].value()
+        initial_media_item_object_id = review_form["media_item_object_id"].value()
+        initial_create_new_media_item_object = review_mgmt_form[
+            "create_new_media_item_object"
         ].value()
 
         context_data.update(
             {
                 "initial_strategy_content_type": initial_strategy_content_type,
-                "initial_media_type_content_type": initial_media_type_content_type,
-                "initial_media_type_object_id": initial_media_type_object_id,
-                "initial_create_new_media_type_object": initial_create_new_media_type_object,
+                "initial_media_item_content_type": initial_media_item_content_type,
+                "initial_media_item_object_id": initial_media_item_object_id,
+                "initial_create_new_media_item_object": initial_create_new_media_item_object,
             }
         )
 
         # Initial Data for Vue Store
         initial_data_for_vue_store = {
             "selectedStrategyId": initial_strategy_content_type,
-            "selectedMediaTypeContentType": initial_media_type_content_type,
-            "selectedMediaTypeObjectId": initial_media_type_object_id,
-            "createNewMediaTypeObject": initial_create_new_media_type_object,
-            "autocompleteUrlBase": reverse("media_type_autocomplete"),
+            "selectedMediaItemContentType": initial_media_item_content_type,
+            "selectedMediaItemObjectId": initial_media_item_object_id,
+            "createNewMediaItemObject": initial_create_new_media_item_object,
+            "autocompleteUrlBase": reverse("media_item_autocomplete"),
         }
         context_data.update(
             {
@@ -155,8 +150,8 @@ class ReviewFormView(TemplateView):
             messages.error(request, "Server Error.")
             return self.on_form_error(request, review_form_group, status_code=500)
 
-        assert isinstance(review.media_type, AbstractMediaType)
-        messages.success(request, f"Added review for {review.media_type.title}.")
+        assert isinstance(review.media_item, BaseMediaItem)
+        messages.success(request, f"Added review for {review.media_item.title}.")
         return self.redirect_to_reviews()
 
     def on_form_error(
@@ -235,15 +230,15 @@ class DeleteReview(DeleteReviewPermissionMixin, DeleteView[Review, ModelForm[Rev
     def form_valid(
         self: FormViewMixinProtocol, form: ModelForm[Any]
     ) -> HttpResponseRedirect:
-        if self.object.media_type:
-            title = self.object.media_type.title
+        if self.object.media_item:
+            title = self.object.media_item.title
         else:
             title = "untitled"
         messages.success(self.request, f"Succesfully deleted review of '{title}'.")
         return super().form_valid(form)  # type: ignore[safe-super]
 
 
-class MediaTypeAutocompleteView(View):
+class MediaItemAutocompleteView(View):
     limit = 20
 
     def get(self, request: HttpRequest) -> JsonResponse:
@@ -256,14 +251,14 @@ class MediaTypeAutocompleteView(View):
                 raise InvalidContentTypeError
             content_type = ContentType.objects.get_for_id(int(content_type_id))
             model_class = content_type.model_class()
-            if not (model_class and issubclass(model_class, AbstractMediaType)):
+            if not (model_class and issubclass(model_class, BaseMediaItem)):
                 raise InvalidContentTypeError
         except (ContentType.DoesNotExist, InvalidContentTypeError, ValueError):
             return JsonResponse(
                 {"error": f"Invalid content type ID {content_type_id}"}, status=400
             )
 
-        manager = cast(MediaTypeQuerySet[AbstractMediaType], model_class.objects)
+        manager = cast(MediaItemQuerySet[BaseMediaItem], model_class.objects)
 
         if is_uuid(q):
             qs = manager.filter(pk=q)
@@ -314,7 +309,7 @@ class SupergoodPagination(pagination.PageNumberPagination):
 
 
 class MediaTypeOptionSerializer(serializers.BaseSerializer):
-    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
+    def to_representation(self, obj: BaseMediaItem) -> dict[str, Any]:
         return {
             "id": ContentTypeUtils().get_content_type_id(obj),
             "name": obj._meta.verbose_name,
@@ -323,9 +318,9 @@ class MediaTypeOptionSerializer(serializers.BaseSerializer):
 
 class MediaTypeChoicesApiView(views.APIView):
     def get(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        media_type_options = supergood_reads_engine.media_type_model_classes
+        media_item_options = supergood_reads_engine.media_item_model_classes
         serializer = MediaTypeOptionSerializer(
-            media_type_options, many=True
+            media_item_options, many=True
         )  # Serialize the list
         return Response(serializer.data)
 
@@ -356,117 +351,110 @@ class CountryApiView(generics.ListAPIView):
         return Country.objects.all().order_by("name")
 
 
-class MediaTypeSerializer(serializers.BaseSerializer):
-    """DRF Serializers don't work with Abstract Model Classes."""
-
-    def to_representation(self, obj: AbstractMediaType) -> dict[str, Any]:
+class BaseMediaItemSerializer(serializers.Serializer):
+    def to_representation(self, base: BaseMediaItem) -> dict[str, Any]:
         user = self.context["request"].user
         update_url: str | None = None
-        if obj.can_user_change(user):
-            update_url = reverse("update_media_item", args=[obj.id])
+        media_item = base.get_child()
+
+        genres: list[str] = []
+        if issubclass(media_item.__class__, GenreMixin):  # type: ignore
+            genres = list(media_item.genres.all().values_list("name", flat=True))  # type: ignore
+
+        if media_item.can_user_change(user):
+            update_url = reverse("update_media_item", args=[base.id])
 
         return {
-            "id": obj.id,
-            "title": obj.title,
-            "year": obj.year,
-            "creator": obj.creator,
-            "genres": list(obj.genres.all().values_list("name", flat=True)),
-            "icon": obj.icon(),
+            "id": media_item.id,
+            "title": media_item.title,
+            "year": media_item.year,
+            "creator": media_item.creator,
+            "genres": genres,
+            "icon": media_item.icon(),
             "updateUrl": update_url,
         }
 
 
-class MediaTypeSearchView(generics.ListAPIView):
-    serializer_class = MediaTypeSerializer
+class MediaItemSearchView(generics.ListAPIView):
+    serializer_class = BaseMediaItemSerializer
     pagination_class = SupergoodPagination
 
-    def get_queryset(self) -> QuerySetSequence:
+    def get_queryset(self) -> QuerySet[BaseMediaItem]:
         query_params = self.request.query_params
         q = query_params.get("q", "").strip()
-        editable_only = query_params.get("showEditableOnly", "false") == "true"
+        my_media_only = query_params.get("myMediaOnly", "false") == "true"
         genres = query_params.getlist("genres")
-        media_type_ids = query_params.getlist("media_types")
+        media_type_ids = query_params.getlist("mediaTypes")
 
-        media_type_models = [
-            ContentTypeUtils().get_model(m_id) for m_id in media_type_ids
-        ]
-        searchable_media_types = [
-            m for m in self.all_media_types if m in media_type_models
-        ]
+        media_types = [ContentTypeUtils().get_model(m_id) for m_id in media_type_ids]
+        searchable_media_types = [m for m in self.all_media_types if m in media_types]
         if genres:
             searchable_media_types = list(
                 set(self.media_types_with_genres) & set(searchable_media_types)
             )
-
-        if editable_only:
-            qs = self._editable_qs(searchable_media_types)
-        else:
-            qs = self._qs_for_media_types(searchable_media_types).filter(
-                Q(validated=True) | Q(owner=self.request.user)
-            )
-
-        qs.prefetch_related("genres")
-
-        if is_uuid(q):
-            qs = qs.filter(pk=q)
-        else:
-            qs = qs.filter(title__icontains=q)
+        qs = self._qs_for_media_types(searchable_media_types)
 
         if genres:
-            qs = qs.filter(genres__name__in=genres)
+            prefetch_genres = [
+                Prefetch(f"{m.__name__.lower()}__genres")
+                for m in searchable_media_types
+            ]
+            genre_filter = Q()
+            for m in searchable_media_types:
+                genre_filter |= Q(**{f"{m.__name__.lower()}__genres__name__in": genres})
+            qs = qs.prefetch_related(*prefetch_genres).filter(genre_filter)
 
+        owner_filter = Q(owner=self.request.user)
+        validated_filter = Q(validated=True)
+
+        if my_media_only:
+            if self.request.user.is_authenticated:
+                qs = qs.filter(owner_filter)
+            else:
+                qs = BaseMediaItem.objects.none()
+        else:
+            if self.request.user.is_authenticated:
+                qs = qs.filter(validated_filter | owner_filter)
+            else:
+                qs = qs.filter(validated_filter)
+
+        qs = qs.filter(title__icontains=q)
         qs = qs.order_by("-updated_at")
         return qs
 
     @property
-    def all_media_types(self) -> list[type[AbstractMediaType]]:
-        return supergood_reads_engine.media_type_model_classes
+    def all_media_types(self) -> list[type[BaseMediaItem]]:
+        return supergood_reads_engine.media_item_model_classes
 
     @property
-    def media_types_with_genres(self) -> list[type[AbstractMediaType]]:
-        return self._media_types_with_field("genres")
+    def media_types_with_genres(self) -> list[type[BaseMediaItem]]:
+        return self._media_types_with_mixin(GenreMixin)
 
     @property
-    def media_types_with_countries(self) -> list[type[AbstractMediaType]]:
-        return self._media_types_with_field("countries")
+    def media_types_with_countries(self) -> list[type[BaseMediaItem]]:
+        return self._media_types_with_mixin(CountryMixin)
 
-    def _media_types_with_field(self, field_name: str) -> list[type[AbstractMediaType]]:
+    def _media_types_with_mixin(self, mixin: type[Model]) -> list[type[BaseMediaItem]]:
         return [
             m
-            for m in supergood_reads_engine.media_type_model_classes
-            if field_name in [f.name for f in m._meta.get_fields()]
+            for m in supergood_reads_engine.media_item_model_classes
+            if issubclass(m, mixin)
         ]
 
-    def _editable_qs(
-        self, searchable_media_types: list[type[AbstractMediaType]]
-    ) -> QuerySetSequence:
-        """
-        Return queryset combining all child content_types of AbstractMediaType.
-        Ex: by default, this will return both Books and Films, ordered by "updated_at"
-        in descending order.
-        """
-        user = self.request.user
-        if user.is_staff:
-            editable_media_types = [
-                mt for mt in self.all_media_types if mt().can_user_change(user)
-            ]
-            searchable_media_types = list(
-                set(editable_media_types) & set(searchable_media_types)
-            )
-            qs = self._qs_for_media_types(searchable_media_types)
-        elif user.is_authenticated:
-            all_media_types_qs = self._qs_for_media_types(searchable_media_types)
-            qs = all_media_types_qs.filter(owner=self.request.user)
-        else:
-            qs = Book.objects.none()
-        return qs
-
     def _qs_for_media_types(
-        self, media_types: list[Type[AbstractMediaType]]
-    ) -> QuerySetSequence:
-        return QuerySetSequence(
-            *[media_type.objects.all() for media_type in media_types],
-            model=AbstractMediaType,
+        self, media_types: list[Type[BaseMediaItem]]
+    ) -> QuerySet[BaseMediaItem]:
+        if not media_types:
+            return BaseMediaItem.objects.none()
+
+        select_related_args = [m.__name__.lower() for m in media_types]
+
+        filter_args = Q()
+        for m in media_types:
+            filter_args |= Q(**{f"{m.__name__.lower()}__isnull": False})
+
+        return BaseMediaItem.objects.select_related(*select_related_args).filter(
+            filter_args
         )
 
 
@@ -492,7 +480,7 @@ class MyReviewsView(ListView[Review]):
         elif user.is_authenticated:
             qs = all_reviews_qs.filter(owner=self.request.user)
         else:
-            qs = all_reviews_qs.filter(demo=True)
+            qs = all_reviews_qs.filter(validated=True)
         return qs
 
 
@@ -513,36 +501,36 @@ class Handle403View(StatusTemplateView):
 
 
 class MediaFormView(TemplateView):
-    object: AbstractMediaType | None = None
+    object: BaseMediaItem | None = None
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        media_type_form_group = MediaTypeFormGroup(instance=self.object)
-        context_data = self._context_data_from_form_group(media_type_form_group)
+        media_item_form_group = MediaItemFormGroup(instance=self.object)
+        context_data = self._context_data_from_form_group(media_item_form_group)
         context.update(context_data)
 
         return context
 
     def _context_data_from_form_group(
-        self, media_type_form_group: MediaTypeFormGroup
+        self, media_item_form_group: MediaItemFormGroup
     ) -> dict[str, Any]:
         context_data = {}
 
-        media_type_forms_by_id = (
-            media_type_form_group.media_type_forms.by_content_type_id
+        media_item_forms_by_id = (
+            media_item_form_group.media_item_forms.by_content_type_id
         )
-        media_mgmt_form = media_type_form_group.media_mgmt_form
-        initial_media_type_content_type = media_mgmt_form[
-            "media_type_content_type"
+        media_mgmt_form = media_item_form_group.media_mgmt_form
+        initial_media_item_content_type = media_mgmt_form[
+            "media_item_content_type"
         ].value()
 
         context_data.update(
             {
-                "media_type_forms_by_id": media_type_forms_by_id,
+                "media_item_forms_by_id": media_item_forms_by_id,
                 "media_mgmt_form": media_mgmt_form,
                 "initial_data_for_vue_store": {
-                    "selectedMediaTypeContentType": initial_media_type_content_type,
+                    "selectedMediaItemContentType": initial_media_item_content_type,
                 },
             }
         )
@@ -551,19 +539,19 @@ class MediaFormView(TemplateView):
     @transaction.atomic
     @log_post_request_data
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
-        media_type_form_group = MediaTypeFormGroup(
+        media_item_form_group = MediaItemFormGroup(
             data=request.POST, instance=self.object, user=cast(User, self.request.user)
         )
-        if not media_type_form_group.is_valid():
+        if not media_item_form_group.is_valid():
             messages.error(request, "Please fix the errors below.")
-            return self.on_form_error(request, media_type_form_group, status_code=400)
+            return self.on_form_error(request, media_item_form_group, status_code=400)
 
         try:
-            media_item = media_type_form_group.save()
+            media_item = media_item_form_group.save()
         except Exception:
             logger.exception("Failed to create Media Item")
             messages.error(request, "Server Error.")
-            return self.on_form_error(request, media_type_form_group, status_code=500)
+            return self.on_form_error(request, media_item_form_group, status_code=500)
 
         messages.success(request, f'Saved "{media_item.title}"')
         return self.redirect_to_library()
@@ -571,11 +559,11 @@ class MediaFormView(TemplateView):
     def on_form_error(
         self,
         request: HttpRequest,
-        media_type_form_group: MediaTypeFormGroup,
+        media_item_form_group: MediaItemFormGroup,
         status_code: int = 500,
     ) -> HttpResponse:
         context = super().get_context_data()
-        context_data = self._context_data_from_form_group(media_type_form_group)
+        context_data = self._context_data_from_form_group(media_item_form_group)
         context.update(context_data)
         return render(
             request,
@@ -591,18 +579,18 @@ class MediaFormView(TemplateView):
 
 
 class CreateMediaItemView(CreateMediaItemPermissionMixin, MediaFormView):
-    template_name = "supergood_reads/views/media_type_form/create_media_type.html"
+    template_name = "supergood_reads/views/media_item_form/create_media_item.html"
 
 
 class UpdateMediaItemView(
-    UpdateMediaItemPermissionMixin, MediaFormView, SingleObjectMixin[AbstractMediaType]
+    UpdateMediaItemPermissionMixin, MediaFormView, SingleObjectMixin[BaseMediaItem]
 ):
-    template_name = "supergood_reads/views/media_type_form/update_media_type.html"
-    model = AbstractMediaType
+    template_name = "supergood_reads/views/media_item_form/update_media_item.html"
+    model = BaseMediaItem
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
         try:
-            # TODO: replace AbstractMediaType with MediaItem
+            # TODO: replace BaseMediaItem with MediaItem
             self.object = self.get_object()
         except Http404:
             messages.error(self.request, "Invalid Request.")
@@ -610,26 +598,23 @@ class UpdateMediaItemView(
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(
-        self, queryset: QuerySet[AbstractMediaType] | None = None
-    ) -> AbstractMediaType:
-        pk = self.kwargs.get(self.pk_url_kwarg)
-        try:
-            object: AbstractMediaType = QuerySetSequence(
-                Book.objects.all(), Film.objects.all(), model=AbstractMediaType
-            ).get(pk=pk)
-        except ObjectDoesNotExist:
+        self, queryset: QuerySet[BaseMediaItem] | None = None
+    ) -> BaseMediaItem:
+        object = super().get_object(queryset)
+        child = object.get_child()
+        if not child:
             raise Http404
-        return object
+        return child
 
 
 class DeleteMediaItemView(
     DeleteMediaPermissionMixin,
-    DeleteView[AbstractMediaType, ModelForm[AbstractMediaType]],
+    DeleteView[BaseMediaItem, ModelForm[BaseMediaItem]],
 ):
     """Delete Media Item, add message, refresh Library page."""
 
-    object: AbstractMediaType
-    model = AbstractMediaType
+    object: BaseMediaItem
+    model = BaseMediaItem
 
     def get_success_url(self: FormViewMixinProtocol) -> str:
         return reverse("library")
@@ -659,13 +644,10 @@ class DeleteMediaItemView(
         return super().form_valid(form)  # type: ignore[safe-super]
 
     def get_object(
-        self, queryset: QuerySet[AbstractMediaType] | None = None
-    ) -> AbstractMediaType:
-        pk = self.kwargs.get(self.pk_url_kwarg)
-        try:
-            object: AbstractMediaType = QuerySetSequence(
-                Book.objects.all(), Film.objects.all(), model=AbstractMediaType
-            ).get(pk=pk)
-        except ObjectDoesNotExist:
+        self, queryset: QuerySet[BaseMediaItem] | None = None
+    ) -> BaseMediaItem:
+        object = super().get_object(queryset)
+        child = object.get_child()
+        if not child:
             raise Http404
-        return object
+        return child

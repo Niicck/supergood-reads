@@ -10,7 +10,7 @@ from django.utils.html import format_html
 from django.utils.safestring import SafeText
 
 
-class AbstractStrategy(models.Model):
+class AbstractReviewStrategy(models.Model):
     """
     Abstract class common to all Strategies.
 
@@ -41,7 +41,7 @@ def ebert_star_validator(value: Decimal) -> None:
         raise ValidationError("Star rating must be a multiple of 0.5")
 
 
-class EbertStrategy(AbstractStrategy):
+class EbertStrategy(AbstractReviewStrategy):
     """Replicate Roger Ebert's film scoring strategy.
 
     Star rating from 0 to 4.
@@ -77,7 +77,7 @@ class EbertStrategy(AbstractStrategy):
         return format_html("<span class='text-gray-900'>{}</span>", value)
 
 
-class GoodreadsStrategy(AbstractStrategy):
+class GoodreadsStrategy(AbstractReviewStrategy):
     """Replicate Goodreads scoring strategy.
 
     The Goodreads Strategy is a star rating from 1 to 5.
@@ -103,7 +103,7 @@ class GoodreadsStrategy(AbstractStrategy):
         )
 
 
-class ImdbStrategy(AbstractStrategy):
+class ImdbStrategy(AbstractReviewStrategy):
     """Replicate IMDB scoring strategy.
 
     Score from 1 to 10.
@@ -125,7 +125,7 @@ def letterboxd_star_validator(value: Decimal) -> None:
         raise ValidationError("Star rating must be a multiple of 0.5")
 
 
-class LetterboxdStrategy(AbstractStrategy):
+class LetterboxdStrategy(AbstractReviewStrategy):
     """Replicate Letterboxd scoring strategy.
 
     Star rating from 0.5 to 5.0.
@@ -140,7 +140,7 @@ class LetterboxdStrategy(AbstractStrategy):
     )
 
 
-class MaximusStrategy(AbstractStrategy):
+class MaximusStrategy(AbstractReviewStrategy):
     """Replicate Joaquin Phoenix's scoring strategy from Gladiator (2000).
 
     Simple yes/no boolean strategy.

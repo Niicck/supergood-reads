@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Self, TypeVar
+from typing import Any, Self, TypeVar, cast
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
@@ -13,24 +13,29 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import SafeText
 
-from supergood_reads.reviews.models import Review
+from supergood_reads.models.review import Review
 
-_T = TypeVar("_T", bound="AbstractMediaType")
+_T = TypeVar("_T", bound="BaseMediaItem")
 
 
-class MediaTypeQuerySet(models.QuerySet[_T]):
+class MediaItemQuerySet(models.QuerySet[_T]):
     def with_autocomplete_label(self) -> Self:
         return self.annotate(autocomplete_label=self.model.autocomplete_label())
 
 
-class MediaTypeManager(models.Manager[_T]):
-    def get_queryset(self) -> MediaTypeQuerySet[_T]:
-        return MediaTypeQuerySet[_T](self.model, using=self._db)
+class MediaItemManager(models.Manager[_T]):
+    def get_queryset(self) -> MediaItemQuerySet[_T]:
+        return MediaItemQuerySet[_T](self.model, using=self._db)
 
 
-class AbstractMediaType(models.Model):
+class BaseMediaItemQuerySet(models.QuerySet["BaseMediaItem"]):
+    def with_select_related(self, *models: type["BaseMediaItem"]) -> Self:
+        return self.select_related([m.__name__.lower() for m in models])
+
+
+class BaseMediaItem(models.Model):
     """
-    Abstract class common to all MediaTypes.
+    Base class common to all MediaItems.
 
     Subclasses can add any additional fields they'd like.
     But they must also define:
@@ -40,30 +45,30 @@ class AbstractMediaType(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True
     )
-    title = models.CharField(default="", max_length=256)
+    title = models.CharField(default="", max_length=256, db_index=True)
     year = models.IntegerField(
         blank=True, null=True, validators=[MaxValueValidator(9999)]
     )
     created_at = models.DateTimeField(null=False)
-    updated_at = models.DateTimeField(default=timezone.now, null=False)
-    validated = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(default=timezone.now, null=False, db_index=True)
+    validated = models.BooleanField(default=False, db_index=True)
 
     reviews = GenericRelation(
         Review,
-        object_id_field="media_type_object_id",
-        content_type_field="media_type_content_type",
+        object_id_field="media_item_object_id",
+        content_type_field="media_item_content_type",
     )
 
     class Meta:
-        abstract = True
+        ordering = ("-updated_at",)
 
     def __str__(self) -> str:
         return self.title
 
     @property
-    def media_type(self) -> str:
+    def media_item(self) -> str:
         return str(self._meta.verbose_name)
 
     @property
@@ -80,7 +85,7 @@ class AbstractMediaType(models.Model):
 
     def can_user_change(self, user: User | AnonymousUser) -> bool:
         """
-        A user can only update a MediaType instance only if:
+        A user can only update a MediaItem instance only if:
           - The user owns the Review
           - The user has global "change_[model]" permission
         """
@@ -92,7 +97,7 @@ class AbstractMediaType(models.Model):
 
     def can_user_delete(self, user: User | AnonymousUser) -> bool:
         """
-        A user can only update a MediaType instance only if:
+        A user can only update a MediaItem instance only if:
           - The user owns the Review
           - The user has global "change_[model]" permission
         """
@@ -101,6 +106,16 @@ class AbstractMediaType(models.Model):
         return has_owner_permission(user, self) or has_perm_dynamic(
             user, self, "delete"
         )
+
+    def get_child(self: _T) -> _T:
+        from supergood_reads.utils.engine import supergood_reads_engine
+
+        for model_class in supergood_reads_engine.media_item_model_classes:
+            model_name = model_class.__name__.lower()
+            if hasattr(self, model_name):
+                return cast(_T, getattr(self, model_name))
+
+        return self
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.clean()
@@ -118,7 +133,14 @@ class Genre(models.Model):
         return self.name
 
 
-class Book(AbstractMediaType):
+class GenreMixin(models.Model):
+    genres = models.ManyToManyField(Genre)
+
+    class Meta:
+        abstract = True
+
+
+class Book(BaseMediaItem, GenreMixin):
     """
     A handwritten or printed work of fiction or nonfiction, usually on sheets of paper
     fastened or bound together within covers.
@@ -126,9 +148,8 @@ class Book(AbstractMediaType):
 
     author = models.CharField(default="", max_length=256)
     pages = models.IntegerField(blank=True, null=True)
-    genres = models.ManyToManyField(Genre)
 
-    objects = MediaTypeManager["Book"]()
+    objects = MediaItemManager["Book"]()
 
     class Meta:
         verbose_name = "Book"
@@ -165,7 +186,14 @@ class Country(models.Model):
         return self.name
 
 
-class Film(AbstractMediaType):
+class CountryMixin(models.Model):
+    countries = models.ManyToManyField(Country)
+
+    class Meta:
+        abstract = True
+
+
+class Film(BaseMediaItem, GenreMixin, CountryMixin):
     """
     A sequence of consecutive still images recorded in a series to be viewed on a screen
     in such rapid succession as to give the illusion of natural movement; motion
@@ -173,10 +201,8 @@ class Film(AbstractMediaType):
     """
 
     director = models.CharField(default="", max_length=256)
-    genres = models.ManyToManyField(Genre)
-    countries = models.ManyToManyField(Country)
 
-    objects = MediaTypeManager["Film"]()
+    objects = MediaItemManager["Film"]()
 
     class Meta:
         verbose_name = "Film"

@@ -3,7 +3,7 @@ from typing import Any
 
 from django import forms
 
-from .models import EbertStrategy, GoodreadsStrategy, MaximusStrategy
+from supergood_reads.models import EbertStrategy, GoodreadsStrategy, MaximusStrategy
 
 GREAT_FILM = "GREAT_FILM"
 

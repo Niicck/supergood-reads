@@ -19,26 +19,26 @@
             <div class="space-y-12 divide-y divide-gray-200 mx-auto max-w-2xl">
                 {% csrf_token %}
 
-                {% comment %} Handle MediaType Selection {% endcomment %}
-                {% block select_media_type %}
+                {% comment %} Handle MediaItem Selection {% endcomment %}
+                {% block select_media_item %}
                     <div>
                         {% form_subheading title="Select a Media Type" text="What do you want to create?" %}
-                        {% comment %} Select MediaType Type {% endcomment %}
-                        {% vue_field_interface media_mgmt_form.media_type_content_type as media_type_content_type_vue_field %}
-                        <field-wrapper :field="{{ media_type_content_type_vue_field }}">
+                        {% comment %} Select MediaItem Type {% endcomment %}
+                        {% vue_field_interface media_mgmt_form.media_item_content_type as media_item_content_type_vue_field %}
+                        <field-wrapper :field="{{ media_item_content_type_vue_field }}">
                             <radio-cards
-                                v-model="selectedMediaTypeContentType"
-                                :field="{{ media_type_content_type_vue_field }}"
+                                v-model="selectedMediaItemContentType"
+                                :field="{{ media_item_content_type_vue_field }}"
                             ></radio-cards>
                         </field-wrapper>
                     </div>
-                {% endblock select_media_type %}
+                {% endblock select_media_item %}
 
-                <div v-show="selectedMediaTypeContentType">
-                    {% for media_type_id, media_type_form in media_type_forms_by_id.items %}
-                        <div v-if="{{media_type_id}} == selectedMediaTypeContentType">
-                            {{ media_type_form.non_field_errors }}
-                            {% for field in media_type_form %}
+                <div v-show="selectedMediaItemContentType">
+                    {% for media_item_id, media_item_form in media_item_forms_by_id.items %}
+                        <div v-if="{{media_item_id}} == selectedMediaItemContentType">
+                            {{ media_item_form.non_field_errors }}
+                            {% for field in media_item_form %}
                                 {% supergood_field field %}
                             {% endfor %}
                         </div>

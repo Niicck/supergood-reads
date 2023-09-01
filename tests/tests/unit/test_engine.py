@@ -1,9 +1,12 @@
 import pytest
 from django.forms import ModelForm
 
-from supergood_reads.media_types.models import AbstractMediaType
-from supergood_reads.models import Book, EbertStrategy
-from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.models import (
+    AbstractReviewStrategy,
+    BaseMediaItem,
+    Book,
+    EbertStrategy,
+)
 from supergood_reads.utils.engine import (
     InvalidSupergoodReadsConfigError,
     SupergoodReadsConfig,
@@ -20,7 +23,7 @@ class TestSupergoodReadsEngine:
             SupergoodReadsEngine(config_cls=BadConfig)  # type: ignore[arg-type]
 
     def test_valid_new_strategy(self) -> None:
-        class NewStrategy(AbstractStrategy):
+        class NewStrategy(AbstractReviewStrategy):
             class Meta:
                 app_label = "test"
 
@@ -56,8 +59,8 @@ class TestSupergoodReadsEngine:
         with pytest.raises(InvalidSupergoodReadsConfigError):
             SupergoodReadsEngine(config_cls=BadConfig)
 
-    def test_valid_new_media_type(self) -> None:
-        class NewMedia(AbstractMediaType):
+    def test_valid_new_media_item(self) -> None:
+        class NewMedia(BaseMediaItem):
             class Meta:
                 app_label = "test"
 
@@ -67,28 +70,28 @@ class TestSupergoodReadsEngine:
                 fields = "__all__"
 
         class GoodConfig(SupergoodReadsConfig):
-            media_type_form_classes = [NewMediaForm]
+            media_item_form_classes = [NewMediaForm]
 
         assert SupergoodReadsEngine(config_cls=GoodConfig)
 
-    def test_invalid_media_type(self) -> None:
+    def test_invalid_media_item(self) -> None:
         class BadClass:
             pass
 
         class BadConfig(SupergoodReadsConfig):
-            media_type_form_classes = [BadClass]  # type: ignore[list-item]
+            media_item_form_classes = [BadClass]  # type: ignore[list-item]
 
         with pytest.raises(InvalidSupergoodReadsConfigError):
             SupergoodReadsEngine(config_cls=BadConfig)
 
-    def test_invalid_media_type_form(self) -> None:
+    def test_invalid_media_item_form(self) -> None:
         class BadClass(ModelForm[EbertStrategy]):
             class Meta:
                 model = EbertStrategy
                 fields = "__all__"
 
         class BadConfig(SupergoodReadsConfig):
-            media_type_form_classes = [BadClass]
+            media_item_form_classes = [BadClass]
 
         with pytest.raises(InvalidSupergoodReadsConfigError):
             SupergoodReadsEngine(config_cls=BadConfig)

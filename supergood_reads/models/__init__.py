@@ -1,7 +1,7 @@
-from .media_types.models import AbstractMediaType, Book, Country, Film, Genre
-from .reviews.models import Review, UserReviewStrategyDefault
-from .strategies.models import (
-    AbstractStrategy,
+from .media_items import BaseMediaItem, Book, Country, Film, Genre
+from .review import Review, UserReviewStrategyDefault
+from .review_strategies import (
+    AbstractReviewStrategy,
     EbertStrategy,
     GoodreadsStrategy,
     ImdbStrategy,
@@ -12,8 +12,8 @@ from .strategies.models import (
 __all__ = [
     "Review",
     "UserReviewStrategyDefault",
-    "AbstractMediaType",
-    "AbstractStrategy",
+    "BaseMediaItem",
+    "AbstractReviewStrategy",
     "EbertStrategy",
     "GoodreadsStrategy",
     "ImdbStrategy",

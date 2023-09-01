@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
-from supergood_reads.media_types.models import Book
+from supergood_reads.models import Book
 from supergood_reads.utils import ContentTypeUtils
 
 

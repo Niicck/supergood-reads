@@ -22,8 +22,8 @@ urlpatterns = [
     ),
     path(
         "media-type-autocomplete/",
-        views.MediaTypeAutocompleteView.as_view(),
-        name="media_type_autocomplete",
+        views.MediaItemAutocompleteView.as_view(),
+        name="media_item_autocomplete",
     ),
     path(
         "library/",
@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     path(
         "media/search/",
-        views.MediaTypeSearchView.as_view(),
+        views.MediaItemSearchView.as_view(),
         name="media_search",
     ),
     path(

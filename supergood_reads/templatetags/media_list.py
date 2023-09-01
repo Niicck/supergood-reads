@@ -5,8 +5,8 @@ from django.forms import ModelForm
 from django.http import HttpRequest
 from django.template import Context
 
-from supergood_reads.media_types.forms import LibraryBookForm, LibraryFilmForm
-from supergood_reads.media_types.models import AbstractMediaType, Book, Film
+from supergood_reads.forms.media_item_forms import LibraryBookForm, LibraryFilmForm
+from supergood_reads.models import BaseMediaItem, Book, Film
 
 register = template.Library()
 
@@ -14,7 +14,7 @@ register = template.Library()
 @register.inclusion_tag(
     "supergood_reads/views/media_list/_media_list_row.html", takes_context=True
 )
-def media_list_row(context: Context, item: AbstractMediaType) -> Context:
+def media_list_row(context: Context, item: BaseMediaItem) -> Context:
     """
     Renders a row on the "My Media" page.
     """
@@ -42,10 +42,10 @@ def media_list_row(context: Context, item: AbstractMediaType) -> Context:
 
 
 @register.filter()
-def is_book(item: AbstractMediaType) -> bool:
+def is_book(item: BaseMediaItem) -> bool:
     return isinstance(item, Book)
 
 
 @register.filter()
-def is_film(item: AbstractMediaType) -> bool:
+def is_film(item: BaseMediaItem) -> bool:
     return isinstance(item, Film)

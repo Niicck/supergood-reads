@@ -15,8 +15,8 @@ from django.http import HttpResponse
 from django.test import Client
 from django.urls import reverse
 
+from supergood_reads.forms.review_forms import CreateNewMediaOption, ReviewForm
 from supergood_reads.models import Book, EbertStrategy, Film, GoodreadsStrategy, Review
-from supergood_reads.reviews.forms import CreateNewMediaOption, ReviewForm
 from supergood_reads.utils import ContentTypeUtils
 from tests.factories import (
     BookFactory,
@@ -31,7 +31,7 @@ from tests.factories import (
 
 
 @dataclass
-class MediaTypeFixtureData:
+class MediaItemFixtureData:
     id: str
     title: str
     year: int
@@ -41,9 +41,9 @@ ReviewFormData: TypeAlias = dict[str, Any]
 
 
 @pytest.fixture
-def film_data() -> list[MediaTypeFixtureData]:
+def film_data() -> list[MediaItemFixtureData]:
     return [
-        MediaTypeFixtureData(
+        MediaItemFixtureData(
             id=data[0],
             title=data[1],
             year=data[2],
@@ -57,9 +57,9 @@ def film_data() -> list[MediaTypeFixtureData]:
 
 
 @pytest.fixture
-def book_data() -> list[MediaTypeFixtureData]:
+def book_data() -> list[MediaItemFixtureData]:
     return [
-        MediaTypeFixtureData(
+        MediaItemFixtureData(
             id=data[0],
             title=data[1],
             year=data[2],
@@ -72,24 +72,16 @@ def book_data() -> list[MediaTypeFixtureData]:
     ]
 
 
-def media_type_response_matches(
-    response: HttpResponse, expected: list[MediaTypeFixtureData]
+def media_item_response_matches(
+    response: HttpResponse, expected: list[MediaItemFixtureData]
 ) -> bool:
     """
     Compare just the "id" and "title" fields between json response and expected values.
     """
-    fields_to_compare = ["id", "title"]
     actual = json.loads(response.content)["results"]
-
-    if len(actual) != len(expected):
-        return False
-
-    for actual_item, expected_item in zip(actual, expected):
-        for field in fields_to_compare:
-            if actual_item[field] != getattr(expected_item, field):
-                return False
-
-    return True
+    actual_values = {(a["id"], a["title"]) for a in actual}
+    expected_values = {(e.id, e.title) for e in expected}
+    return actual_values == expected_values
 
 
 @pytest.fixture
@@ -109,23 +101,23 @@ def is_redirected_to_login(res: Any) -> bool:
     return res.status_code == 302 and res_url_root == settings.LOGIN_URL
 
 
-def media_type_autocomplete_url(content_type_id: int | str) -> str:
-    base_url = reverse("media_type_autocomplete")
+def media_item_autocomplete_url(content_type_id: int | str) -> str:
+    base_url = reverse("media_item_autocomplete")
     query_params = urlencode({"content_type_id": content_type_id})
     return f"{base_url}?{query_params}"
 
 
 @pytest.mark.django_db
-class TestMediaTypeAutocompleteView:
+class TestMediaItemAutocompleteView:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         book_content_type = ContentTypeUtils.get_content_type_id(Book)
-        self.book_autocomplete_url = media_type_autocomplete_url(book_content_type)
+        self.book_autocomplete_url = media_item_autocomplete_url(book_content_type)
         film_content_type = ContentTypeUtils.get_content_type_id(Film)
-        self.film_autocomplete_url = media_type_autocomplete_url(film_content_type)
+        self.film_autocomplete_url = media_item_autocomplete_url(film_content_type)
 
     def test_film_without_q(
-        self, admin_client: Client, film_data: list[MediaTypeFixtureData]
+        self, admin_client: Client, film_data: list[MediaItemFixtureData]
     ) -> None:
         """Should return all films."""
         for data in film_data:
@@ -137,10 +129,10 @@ class TestMediaTypeAutocompleteView:
         url = self.film_autocomplete_url
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert media_type_response_matches(cast(HttpResponse, response), film_data)
+        assert media_item_response_matches(cast(HttpResponse, response), film_data)
 
     def test_film_with_q(
-        self, admin_client: Client, film_data: list[MediaTypeFixtureData]
+        self, admin_client: Client, film_data: list[MediaItemFixtureData]
     ) -> None:
         """Should only return queried film."""
         for data in film_data:
@@ -152,10 +144,10 @@ class TestMediaTypeAutocompleteView:
         url = self.film_autocomplete_url
         response = admin_client.get(url + "&q=Charade")
         assert response.status_code == 200
-        assert media_type_response_matches(cast(HttpResponse, response), [film_data[2]])
+        assert media_item_response_matches(cast(HttpResponse, response), [film_data[2]])
 
     def test_book_without_q(
-        self, admin_client: Client, book_data: list[MediaTypeFixtureData]
+        self, admin_client: Client, book_data: list[MediaItemFixtureData]
     ) -> None:
         """Should return all films."""
         for data in book_data:
@@ -167,10 +159,10 @@ class TestMediaTypeAutocompleteView:
         url = self.book_autocomplete_url
         response = admin_client.get(url)
         assert response.status_code == 200
-        assert media_type_response_matches(cast(HttpResponse, response), book_data)
+        assert media_item_response_matches(cast(HttpResponse, response), book_data)
 
     def test_book_with_q(
-        self, admin_client: Client, book_data: list[MediaTypeFixtureData]
+        self, admin_client: Client, book_data: list[MediaItemFixtureData]
     ) -> None:
         """Should only return queried film."""
         for data in book_data:
@@ -182,7 +174,7 @@ class TestMediaTypeAutocompleteView:
         url = self.book_autocomplete_url
         response = admin_client.get(url + "&q=Anna")
         assert response.status_code == 200
-        assert media_type_response_matches(cast(HttpResponse, response), [book_data[2]])
+        assert media_item_response_matches(cast(HttpResponse, response), [book_data[2]])
 
 
 @pytest.mark.django_db
@@ -206,7 +198,7 @@ class TestCreateReviewView:
 
     def test_view_unauthenciated(self, client: Client, django_user_model: User) -> None:
         book = BookFactory()
-        review = ReviewFactory.build(media_type=book, text="It was okay.")
+        review = ReviewFactory.build(media_item=book, text="It was okay.")
         data = ReviewFormDataFactory(instance=review).data
         # Allow Views
         response = client.get(self.url)
@@ -234,10 +226,10 @@ class TestCreateReviewView:
     ) -> None:
         book = BookFactory.create()
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
-        create_review_data["review-media_type_content_type"] = self.book_content_type
-        create_review_data["review-media_type_object_id"] = book.id
+        create_review_data["review-media_item_content_type"] = self.book_content_type
+        create_review_data["review-media_item_object_id"] = book.id
         response = client.post(self.url, create_review_data)
         assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
@@ -245,7 +237,7 @@ class TestCreateReviewView:
         assert response.status_code == 200
         review = Review.objects.first()
         assert review
-        assert review.media_type == book
+        assert review.media_item == book
         assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
@@ -256,10 +248,10 @@ class TestCreateReviewView:
     ) -> None:
         film = FilmFactory.create()
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
-        create_review_data["review-media_type_content_type"] = self.film_content_type
-        create_review_data["review-media_type_object_id"] = film.id
+        create_review_data["review-media_item_content_type"] = self.film_content_type
+        create_review_data["review-media_item_object_id"] = film.id
         response = client.post(self.url, create_review_data)
         assert is_redirected_to_login(response)
         client.force_login(reviewer_user)
@@ -267,7 +259,7 @@ class TestCreateReviewView:
         assert response.status_code == 200
         review = Review.objects.first()
         assert review
-        assert review.media_type == film
+        assert review.media_item == film
         assert review.strategy
         assert review.strategy.stars == 5
         assert review.text == "It was good."
@@ -276,18 +268,20 @@ class TestCreateReviewView:
     def test_non_existent_book(self, client: Client, reviewer_user: User) -> None:
         book = BookFactory.build()
         book.owner.save()
-        review = ReviewFactory.build(media_type=book)
+        review = ReviewFactory.build(media_item=book)
         data = ReviewFormDataFactory(instance=review).data
+        # If book had been saved, book.pk would've been populated
+        data["review-media_item_object_id"] = book.id
         client.force_login(reviewer_user)
-        # Should return error if media_type_object_id doesn't exist
+        # Should return error if media_item_object_id doesn't exist
         response = client.post(self.url, data, follow=True)
         assert response.status_code == 400
         res_form = cast(ReviewForm, response.context.get("review_form"))
         assert (
-            res_form.errors["media_type_object_id"][0]
+            res_form.errors["media_item_object_id"][0]
             == "The selected object does not exist."
         )
-        # Should succeed once media_type is saved in db
+        # Should succeed once media_item is saved in db
         book.save()
         response = client.post(self.url, data, follow=True)
         assert response.status_code == 200
@@ -297,9 +291,9 @@ class TestCreateReviewView:
     ) -> None:
         book = BookFactory.build()  # not saved to database
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["review-media_item_content_type"] = self.book_content_type
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
         create_review_data["book-year"] = book.year
@@ -310,18 +304,18 @@ class TestCreateReviewView:
         assert response.status_code == 200
         review = Review.objects.first()
         assert review
-        assert review.media_type
-        assert review.media_type.title == book.title
-        assert review.media_type.owner == reviewer_user
+        assert review.media_item
+        assert review.media_item.title == book.title
+        assert review.media_item.owner == reviewer_user
 
     def test_create_new_film(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
     ) -> None:
         film = FilmFactory.build()  # not saved to database
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["review-media_item_content_type"] = self.film_content_type
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
         create_review_data["film-year"] = film.year
@@ -332,17 +326,17 @@ class TestCreateReviewView:
         assert response.status_code == 200
         review = Review.objects.first()
         assert review
-        assert review.media_type
-        assert review.media_type.title == film.title
-        assert review.media_type.owner == reviewer_user
+        assert review.media_item
+        assert review.media_item.title == film.title
+        assert review.media_item.owner == reviewer_user
 
     def test_missing_selected_book(
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
     ) -> None:
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
-        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["review-media_item_content_type"] = self.book_content_type
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -356,9 +350,9 @@ class TestCreateReviewView:
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
     ) -> None:
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.SELECT_EXISTING.value
-        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["review-media_item_content_type"] = self.film_content_type
         client.force_login(reviewer_user)
         response = client.post(self.url, create_review_data)
         assert response.status_code == 400
@@ -372,9 +366,9 @@ class TestCreateReviewView:
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
     ) -> None:
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["review-media_item_content_type"] = self.book_content_type
         create_review_data["book-title"] = ""
         create_review_data["book-author"] = ""
         create_review_data["book-year"] = ""
@@ -387,9 +381,9 @@ class TestCreateReviewView:
         self, client: Client, create_review_data: ReviewFormData, reviewer_user: User
     ) -> None:
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["review-media_item_content_type"] = self.film_content_type
         create_review_data["film-title"] = ""
         create_review_data["film-director"] = ""
         create_review_data["film-year"] = ""
@@ -403,9 +397,9 @@ class TestCreateReviewView:
     ) -> None:
         # Submit data for new Film, even though Book was the selected content_type
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.book_content_type
+        create_review_data["review-media_item_content_type"] = self.book_content_type
         film = FilmFactory.build()  # not saved to database
         create_review_data["film-title"] = film.title
         create_review_data["film-director"] = film.director
@@ -420,9 +414,9 @@ class TestCreateReviewView:
     ) -> None:
         # Submit data for new Book, even though Film was the selected content_type
         create_review_data[
-            "review_mgmt-create_new_media_type_object"
+            "review_mgmt-create_new_media_item_object"
         ] = CreateNewMediaOption.CREATE_NEW.value
-        create_review_data["review-media_type_content_type"] = self.film_content_type
+        create_review_data["review-media_item_content_type"] = self.film_content_type
         book = BookFactory.build()  # not saved to database
         create_review_data["book-title"] = book.title
         create_review_data["book-author"] = book.author
@@ -467,7 +461,7 @@ class TestUpdateBookView:
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 400
-        assert res.context.get("media_type_forms_by_id")[book_content_type_id].errors["author"][0] == "This field is required."  # type: ignore[index]
+        assert res.context.get("media_item_forms_by_id")[book_content_type_id].errors["author"][0] == "This field is required."  # type: ignore[index]
         book.refresh_from_db()
         assert book.title != new_title
 
@@ -513,7 +507,7 @@ class TestUpdateFilmView:
         client.force_login(reviewer_user)
         res = client.post(url, data)
         assert res.status_code == 400
-        assert res.context.get("media_type_forms_by_id")[film_content_type_id].errors["director"][0] == "This field is required."  # type: ignore[index]
+        assert res.context.get("media_item_forms_by_id")[film_content_type_id].errors["director"][0] == "This field is required."  # type: ignore[index]
         film.refresh_from_db()
         assert film.title != new_title
 
@@ -554,7 +548,7 @@ class TestDeleteBook:
     def test_delete_reviews(self, client: Client, reviewer_user: User) -> None:
         another_user = UserFactory()
         book = BookFactory(owner=reviewer_user)
-        review = ReviewFactory(media_type=book, owner=another_user)
+        review = ReviewFactory(media_item=book, owner=another_user)
         url = self.get_url(book.id)
         res = client.post(url)
         assert is_redirected_to_login(res)
@@ -606,7 +600,7 @@ class TestDeleteFilm:
     def test_delete_reviews(self, client: Client, reviewer_user: User) -> None:
         another_user = UserFactory()
         film = FilmFactory(owner=reviewer_user)
-        review = ReviewFactory(media_type=film, owner=another_user)
+        review = ReviewFactory(media_item=film, owner=another_user)
         url = self.get_url(film.id)
         res = client.post(url)
         assert is_redirected_to_login(res)
@@ -724,8 +718,8 @@ class TestUpdateReviewView:
         with pytest.raises(EbertStrategy.DoesNotExist):
             strategy.refresh_from_db()
 
-    def test_view_demo(self, client: Client) -> None:
-        review = ReviewFactory(demo=True)
+    def test_view_validated(self, client: Client) -> None:
+        review = ReviewFactory(validated=True)
         url = self.get_url(review.id)
         res = client.get(url)
         assert res.status_code == 200
@@ -733,9 +727,9 @@ class TestUpdateReviewView:
             "update_review", kwargs={"pk": review.id}
         )
 
-    def test_view_non_demo(self, client: Client, django_user_model: Any) -> None:
+    def test_view_non_validated(self, client: Client, django_user_model: Any) -> None:
         # Unauthorized user can't see review
-        review = ReviewFactory(demo=False)
+        review = ReviewFactory(validated=False)
         url = self.get_url(review.id)
         res = client.get(url)
         assert is_redirected_to_login(res)

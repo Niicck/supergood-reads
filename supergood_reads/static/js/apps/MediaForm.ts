@@ -9,7 +9,7 @@ import FieldWrapper from '@/js/components/forms/layout/FieldWrapper.vue';
 import { parseJsonScript } from '@/js/utils/parseJsonScript';
 
 interface InitialDataForVueStore {
-  selectedMediaTypeContentType: number;
+  selectedMediaItemContentType: number;
 }
 
 const RootComponent = defineComponent({
@@ -20,7 +20,7 @@ const RootComponent = defineComponent({
     'delete-modal': DeleteModal,
   },
   setup() {
-    const selectedMediaTypeContentType: Ref<number | null> = ref(null);
+    const selectedMediaItemContentType: Ref<number | null> = ref(null);
     const showDeleteReviewModal = ref(false);
 
     const openDeleteReviewModal = () => {
@@ -35,11 +35,11 @@ const RootComponent = defineComponent({
       const initialData = parseJsonScript(
         'initialDataForVueStore',
       ) as InitialDataForVueStore;
-      selectedMediaTypeContentType.value = initialData.selectedMediaTypeContentType;
+      selectedMediaItemContentType.value = initialData.selectedMediaItemContentType;
     });
 
     return {
-      selectedMediaTypeContentType,
+      selectedMediaItemContentType,
       showDeleteReviewModal,
       openDeleteReviewModal,
       closeDeleteReviewModal,

@@ -17,7 +17,7 @@ export type NavBarLink = {
 
 export type MyReviewRowInitialData = {
   initialTitle: string;
-  initialMediaType: string;
+  initialMediaItem: string;
   initialCompletedAt: string;
   initialRating: string;
   initialText: string;

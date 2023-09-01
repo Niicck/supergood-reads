@@ -10,12 +10,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
-from supergood_reads.strategies.models import AbstractStrategy
+from supergood_reads.models.review_strategies import AbstractReviewStrategy
 
 
 class ReviewQuerySet(models.QuerySet["Review"]):
     def with_generic_relations(self) -> models.QuerySet["Review"]:
-        return self.prefetch_related("strategy", "media_type")
+        return self.prefetch_related("strategy", "media_item")
 
 
 ReviewManager = models.Manager.from_queryset(ReviewQuerySet)
@@ -31,7 +31,7 @@ class Review(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True
     )
     created_at = models.DateTimeField(null=False)
     updated_at = models.DateTimeField(default=timezone.now, null=False)
@@ -43,7 +43,7 @@ class Review(models.Model):
     )
     completed_at_year = models.IntegerField(blank=True, null=True)
     text = models.TextField(default="", blank=True)
-    demo = models.BooleanField(default=False)
+    validated = models.BooleanField(default=False, db_index=True)
 
     # Allow reviews of any Strategy type
     strategy_content_type = models.ForeignKey(
@@ -56,16 +56,16 @@ class Review(models.Model):
     strategy_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
     strategy = GenericForeignKey("strategy_content_type", "strategy_object_id")
 
-    # Allow reviews for any Media type
-    media_type_content_type = models.ForeignKey(
+    # Allow reviews for any media_item
+    media_item_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.PROTECT,
-        related_name="media_type_review_set",
+        related_name="media_item_review_set",
         blank=True,
         null=True,
     )
-    media_type_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
-    media_type = GenericForeignKey("media_type_content_type", "media_type_object_id")
+    media_item_object_id = models.UUIDField(blank=True, null=True)  # noqa: DJ01
+    media_item = GenericForeignKey("media_item_content_type", "media_item_object_id")
 
     objects = ReviewQuerySet.as_manager()
 
@@ -78,11 +78,16 @@ class Review(models.Model):
         )
         indexes = [
             models.Index(
-                fields=["completed_at_year", "completed_at_month", "completed_at_day"],
+                fields=[
+                    "completed_at_year",
+                    "completed_at_month",
+                    "completed_at_day",
+                    "created_at",
+                ],
                 name="review_completed_at_idx",
             ),
             models.Index(fields=["strategy_content_type", "strategy_object_id"]),
-            models.Index(fields=["media_type_content_type", "media_type_object_id"]),
+            models.Index(fields=["media_item_content_type", "media_item_object_id"]),
         ]
 
     def __str__(self) -> str:
@@ -113,7 +118,7 @@ class Review(models.Model):
     @property
     def rating_html(self) -> str:
         if self.strategy:
-            assert isinstance(self.strategy, AbstractStrategy)
+            assert isinstance(self.strategy, AbstractReviewStrategy)
             return self.strategy.rating_html
         else:
             return ""

@@ -11,9 +11,8 @@ from django.forms import Form
 from faker import Faker
 
 from supergood_reads import models
-from supergood_reads.media_types.forms import MediaTypeFormGroup
-from supergood_reads.reviews.forms import ReviewFormGroup
-from supergood_reads.utils.forms import get_initial_field_value
+from supergood_reads.forms.media_item_forms import MediaItemFormGroup
+from supergood_reads.forms.review_forms import ReviewFormGroup
 
 fake = Faker()
 
@@ -181,8 +180,8 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     created_at = factory.LazyFunction(datetime.now)
     updated_at = factory.LazyFunction(datetime.now)
     text = factory.LazyFunction(fake.unique.sentence)
-    demo = False
-    media_type = factory.SubFactory(BookFactory)
+    validated = False
+    media_item = factory.SubFactory(BookFactory)
     strategy = factory.SubFactory(EbertStrategyFactory)
 
     @classmethod
@@ -251,7 +250,7 @@ class FormDataFactory:
                 data_key = f"{self.form.prefix}-{key}"
             else:
                 data_key = key
-            value = get_initial_field_value(self.form, key)
+            value = self.form[key].value()
             if value is None:
                 form_field = self.form.fields[key]
                 value = getattr(form_field, "empty_value", "")
@@ -276,10 +275,10 @@ class ReviewFormDataFactory:
         'review-completed_at_month': '',
         'review-completed_at_year': '',
         'review-text': '',
-        'review-media_type_content_type': '',
-        'review-media_type_object_id': '',
+        'review-media_item_content_type': '',
+        'review-media_item_object_id': '',
         'review-strategy_content_type': '',
-        'review_mgmt-create_new_media_type_object': 'SELECT_EXISTING',
+        'review_mgmt-create_new_media_item_object': 'SELECT_EXISTING',
         'book-title': '',
         'book-author': '',
         'book-year': '',
@@ -308,10 +307,10 @@ class ReviewFormDataFactory:
         review_mgmt_form_data = FormDataFactory(review_mgmt_form).data
         data.update(review_mgmt_form_data)
 
-        media_type_forms = (
-            self.review_form_group.media_type_forms.by_content_type_id.values()
+        media_item_forms = (
+            self.review_form_group.media_item_forms.by_content_type_id.values()
         )
-        for form in media_type_forms:
+        for form in media_item_forms:
             form_data = FormDataFactory(form).data
             data.update(form_data)
 
@@ -326,22 +325,22 @@ class ReviewFormDataFactory:
 
 
 class MediaFormDataFactory:
-    def __init__(self, instance: Optional[models.AbstractMediaType] = None) -> None:
+    def __init__(self, instance: Optional[models.BaseMediaItem] = None) -> None:
         self.instance = instance
-        self.media_type_form_group = MediaTypeFormGroup(instance=instance)
+        self.media_item_form_group = MediaItemFormGroup(instance=instance)
         self.data = self.build_data()
 
     def build_data(self) -> dict[str, Any]:
         data = {}
 
-        media_mgmt_form = self.media_type_form_group.media_mgmt_form
+        media_mgmt_form = self.media_item_form_group.media_mgmt_form
         media_mgmt_form_data = FormDataFactory(media_mgmt_form).data
         data.update(media_mgmt_form_data)
 
-        media_type_forms = (
-            self.media_type_form_group.media_type_forms.by_content_type_id.values()
+        media_item_forms = (
+            self.media_item_form_group.media_item_forms.by_content_type_id.values()
         )
-        for form in media_type_forms:
+        for form in media_item_forms:
             form_data = FormDataFactory(form).data
             data.update(form_data)
 
