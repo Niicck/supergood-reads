@@ -462,7 +462,7 @@ class MediaItemSearchView(generics.ListAPIView):
 
 
 class LibraryView(TemplateView):
-    template_name = "supergood_reads/views/library/library.html"
+    template_name = "supergood_reads/views/library.html"
 
 
 class MyReviewsView(ListView[Review]):
