@@ -17,6 +17,7 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
     JsonResponse,
+    QueryDict,
 )
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -78,11 +79,14 @@ class ReviewFormView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        review_form_group = ReviewFormGroup(instance=self.object)
+        review_form_group = self.get_review_form_group()
         context_data = self._context_data_from_review_form_group(review_form_group)
         context.update(context_data)
 
         return context
+
+    def get_review_form_group(self) -> ReviewFormGroup:
+        return ReviewFormGroup(instance=self.object)
 
     def _context_data_from_review_form_group(
         self, review_form_group: ReviewFormGroup
@@ -179,6 +183,26 @@ class ReviewFormView(TemplateView):
 
 class CreateReviewView(CreateReviewPermissionMixin, ReviewFormView):
     template_name = "supergood_reads/views/review_form/create_review.html"
+
+    def get_review_form_group(self) -> ReviewFormGroup:
+        initial = {}
+        base_media_item_id = self.request.GET.get("base_media_item_id", None)
+        if base_media_item_id:
+            try:
+                media_item = BaseMediaItem.objects.get(id=base_media_item_id)
+                child = media_item.get_child()
+                if child:
+                    initial = {
+                        "review_form": {
+                            "media_item_object_id": child.id,
+                            "media_item_content_type": model_to_content_type_id(child),
+                        }
+                    }
+            except BaseMediaItem.DoesNotExist:
+                pass
+
+        review_form_group = ReviewFormGroup(initial=initial)
+        return review_form_group
 
 
 class UpdateReviewView(
@@ -367,6 +391,11 @@ class BaseMediaItemSerializer(serializers.Serializer):
         if media_item.can_user_change(user):
             update_url = reverse("update_media_item", args=[base.id])
 
+        base_review_url = reverse("create_review")
+        review_query_params = QueryDict(mutable=True)
+        review_query_params["base_media_item_id"] = str(base.id)
+        review_url = f"{base_review_url}?{review_query_params.urlencode()}"
+
         return {
             "id": media_item.id,
             "title": media_item.title,
@@ -375,6 +404,7 @@ class BaseMediaItemSerializer(serializers.Serializer):
             "genres": genres,
             "icon": media_item.icon(),
             "updateUrl": update_url,
+            "reviewUrl": review_url,
         }
 
 

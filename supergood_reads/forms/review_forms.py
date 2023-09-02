@@ -189,10 +189,12 @@ class ReviewFormGroup:
         data: Optional[Any] = None,
         instance: Optional[Review] = None,
         user: Optional[User] = None,
+        initial: dict[str, Any] | None = None,
     ) -> None:
         self.data = data
         self.instance = instance
         self.user = user
+        self.initial = initial or {}
         self.valid: Optional[bool] = None
         self.original_strategy = self._get_original_strategy()
         self.instantiate_forms()
@@ -209,6 +211,7 @@ class ReviewFormGroup:
             instance=self.instance,
             strategy_choices=supergood_reads_engine.strategy_model_classes,
             media_item_choices=supergood_reads_engine.media_item_model_classes,
+            initial=self.initial.get("review_form"),
         )
 
         self.review_mgmt_form = ReviewMgmtForm(

@@ -67,7 +67,7 @@
       class="hidden px-3 py-4 text-sm text-gray-500 align-top text-right sm:table-cell"
     >
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
-        <BaseButton title="Write Review" />
+        <BaseButton title="Write Review" @click="navigateToReviewPage" />
         <BaseButton title="Add to Wishlist" @click="addToWishList" />
         <BaseButton v-if="props.updateUrl" title="Edit" @click="navigateToEditPage" />
       </div>
@@ -89,6 +89,7 @@ const props = defineProps({
   icon: { type: String as PropType<string>, default: '' },
   genres: { type: Array as PropType<string[]>, default: () => [] },
   updateUrl: { type: String as PropType<string>, default: '' },
+  reviewUrl: { type: String as PropType<string>, required: true },
   selectedGenres: { type: Array as PropType<string[]>, required: true },
 });
 
@@ -102,6 +103,10 @@ const toggleSelectedGenre = (genre: string) => {
 
 const navigateToEditPage = () => {
   window.location.href = props.updateUrl;
+};
+
+const navigateToReviewPage = () => {
+  window.location.href = props.reviewUrl;
 };
 
 const addToWishList = () => {

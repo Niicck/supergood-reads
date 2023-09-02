@@ -44,4 +44,5 @@ export type MediaSearchResult = {
   genres: string[];
   icon: string;
   UpdateUrl: string;
+  reviewUrl: string;
 };
