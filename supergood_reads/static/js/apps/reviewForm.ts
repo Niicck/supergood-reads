@@ -6,6 +6,7 @@ import { useReviewFormStore } from '@/js/stores/reviewForm';
 import ComboboxAutocomplete from '@/js/components/forms/fields/ComboboxAutocomplete.vue';
 import DeleteModal from '@/js/components/DeleteModal.vue';
 import FieldWrapper from '@/js/components/forms/layout/FieldWrapper.vue';
+import DatePicker from '@/js/components/forms/fields/DatePicker.vue';
 
 const pinia = createPinia();
 
@@ -16,6 +17,7 @@ const RootComponent = defineComponent({
     'autocomplete': ComboboxAutocomplete,
     'delete-modal': DeleteModal,
     'field-wrapper': FieldWrapper,
+    'date-picker': DatePicker,
   },
   setup() {
     const store = useReviewFormStore();

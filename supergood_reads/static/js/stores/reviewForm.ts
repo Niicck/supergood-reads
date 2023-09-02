@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { parseJsonScript } from '@/js/utils/parseJsonScript';
 import { ref, onMounted, watch, computed } from 'vue';
 import type { Ref, ComputedRef } from 'vue';
-import { safeParseInt } from '@/js/utils/parseInt';
+import { safeParseInt } from '@/js/utils/safeParseInt';
 
 interface State {
   selectedStrategyContentType: Ref<number | null>;

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django import template
 from django.forms import BoundField
@@ -38,23 +38,6 @@ def supergood_field(
         template_name = "supergood_reads/components/forms/fields/default.html"
 
     return render_to_string(template_name, context)
-
-
-@register.inclusion_tag(
-    "supergood_reads/components/forms/custom_fields/date_picker.html"
-)
-def date_picker(
-    day_field: BoundField,
-    month_field: BoundField,
-    year_field: BoundField,
-    label_above: bool = True,
-) -> Dict[str, Any]:
-    return {
-        "day_field": day_field,
-        "month_field": month_field,
-        "year_field": year_field,
-        "label_above": label_above,
-    }
 
 
 @register.inclusion_tag("supergood_reads/components/forms/layout/_subheading.html")

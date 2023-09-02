@@ -186,7 +186,7 @@ class CreateReviewView(CreateReviewPermissionMixin, ReviewFormView):
 
     def get_review_form_group(self) -> ReviewFormGroup:
         initial = {}
-        base_media_item_id = self.request.GET.get("base_media_item_id", None)
+        base_media_item_id = self.request.GET.get("base-media-item-id", None)
         if base_media_item_id:
             try:
                 media_item = BaseMediaItem.objects.get(id=base_media_item_id)
@@ -393,7 +393,7 @@ class BaseMediaItemSerializer(serializers.Serializer):
 
         base_review_url = reverse("create_review")
         review_query_params = QueryDict(mutable=True)
-        review_query_params["base_media_item_id"] = str(base.id)
+        review_query_params["base-media-item-id"] = str(base.id)
         review_url = f"{base_review_url}?{review_query_params.urlencode()}"
 
         return {

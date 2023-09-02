@@ -70,7 +70,15 @@
                 {% comment %} Handle completed_at date {% endcomment %}
                 <div class="my-12">
                     {% form_subheading title="Date" text="When did you finish it?" %}
-                    {% date_picker day_field=review_form.completed_at_day month_field=review_form.completed_at_month year_field=review_form.completed_at_year %}
+                    {% vue_field_interface review_form.completed_at_day as day_vue_field %}
+                    {% vue_field_interface review_form.completed_at_month as month_vue_field %}
+                    {% vue_field_interface review_form.completed_at_year as year_vue_field %}
+                    <date-picker
+                        :day-field="{{day_vue_field}}"
+                        :month-field="{{month_vue_field}}"
+                        :year-field="{{year_vue_field}}"
+                    >
+                    </date-picker>
                     <p class="mt-2 text-sm text-gray-500">It's okay to enter an estimated date (just a month and year, or just a year).</p>
                 </div>
 
