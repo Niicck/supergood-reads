@@ -411,49 +411,87 @@ class BaseMediaItemSerializer(serializers.Serializer):
 class MediaItemSearchView(generics.ListAPIView):
     serializer_class = BaseMediaItemSerializer
     pagination_class = SupergoodPagination
+    qs: QuerySet[BaseMediaItem]
 
     def get_queryset(self) -> QuerySet[BaseMediaItem]:
+        self.parse_query_params()
+        self.set_searchable_media_types()
+        self.set_qs()
+        self.apply_genre_filter()
+        self.apply_user_filter()
+        self.qs = self.qs.filter(title__icontains=self.q)
+        self.qs = self.qs.order_by("-updated_at")
+        return self.qs.distinct()
+
+    def parse_query_params(self) -> None:
         query_params = self.request.query_params
-        q = query_params.get("q", "").strip()
-        my_media_only = query_params.get("myMediaOnly", "false") == "true"
-        genres = query_params.getlist("genres")
-        media_type_ids = query_params.getlist("mediaTypes")
+        self.q = query_params.get("q", "").strip()
+        self.my_media_only = query_params.get("myMediaOnly", "false") == "true"
+        self.genres = query_params.getlist("genres")
+        self.media_type_ids = query_params.getlist("mediaTypes")
 
-        media_types = [content_type_id_to_model(m_id) for m_id in media_type_ids]
-        searchable_media_types = [m for m in self.all_media_types if m in media_types]
-        if genres:
-            searchable_media_types = list(
-                set(self.media_types_with_genres) & set(searchable_media_types)
+    def set_searchable_media_types(self) -> None:
+        media_types = [content_type_id_to_model(m_id) for m_id in self.media_type_ids]
+        self.searchable_media_types: list[Type[BaseMediaItem]] = [
+            m for m in self.all_media_types if m in media_types
+        ]
+        if self.genres:
+            self.searchable_media_types = list(
+                set(self.media_types_with_genres) & set(self.searchable_media_types)
             )
-        qs = self._qs_for_media_types(searchable_media_types)
 
-        if genres:
-            prefetch_genres = [
-                Prefetch(f"{m.__name__.lower()}__genres")
-                for m in searchable_media_types
-            ]
-            genre_filter = Q()
-            for m in searchable_media_types:
-                genre_filter |= Q(**{f"{m.__name__.lower()}__genres__name__in": genres})
-            qs = qs.prefetch_related(*prefetch_genres).filter(genre_filter)
+    def set_qs(self) -> None:
+        if not self.searchable_media_types:
+            self.qs = BaseMediaItem.objects.none()
 
+        # select_related media_types
+        select_related_args = [
+            media_type.__name__.lower() for media_type in self.searchable_media_types
+        ]
+        self.qs = BaseMediaItem.objects.select_related(*select_related_args)
+
+        # filter for BaseMediaItems where selected media_types are not null
+        media_type_filter = Q()
+        for media_type in self.searchable_media_types:
+            non_null_media_type_filter = Q(
+                **{f"{media_type.__name__.lower()}__isnull": False}
+            )
+            media_type_filter |= non_null_media_type_filter
+        self.qs = self.qs.filter(media_type_filter)
+
+    def apply_genre_filter(self) -> None:
+        if not self.genres:
+            return
+
+        # prefetch our genres
+        prefetch_genres = [
+            Prefetch(f"{m.__name__.lower()}__genres")
+            for m in self.searchable_media_types
+        ]
+        self.qs = self.qs.prefetch_related(*prefetch_genres)
+
+        # filter by genre
+        genre_filter = Q()
+        for media_type in self.searchable_media_types:
+            genre_filter |= Q(
+                **{f"{media_type.__name__.lower()}__genres__name__in": self.genres}
+            )
+        self.qs = self.qs.filter(genre_filter)
+
+    def apply_user_filter(self) -> None:
         owner_filter = Q(owner=self.request.user)
         validated_filter = Q(validated=True)
 
-        if my_media_only:
+        if self.my_media_only:
             if self.request.user.is_authenticated:
-                qs = qs.filter(owner_filter)
+                self.qs = self.qs.filter(owner_filter)
             else:
-                qs = BaseMediaItem.objects.none()
+                self.qs = BaseMediaItem.objects.none()
         else:
             if self.request.user.is_authenticated:
-                qs = qs.filter(validated_filter | owner_filter)
+                self.qs = self.qs.filter(validated_filter | owner_filter)
             else:
-                qs = qs.filter(validated_filter)
-
-        qs = qs.filter(title__icontains=q)
-        qs = qs.order_by("-updated_at")
-        return qs
+                self.qs = self.qs.filter(validated_filter)
 
     @property
     def all_media_types(self) -> list[type[BaseMediaItem]]:
@@ -473,22 +511,6 @@ class MediaItemSearchView(generics.ListAPIView):
             for m in supergood_reads_engine.media_item_model_classes
             if issubclass(m, mixin)
         ]
-
-    def _qs_for_media_types(
-        self, media_types: list[Type[BaseMediaItem]]
-    ) -> QuerySet[BaseMediaItem]:
-        if not media_types:
-            return BaseMediaItem.objects.none()
-
-        select_related_args = [m.__name__.lower() for m in media_types]
-
-        filter_args = Q()
-        for m in media_types:
-            filter_args |= Q(**{f"{m.__name__.lower()}__isnull": False})
-
-        return BaseMediaItem.objects.select_related(*select_related_args).filter(
-            filter_args
-        )
 
 
 class LibraryView(TemplateView):
