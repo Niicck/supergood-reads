@@ -71,4 +71,10 @@ urlpatterns = [
         views.DeleteReview.as_view(),
         name="delete_review",
     ),
+    path(
+        "settings/",
+        views.UserSettingsView.as_view(),
+        name="user_settings",
+    ),
+    path("delete_user/", views.DeleteUserView.as_view(), name="delete_user"),
 ]

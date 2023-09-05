@@ -31,7 +31,10 @@ def nav_bar(context: Context) -> Context:
         ("Library", reverse("library")),
     ]
 
-    account_links_data = [("Settings", "#"), ("Sign out", reverse("logout"))]
+    account_links_data = [
+        ("Settings", reverse("user_settings")),
+        ("Sign out", reverse("logout")),
+    ]
 
     primary_nav_bar_links = nav_bar_links_factory(primary_links_data, current_url)
     account_nav_bar_links = nav_bar_links_factory(account_links_data, current_url)

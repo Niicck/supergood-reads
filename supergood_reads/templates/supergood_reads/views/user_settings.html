@@ -1,0 +1,72 @@
+{% extends "supergood_reads/views/base/base.html" %}
+{% load basic_header %}
+{% load django_vite %}
+
+{% block header %}
+    {% basic_header "Settings" %}
+{% endblock header %}
+
+{% block content %}
+    {% vite_asset 'js/apps/userSettings.ts' %}
+    {% csrf_token %}
+    <div id="user-settings-app" class="mx-auto max-w-4xl space-y-6">
+        <div>
+            <div class="mb-6">
+                <h3 class="text-base font-semibold leading-7 text-gray-900">Quotas</h3>
+            </div>
+            <div class="border-t border-gray-100 overflow-x-scroll">
+                <ul class="divide-y divide-gray-100">
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 ">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Review Count</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 ">{{ object.review_count }}</dd>
+                    </li>
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 ">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Reviews Limit</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 ">{{ object.review_limit }}</dd>
+                    </li>
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 bg-gray-100">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Reviews Remaining</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 font-medium">{{ object.reviews_remaining }}</dd>
+                    </li>
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 ">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Media Item Count</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 ">{{ object.media_item_count }}</dd>
+                    </li>
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 ">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Media Item Limit</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 ">{{ object.media_item_limit }}</dd>
+                    </li>
+                    <li class=" py-2 grid grid-cols-2 sm:gap-4 sm:px-0 bg-gray-100">
+                        <dt class="text-sm font-medium leading-6 text-gray-900">Media Items Remaining</dt>
+                        <dd class="mt-1 text-sm leading-6 text-gray-700 font-medium">{{ object.media_items_remaining }}</dd>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div v-if="showDangerZone">
+            <div class="mb-6">
+                <h3 class="text-base font-semibold leading-7 text-gray-900">Delete Account</h3>
+                <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Done making supergood reviews? You can delete your account here. This action is not reversible. All reviews related to this account will be deleted permanently.</p>
+            </div>
+            <div>
+                <delete-button
+                    delete-url=""
+                    csrf-token={{ csrf_token }}
+                    title="Delete my account"
+                >
+                    <template #modal-content>
+                        Are <strong>really</strong> sure you want to delete your account? This action is not reversible. All of your reviews will be deleted permanently.
+                    </template>
+                </delete-button>
+            </div>
+        </div>
+        <div v-else>
+            <div
+                class="rounded-md cursor-pointer inline-flex justify-center bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                @click="showDangerZone = true"
+            >
+                Go to the Danger Zone
+            </div>
+        </div>
+    </div>
+{% endblock content %}

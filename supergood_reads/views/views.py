@@ -4,6 +4,8 @@ from typing import Any, Callable, Dict, Protocol, Type, TypeVar, cast
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage, Paginator
@@ -23,7 +25,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.edit import DeleteView
 from rest_framework import generics, pagination, serializers, views
 from rest_framework.request import Request
@@ -39,7 +41,7 @@ from supergood_reads.auth import (
 )
 from supergood_reads.forms.media_item_forms import MediaItemFormGroup
 from supergood_reads.forms.review_forms import InvalidContentTypeError, ReviewFormGroup
-from supergood_reads.models import BaseMediaItem, Country, Genre, Review
+from supergood_reads.models import BaseMediaItem, Country, Genre, Review, UserSettings
 from supergood_reads.models.media_items import (
     CountryMixin,
     GenreMixin,
@@ -706,3 +708,28 @@ class DeleteMediaItemView(
         if not child:
             raise Http404
         return child
+
+
+class UserSettingsView(LoginRequiredMixin, DetailView[UserSettings]):
+    template_name = "supergood_reads/views/user_settings.html"
+
+    def get_object(
+        self, queryset: QuerySet[UserSettings] | None = None
+    ) -> UserSettings:
+        user_settings, created = UserSettings.objects.get_or_create(
+            user=self.request.user
+        )
+        return user_settings
+
+
+class DeleteUserView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            logout(request)
+            user.delete()
+            return HttpResponseRedirect(reverse("home"))
+        except Exception:
+            logger.exception("Failed to delete User.")
+            messages.error(request, "An unexpected error occurred. Please try again.")
+            return HttpResponseRedirect(reverse("user_settings"))

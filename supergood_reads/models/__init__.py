@@ -1,5 +1,5 @@
 from .media_items import BaseMediaItem, Book, Country, Film, Genre
-from .review import Review, UserReviewStrategyDefault
+from .review import Review
 from .review_strategies import (
     AbstractReviewStrategy,
     EbertStrategy,
@@ -8,10 +8,10 @@ from .review_strategies import (
     LetterboxdStrategy,
     MaximusStrategy,
 )
+from .user_settings import UserSettings
 
 __all__ = [
     "Review",
-    "UserReviewStrategyDefault",
     "BaseMediaItem",
     "AbstractReviewStrategy",
     "EbertStrategy",
@@ -23,4 +23,5 @@ __all__ = [
     "Country",
     "Book",
     "Film",
+    "UserSettings",
 ]

@@ -171,22 +171,3 @@ class Review(models.Model):
             self.created_at = now
         self.updated_at = now
         super().save(*args, **kwargs)
-
-
-class UserReviewStrategyDefault(models.Model):
-    """Assign per-User default strategies for each Media type."""
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    media = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        related_name="media_user_default_set",
-    )
-    default_strategy = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-        related_name="strategy_user_default_set",
-    )
-
-    def __str__(self) -> str:
-        return str(self.id)
