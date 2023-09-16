@@ -9,7 +9,10 @@ from supergood_reads.forms.media_item_forms import BookForm, FilmForm
 from supergood_reads.forms.strategy_forms import (
     EbertStrategyForm,
     GoodreadsStrategyForm,
-    MaximusStrategyForm,
+    ImdbStrategyForm,
+    LetterboxdStrategyForm,
+    ThumbsStrategyForm,
+    TomatoStrategyForm,
 )
 from supergood_reads.models import AbstractReviewStrategy, BaseMediaItem
 
@@ -43,7 +46,10 @@ class DefaultSupergoodReadsConfig(SupergoodReadsConfig):
     strategy_form_classes = [
         EbertStrategyForm,
         GoodreadsStrategyForm,
-        MaximusStrategyForm,
+        ImdbStrategyForm,
+        ThumbsStrategyForm,
+        LetterboxdStrategyForm,
+        TomatoStrategyForm,
     ]
     media_item_form_classes = [
         BookForm,

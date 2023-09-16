@@ -142,7 +142,7 @@ class MediaItemFormGroup:
 
         media_item: BaseMediaItem = selected_media_item_form.save(commit=False)
 
-        if not media_item.pk:
+        if selected_media_item_form.instance._state.adding:
             media_item.owner = self.user
 
         media_item.save()

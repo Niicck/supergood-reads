@@ -115,6 +115,16 @@ class ImdbStrategy(AbstractReviewStrategy):
         null=False, validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
 
+    class Meta:
+        verbose_name = "IMDB"
+
+    @property
+    def rating_html(self) -> SafeText:
+        return format_html(
+            "<span class='text-amber-400'>★</span><span class='text-gray-900'> {} / 10</span>",
+            self.score,
+        )
+
 
 def letterboxd_star_validator(value: Decimal) -> None:
     """Ensure that star rating is valid."""
@@ -140,8 +150,20 @@ class LetterboxdStrategy(AbstractReviewStrategy):
         validators=[letterboxd_star_validator],
     )
 
+    class Meta:
+        verbose_name = "Letterboxd"
 
-class MaximusStrategy(AbstractReviewStrategy):
+    @property
+    def rating_html(self) -> SafeText:
+        star_count = math.floor(self.stars)
+        remainder = self.stars % 1
+        value = "★" * star_count
+        if remainder:
+            value += "½"
+        return format_html("<span class='text-green-400'>{}</span>", value)
+
+
+class ThumbsStrategy(AbstractReviewStrategy):
     """Replicate Joaquin Phoenix's scoring strategy from Gladiator (2000).
 
     Simple yes/no boolean strategy.
@@ -150,7 +172,7 @@ class MaximusStrategy(AbstractReviewStrategy):
     recommended = models.BooleanField(null=False)
 
     class Meta:
-        verbose_name = "Maximus"
+        verbose_name = "Thumbs"
 
     @property
     def rating_html(self) -> SafeText:
@@ -160,3 +182,21 @@ class MaximusStrategy(AbstractReviewStrategy):
             template_name = "supergood_reads/components/svg/thumbs_down.html"
         value = render_to_string(template_name)
         return format_html("<span class='text-emerald-600'>{}</span>", value)
+
+
+class TomatoStrategy(AbstractReviewStrategy):
+    """Simple yes/no boolean strategy."""
+
+    fresh = models.BooleanField(null=False)
+
+    class Meta:
+        verbose_name = "Tomatoes"
+
+    @property
+    def rating_html(self) -> SafeText:
+        if self.fresh:
+            return format_html("<span>🍅</span>")
+        else:
+            template_name = "supergood_reads/components/svg/rotten.html"
+            value = render_to_string(template_name)
+            return format_html("<span class='text-lime-700'>{}</span>", value)

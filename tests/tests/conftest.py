@@ -6,7 +6,7 @@ from supergood_reads.forms.media_item_forms import BookForm, FilmForm
 from supergood_reads.forms.strategy_forms import (
     EbertStrategyForm,
     GoodreadsStrategyForm,
-    MaximusStrategyForm,
+    TomatoStrategyForm,
 )
 from supergood_reads.utils.engine import SupergoodReadsConfig
 
@@ -15,7 +15,7 @@ class PytestSupergoodReadsConfig(SupergoodReadsConfig):
     strategy_form_classes = [
         EbertStrategyForm,
         GoodreadsStrategyForm,
-        MaximusStrategyForm,
+        TomatoStrategyForm,
     ]
     media_item_form_classes = [
         BookForm,

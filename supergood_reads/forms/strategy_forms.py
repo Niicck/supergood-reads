@@ -3,7 +3,14 @@ from typing import Any
 
 from django import forms
 
-from supergood_reads.models import EbertStrategy, GoodreadsStrategy, MaximusStrategy
+from supergood_reads.models import (
+    EbertStrategy,
+    GoodreadsStrategy,
+    ImdbStrategy,
+    LetterboxdStrategy,
+    ThumbsStrategy,
+    TomatoStrategy,
+)
 
 GOAT = "GOAT"
 
@@ -76,16 +83,66 @@ class GoodreadsStrategyForm(forms.ModelForm[GoodreadsStrategy]):
         fields = ["stars"]
 
 
-class MaximusStrategyForm(forms.ModelForm[MaximusStrategy]):
+class LetterboxdStrategyForm(forms.ModelForm[EbertStrategy]):
+    stars = forms.ChoiceField(
+        choices=(
+            ("5.0", "★★★★★"),
+            ("4.5", "★★★★½"),
+            ("4.0", "★★★★"),
+            ("3.5", "★★★½"),
+            ("3.0", "★★★"),
+            ("2.5", "★★½"),
+            ("2.0", "★★"),
+            ("1.5", "★½"),
+            ("1.0", "★"),
+            ("0.5", "½"),
+        ),
+        initial="5.0",
+        label="Stars",
+        required=True,
+    )
+
+    class Meta:
+        model = LetterboxdStrategy
+        fields = ["stars"]
+
+
+class ImdbStrategyForm(forms.ModelForm[ImdbStrategy]):
+    score = forms.ChoiceField(
+        choices=tuple((i, i) for i in range(10, 1, -1)),
+        label="Score",
+    )
+
+    class Meta:
+        model = ImdbStrategy
+        fields = ["score"]
+
+
+class ThumbsStrategyForm(forms.ModelForm[ThumbsStrategy]):
     recommended = forms.ChoiceField(
         choices=(
-            (True, "Yes"),
-            (False, "No"),
+            (True, "👍"),
+            (False, "👎"),
         ),
         widget=forms.RadioSelect,
         label="Is it good?",
     )
 
     class Meta:
-        model = MaximusStrategy
+        model = ThumbsStrategy
         fields = ["recommended"]
+
+
+class TomatoStrategyForm(forms.ModelForm[TomatoStrategy]):
+    fresh = forms.ChoiceField(
+        choices=(
+            (True, "Yes 🍅"),
+            (False, "No 🤮"),
+        ),
+        widget=forms.RadioSelect,
+        label="Is it good?",
+    )
+
+    class Meta:
+        model = TomatoStrategy
+        fields = ["fresh"]

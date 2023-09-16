@@ -6,7 +6,8 @@ from .review_strategies import (
     GoodreadsStrategy,
     ImdbStrategy,
     LetterboxdStrategy,
-    MaximusStrategy,
+    ThumbsStrategy,
+    TomatoStrategy,
 )
 from .user_settings import UserSettings
 
@@ -18,7 +19,8 @@ __all__ = [
     "GoodreadsStrategy",
     "ImdbStrategy",
     "LetterboxdStrategy",
-    "MaximusStrategy",
+    "ThumbsStrategy",
+    "TomatoStrategy",
     "Genre",
     "Country",
     "Book",

@@ -8,7 +8,7 @@ from supergood_reads.models import (
     EbertStrategy,
     Film,
     GoodreadsStrategy,
-    MaximusStrategy,
+    TomatoStrategy,
 )
 from supergood_reads.utils.content_type import model_to_content_type_id
 
@@ -28,11 +28,11 @@ class TestReviewForm:
         }
 
     def test_valid_strategy_content_type(self, form_data: Dict[str, Any]) -> None:
-        valid_content_type_id = model_to_content_type_id(MaximusStrategy)
+        valid_content_type_id = model_to_content_type_id(TomatoStrategy)
         form_data["strategy_content_type"] = valid_content_type_id
         form = ReviewForm(
             form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
+            strategy_choices=[TomatoStrategy, EbertStrategy, GoodreadsStrategy],
             media_item_choices=[Book, Film],
         )
         assert form.is_valid()
@@ -56,7 +56,7 @@ class TestReviewForm:
         form_data["media_item_content_type"] = valid_content_type_id
         form = ReviewForm(
             form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
+            strategy_choices=[TomatoStrategy, EbertStrategy, GoodreadsStrategy],
             media_item_choices=[Book, Film],
         )
         assert form.is_valid()
@@ -66,7 +66,7 @@ class TestReviewForm:
         form_data["media_item_content_type"] = invalid_content_type_id
         form = ReviewForm(
             form_data,
-            strategy_choices=[MaximusStrategy, EbertStrategy, GoodreadsStrategy],
+            strategy_choices=[TomatoStrategy, EbertStrategy, GoodreadsStrategy],
             media_item_choices=[EbertStrategy],  # type: ignore[list-item]
         )
         assert not form.is_valid()

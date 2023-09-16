@@ -44,11 +44,11 @@ class GenericRelationFormGroup:
         (EbertStrategyForm).
 
         Example:
-            self.forms = [EbertStrategyForm, GoodreadsStrategyForm, MaximusStrategyForm]
+            self.forms = [EbertStrategyForm, GoodreadsStrategyForm, TomatoStrategyForm]
             self.forms_by_content_type_id -> {
                 7: EbertStrategyForm(),
                 8: GoodreadsStrategyForm(),
-                9: MaximusStrategyForm(),
+                9: TomatoStrategyForm(),
             }
         """
         forms_by_content_type_id = {}
@@ -91,7 +91,7 @@ class GenericRelationFormGroup:
             self.forms_by_content_type_id = {
                 7: EbertStrategyForm(),
                 8: GoodreadsStrategyForm(),
-                9: MaximusStrategyForm(),
+                9: TomatoStrategyForm(),
             }
             self.selected_form -> EbertStrategyForm()
         """

@@ -143,11 +143,11 @@ class GoodreadsStrategyFactory(factory.django.DjangoModelFactory):
         model = models.GoodreadsStrategy
 
 
-class MaximusStrategyFactory(factory.django.DjangoModelFactory):
-    recommended = factory.fuzzy.FuzzyChoice([True, False])
+class TomatoStrategyFactory(factory.django.DjangoModelFactory):
+    fresh = factory.fuzzy.FuzzyChoice([True, False])
 
     class Meta:
-        model = models.MaximusStrategy
+        model = models.TomatoStrategy
 
 
 class ReviewFactory(factory.django.DjangoModelFactory):
