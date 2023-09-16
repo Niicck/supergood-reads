@@ -65,6 +65,7 @@ class EbertStrategy(AbstractReviewStrategy):
     def rating_html(self) -> SafeText:
         if self.goat:
             value = "GOAT"
+            return format_html("<span class='goat-font text-gray-900'>{}</span>", value)
         elif self.stars is None:
             value = "No Star Rating"
         elif self.stars == Decimal("0.0"):

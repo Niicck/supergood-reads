@@ -23,6 +23,28 @@
   src: url('/fonts/linguistics-pro/LinguisticsPro-Italic.otf') format('opentype');
 }
 
+@font-face {
+  font-family: Cardo;
+  src: url('/fonts/cardo/Cardo-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-weight: bold;
+  font-family: Cardo;
+  src: url('/fonts/cardo/Cardo-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: Cardo;
+  font-style: italic;
+  src: url('/fonts/cardo/Cardo-Italic.ttf') format('truetype');
+}
+
 .supergood-font {
   font-family: LinguisticsPro, sans-serif;
+}
+
+.goat-font {
+  font-weight: bold;
+  font-family: Cardo, sans-serif;
 }
