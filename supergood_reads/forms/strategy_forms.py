@@ -5,13 +5,13 @@ from django import forms
 
 from supergood_reads.models import EbertStrategy, GoodreadsStrategy, MaximusStrategy
 
-GREAT_FILM = "GREAT_FILM"
+GOAT = "GOAT"
 
 
 class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
     rating = forms.ChoiceField(
         choices=(
-            (GREAT_FILM, "Great Film"),
+            (GOAT, "GOAT"),
             ("4.0", "★★★★"),
             ("3.5", "★★★½"),
             ("3.0", "★★★"),
@@ -39,8 +39,8 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
     def _set_initial_value(self, *args: Any, **kwargs: Any) -> None:
         instance = kwargs.get("instance")
         if instance:
-            if instance.great_film:
-                self.fields["rating"].initial = GREAT_FILM
+            if instance.goat:
+                self.fields["rating"].initial = GOAT
             elif instance.stars is None:
                 self.fields["rating"].initial = None
             else:
@@ -52,13 +52,13 @@ class EbertStrategyForm(forms.ModelForm[EbertStrategy]):
         rating = self.cleaned_data.get("rating")
         if not rating:
             instance.stars = None
-            instance.great_film = False
-        elif rating == GREAT_FILM:
+            instance.goat = False
+        elif rating == GOAT:
             instance.stars = Decimal("4.0")
-            instance.great_film = True
+            instance.goat = True
         else:
             instance.stars = Decimal(rating)
-            instance.great_film = False
+            instance.goat = False
 
         if commit:
             instance.save()

@@ -46,7 +46,8 @@ class EbertStrategy(AbstractReviewStrategy):
 
     Star rating from 0 to 4.
     Null values are allowed.
-    There is also a "Great Film" boolean value that supercedes the star rating.
+    There is also a "GOAT" boolean value to indicate 4-star MediaItems that are among
+    the "Greatest of all Time."
     """
 
     stars = models.DecimalField(
@@ -55,15 +56,15 @@ class EbertStrategy(AbstractReviewStrategy):
         null=True,
         validators=[ebert_star_validator],
     )
-    great_film = models.BooleanField(default=False, null=False)
+    goat = models.BooleanField(default=False, null=False)
 
     class Meta:
         verbose_name = "Ebert"
 
     @property
     def rating_html(self) -> SafeText:
-        if self.great_film:
-            value = "Great Film"
+        if self.goat:
+            value = "GOAT"
         elif self.stars is None:
             value = "No Star Rating"
         elif self.stars == Decimal("0.0"):

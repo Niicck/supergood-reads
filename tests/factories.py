@@ -130,7 +130,7 @@ class EbertStrategyFactory(factory.django.DjangoModelFactory):
     stars = factory.fuzzy.FuzzyChoice(
         [Decimal(x) for x in ["0.0", "1.0", "2.0", "2.5", "3.0", "3.5", "4.0"]]
     )
-    great_film = False
+    goat = False
 
     class Meta:
         model = models.EbertStrategy
