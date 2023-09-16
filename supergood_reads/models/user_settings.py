@@ -7,7 +7,7 @@ from supergood_reads.models.review import Review
 
 class UserSettings(models.Model):
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, required=True, db_index=True
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_index=True
     )
     review_limit = models.IntegerField(null=True, blank=True, default=100)
     media_item_limit = models.IntegerField(null=True, blank=True, default=100)

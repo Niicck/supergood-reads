@@ -319,7 +319,7 @@ class ReviewFormGroup:
         strategy = selected_strategy_form.save()
         review.strategy = strategy
 
-        if not review.owner and not review.validated:
+        if not review.pk:
             review.owner = self.user
 
         review.save()
