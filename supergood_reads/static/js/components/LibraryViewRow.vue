@@ -37,7 +37,7 @@
           <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
               <BaseButton title="Write Review" />
-              <BaseButton title="Add to Wishlist" @click="addToWishList" />
+              <!-- <BaseButton title="Add to Wishlist" @click="addToWishList" /> -->
               <BaseButton
                 v-if="props.updateUrl"
                 title="Edit"
@@ -68,7 +68,7 @@
     >
       <div class="flex flex-row justify-end space-x-3 whitespace-nowrap">
         <BaseButton title="Write Review" @click="navigateToReviewPage" />
-        <BaseButton title="Add to Wishlist" @click="addToWishList" />
+        <!-- <BaseButton title="Add to Wishlist" @click="addToWishList" /> -->
         <BaseButton v-if="props.updateUrl" title="Edit" @click="navigateToEditPage" />
       </div>
     </td>
