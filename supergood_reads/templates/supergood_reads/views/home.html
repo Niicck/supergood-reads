@@ -1,27 +1,71 @@
 {% extends "supergood_reads/views/base/base.html" %}
+{% load django_vite %}
 
 {% load static %}
 
 {% block content %}
-    <div class="flex flex-col justify-start lg:w-3/4 w-full mx-auto">
+    {% vite_asset 'js/apps/home.ts' %}
+    <div id="home-app" class="flex flex-col justify-start sm:max-w-4xl w-full mx-auto">
         <div class="flex items-center flex-col justify-center">
             <div class="relative isolate overflow-hidden rounded-md">
                 <img
                     src="{% static 'images/art_critic.jpg' %}"
                     alt="The Art Critic, a painting by John Henry Dolph (1886)"
                     class="sm:-mt-24 sm:-mb-32 rounded-md">
-                <h2 class="absolute top-4 left-4 text-white text-3xl font-bold sm:text-4xl supergood-font">
+                <h1 class="absolute top-4 left-4 text-white text-3xl font-bold sm:text-4xl supergood-font">
                     Sign up today<br/>to create<br/>your own<br/>magnificient<br/>reviews.
-                </h2>
+                </h1>
             </div>
         </div>
-        <div class="max-w-2xl text-left lg:pl-0 sm:pl-10 pl-0">
-            <p class="mt-6 max-w-xl text-lg text-gray-600 pb-3">
-                I hope you're enjoying the demo so far. If you create a free account you get to click on even more things.
-            </p>
-            <div class="flex items-center gap-x-6">
-                <a href={% url 'login' %} class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Create an Account / Sign in</a>
+        <div class="mt-12 space-y-12">
+            <div class="text-center text-md">
+                <home-fun-dropdown></home-fun-dropdown>
             </div>
+            <h2 class="text-center mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Finally, one review site to rule them all.</h2>
+            <p class="text-center text-lg leading-8 text-gray-600">
+                Use the rating systems from any of your second-favorite review sites to review any type of media.
+            </p>
+            {% if not user.is_authenticated %}
+                <div class="text-center text-lg leading-8">
+                    <p class="max-w-lg mx-auto mb-6 text-gray-600">
+                        Most of the site is free to explore without signing in. But if you want to save your own reviews, you can create an account here:
+                    </p>
+                    <a href={% url 'login' %} class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Create an Account / Sign in</a>
+                </div>
+            {% endif %}
+
+            <p class="mt-6 mx-auto text-lg leading-8 text-gray-600">
+                <span class="underline supergood-font text-gray-900">
+                    supergood<span class="inline-block align-middle">{% include "supergood_reads/components/svg/logo_book.html" %}</span>reads
+                </span>
+                lets you mix and match your favorite rating schemas to use with any type of media.
+            </p>
+            <p class="text-center mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">What is SupergoodReads?</p>
+            <div class="flex flex-col space-y-6">
+                <p>
+                    On the technical side, the purpose of this site is for me to experiment with some new ways of making Django applications.
+                    These are features that I haven't seen in too many other public projects, so I hope they're interesting/useful to you.
+                </p>
+
+                <p>
+                    One of my goals was to see how far I could enhance a <strong>Django templates</strong> before needing to swap out the frontend for
+                    a totally decoupled <strong>React/Vue.js</strong> app.
+                </p>
+
+                <p>
+                    What have been the results of my experiment? While I've discovered that it is technically possible to deeply integrate Vue.js with
+                    django templates, it's
+                </p>
+
+                Some of the features I've added so far are:
+                <ul class="max-w-lg mx-auto">
+                    <li>✅ <strong>Vue.js SFC (Single File Components)</strong> embedded within Django templates</li>
+                    <li>✅ <strong>Custom Django form field widgets</strong> made from <strong>Vue.js HeadlessUI Components</strong></li>
+                    <li>✅ <strong>Autocomplete</strong> Django form fields using Vue.js Components</li>
+                    <li>✅ <strong>The inevitable Datepicker</strong></li>
+                </ul>
+            </div>
+
         </div>
     </div>
 {% endblock content %}

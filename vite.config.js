@@ -45,6 +45,7 @@ export default defineConfig((mode) => {
           library: resolve('./supergood_reads/static/js/apps/library.ts'),
           reviewList: resolve('./supergood_reads/static/js/apps/reviewList.ts'),
           userSettings: resolve('./supergood_reads/static/js/apps/userSettings.ts'),
+          home: resolve('./supergood_reads/static/js/apps/home.ts'),
           css: resolve('./supergood_reads/static/css/main.css.js'),
         },
         output: {
