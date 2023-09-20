@@ -3,7 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 
-const STATIC_DIR = './supergood_reads/assets/src';
+const STATIC_DIR = './supergood_reads/assets';
 
 const postcssConfig = {
   plugins: [
