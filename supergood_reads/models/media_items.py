@@ -89,7 +89,7 @@ class BaseMediaItem(models.Model):
           - The user owns the Review
           - The user has global "change_[model]" permission
         """
-        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
+        from supergood_reads.views.auth import has_owner_permission, has_perm_dynamic
 
         return has_owner_permission(user, self) or has_perm_dynamic(
             user, self, "change"
@@ -101,7 +101,7 @@ class BaseMediaItem(models.Model):
           - The user owns the Review
           - The user has global "change_[model]" permission
         """
-        from supergood_reads.auth import has_owner_permission, has_perm_dynamic
+        from supergood_reads.views.auth import has_owner_permission, has_perm_dynamic
 
         return has_owner_permission(user, self) or has_perm_dynamic(
             user, self, "delete"

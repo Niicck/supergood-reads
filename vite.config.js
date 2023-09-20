@@ -3,6 +3,8 @@ import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 
+const STATIC_DIR = './supergood_reads/assets/src';
+
 const postcssConfig = {
   plugins: [
     require('postcss-import')(),
@@ -19,11 +21,11 @@ export default defineConfig((mode) => {
     plugins: [vue()],
     resolve: {
       alias: {
-        '@': resolve('./supergood_reads/static'),
+        '@': resolve(STATIC_DIR),
         'vue': 'vue/dist/vue.esm-bundler.js',
       },
     },
-    root: resolve('./supergood_reads/static'),
+    root: resolve(STATIC_DIR),
     base: '/static/',
     css: {
       postcss: postcssConfig,
@@ -35,18 +37,18 @@ export default defineConfig((mode) => {
       manifest: true,
       emptyOutDir: true,
       target: 'es2015',
-      outDir: resolve(env.DJANGO_VITE_ASSETS_PATH),
+      outDir: resolve('./supergood_reads/assets/dist/supergood_reads'),
       rollupOptions: {
         input: {
-          reviewForm: resolve('./supergood_reads/static/js/apps/reviewForm.ts'),
-          mediaForm: resolve('./supergood_reads/static/js/apps/mediaForm.ts'),
-          messages: resolve('./supergood_reads/static/js/apps/messages.ts'),
-          navBar: resolve('./supergood_reads/static/js/apps/navBar.ts'),
-          library: resolve('./supergood_reads/static/js/apps/library.ts'),
-          reviewList: resolve('./supergood_reads/static/js/apps/reviewList.ts'),
-          userSettings: resolve('./supergood_reads/static/js/apps/userSettings.ts'),
-          home: resolve('./supergood_reads/static/js/apps/home.ts'),
-          css: resolve('./supergood_reads/static/css/main.css.js'),
+          reviewForm: resolve(`${STATIC_DIR}/js/apps/reviewForm.ts`),
+          mediaForm: resolve(`${STATIC_DIR}/js/apps/mediaForm.ts`),
+          messages: resolve(`${STATIC_DIR}/js/apps/messages.ts`),
+          navBar: resolve(`${STATIC_DIR}/js/apps/navBar.ts`),
+          library: resolve(`${STATIC_DIR}/js/apps/library.ts`),
+          reviewList: resolve(`${STATIC_DIR}/js/apps/reviewList.ts`),
+          userSettings: resolve(`${STATIC_DIR}/js/apps/userSettings.ts`),
+          home: resolve(`${STATIC_DIR}/js/apps/home.ts`),
+          css: resolve(`${STATIC_DIR}/css/main.css.js`),
         },
         output: {
           chunkFileNames: undefined,

@@ -31,14 +31,6 @@ from rest_framework import generics, pagination, serializers, views
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from supergood_reads.auth import (
-    CreateMediaItemPermissionMixin,
-    CreateReviewPermissionMixin,
-    DeleteMediaPermissionMixin,
-    DeleteReviewPermissionMixin,
-    UpdateMediaItemPermissionMixin,
-    UpdateReviewPermissionMixin,
-)
 from supergood_reads.forms.media_item_forms import MediaItemFormGroup
 from supergood_reads.forms.review_forms import InvalidContentTypeError, ReviewFormGroup
 from supergood_reads.models import BaseMediaItem, Country, Genre, Review, UserSettings
@@ -54,6 +46,14 @@ from supergood_reads.utils.content_type import (
 from supergood_reads.utils.engine import supergood_reads_engine
 from supergood_reads.utils.json import UUIDEncoder
 from supergood_reads.utils.uuid import is_uuid
+from supergood_reads.views.auth import (
+    CreateMediaItemPermissionMixin,
+    CreateReviewPermissionMixin,
+    DeleteMediaPermissionMixin,
+    DeleteReviewPermissionMixin,
+    UpdateMediaItemPermissionMixin,
+    UpdateReviewPermissionMixin,
+)
 
 logger = logging.getLogger(__name__)
 

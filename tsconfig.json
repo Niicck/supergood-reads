@@ -17,9 +17,9 @@
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["supergood_reads/static/*"]
+      "@/*": ["supergood_reads/assets/src/*"]
     }
   },
   "exclude": ["node_modules", "**/*.spec.ts"],
-  "include": ["supergood_reads/static"]
+  "include": ["supergood_reads/assets/src"]
 }

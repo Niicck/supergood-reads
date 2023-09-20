@@ -78,3 +78,7 @@ debug-pytest:
 .PHONY: jest
 jest:
 	npm run jest
+
+.PHONY: collectstatic
+collectstatic:
+	poetry run python manage.py collectstatic

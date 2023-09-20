@@ -51,9 +51,8 @@ TEMPLATES = [
 ]
 
 STATIC_URL = "/static/"
+STATIC_ROOT = PROJECT_ROOT / "collectstatic"
 MEDIA_URL = "/media/"
-LOGIN_URL = "/reads-app/auth/login/"
-LOGIN_REDIRECT_URL = "/reads-app/reviews"
 
 LANGUAGE_CODE = "en-us"
 
@@ -123,12 +122,15 @@ LOGGING = {
 SHELL_PLUS = "ipython"
 
 # django-vite
-DJANGO_VITE_ASSETS_PATH = os.path.join(PROJECT_ROOT, env("DJANGO_VITE_ASSETS_PATH"))
-DJANGO_VITE_DEV_MODE = DEBUG
+DJANGO_VITE_ASSETS_PATH = (
+    PROJECT_ROOT / "supergood_reads" / "assets" / "dist" / "supergood_reads"
+)
+DJANGO_VITE_MANIFEST_PATH = STATIC_ROOT / "supergood_reads" / "manifest.json"
+DJANGO_VITE_DEV_MODE = True
 DJANGO_VITE_DEV_SERVER_PORT = env("DJANGO_VITE_DEV_SERVER_PORT")
-STATICFILES_DIRS = [
-    DJANGO_VITE_ASSETS_PATH,
-]
+STATICFILES_DIRS = [PROJECT_ROOT / "supergood_reads" / "assets" / "dist"]
 
 # supergood-reads
 SUPERGOOD_READS_CONFIG = "supergood_reads.utils.engine.DefaultSupergoodReadsConfig"
+LOGIN_URL = "/reads-app/auth/login/"
+LOGIN_REDIRECT_URL = "/reads-app/reviews"

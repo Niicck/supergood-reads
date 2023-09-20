@@ -251,3 +251,7 @@ tsconfig.tsbuildinfo
 
 # mac
 .DS_Store
+
+# compiled assets
+supergood_reads/assets/dist
+collectstatic

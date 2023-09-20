@@ -1,0 +1,7 @@
+include README.md
+include LICENSE.md
+recursive-include supergood_reads/static/supergood_reads/images *
+recursive-include supergood_reads/assets/dist *
+recursive-include supergood_reads/templates *
+global-exclude __pycache__
+global-exclude *.py[co]
