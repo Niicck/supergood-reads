@@ -1,83 +1,96 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="space-x-2 text-md break-words">
-    <span class="">Use any rating system</span>
-    <div class="inline-block align-sub w-36 text-left text-md">
-      <Listbox as="div" :default-value="ratingStrategies[0]">
-        <div class="relative mt-2">
-          <ListboxButton
-            v-slot="{ value }"
-            class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 text-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-          >
-            <span class="block truncate" v-html="value" />
-            <span
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
-            >
-              <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </span>
-          </ListboxButton>
-
-          <transition
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-          >
-            <ListboxOptions
-              class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            >
-              <ListboxOption
-                v-for="ratingStrategy in ratingStrategies"
-                :key="ratingStrategy"
-                as="template"
-                :value="ratingStrategy"
-              >
-                <li class="listbox-option">
-                  <span v-html="ratingStrategy" />
-                </li>
-              </ListboxOption>
-            </ListboxOptions>
-          </transition>
+  <div class="flex flex-col break-words max-w-lg mx-auto space-y-6">
+    <div class="flex flex-row items-top justify-between gap-x-8">
+      <div class="text-left">
+        <div class="font-semibold text-gray-900">Use any rating system!</div>
+        <div class="text-gray-600">
+          Carefully curated from each of your 2nd-favorite review sites.
         </div>
-      </Listbox>
+      </div>
+      <div class="inline-block align-sub text-left text-md">
+        <Listbox as="div" :default-value="ratingStrategies[0]">
+          <div class="relative mt-2 w-36">
+            <ListboxButton
+              v-slot="{ value }"
+              class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 text-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            >
+              <span class="block truncate" v-html="value" />
+              <span
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+              >
+                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </span>
+            </ListboxButton>
+
+            <transition
+              leave-active-class="transition ease-in duration-100"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
+            >
+              <ListboxOptions
+                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+              >
+                <ListboxOption
+                  v-for="ratingStrategy in ratingStrategies"
+                  :key="ratingStrategy"
+                  as="template"
+                  :value="ratingStrategy"
+                >
+                  <li class="listbox-option">
+                    <span v-html="ratingStrategy" />
+                  </li>
+                </ListboxOption>
+              </ListboxOptions>
+            </transition>
+          </div>
+        </Listbox>
+      </div>
     </div>
-    <span>to review whatever you want</span>
-    <div class="inline-block align-sub w-36 text-left text-md">
-      <Listbox as="div" :default-value="mediaTypes[0]">
-        <div class="relative mt-2">
-          <ListboxButton
-            v-slot="{ value }"
-            class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 text-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-          >
-            <span class="block truncate" v-html="value" />
-            <span
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+    <div class="flex flex-row items-top justify-between gap-x-8">
+      <div class="text-left">
+        <div class="font-semibold text-gray-900">Review anything!</div>
+        <div class="text-gray-600">Keep all of your reviews in one place.</div>
+      </div>
+      <div class="font-semibold text-gray-900 text-left"></div>
+      <div class="inline-block align-sub text-left text-md">
+        <Listbox as="div" :default-value="mediaTypes[0]">
+          <div class="relative mt-2 w-36">
+            <ListboxButton
+              v-slot="{ value }"
+              class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 text-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             >
-              <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </span>
-          </ListboxButton>
-
-          <transition
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-          >
-            <ListboxOptions
-              class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            >
-              <ListboxOption
-                v-for="mediaType in mediaTypes"
-                :key="mediaType"
-                as="template"
-                :value="mediaType"
+              <span class="block truncate" v-html="value" />
+              <span
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
               >
-                <li class="listbox-option">
-                  <span v-html="mediaType" />
-                </li>
-              </ListboxOption>
-            </ListboxOptions>
-          </transition>
-        </div>
-      </Listbox>
+                <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </span>
+            </ListboxButton>
+
+            <transition
+              leave-active-class="transition ease-in duration-100"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
+            >
+              <ListboxOptions
+                class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+              >
+                <ListboxOption
+                  v-for="mediaType in mediaTypes"
+                  :key="mediaType"
+                  as="template"
+                  :value="mediaType"
+                >
+                  <li class="listbox-option">
+                    <span v-html="mediaType" />
+                  </li>
+                </ListboxOption>
+              </ListboxOptions>
+            </transition>
+          </div>
+        </Listbox>
+      </div>
     </div>
   </div>
 </template>
@@ -103,5 +116,22 @@ const mediaTypes = [
 <style scoped>
 .listbox-option {
   @apply text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-indigo-300;
+}
+
+.cta-text {
+  font-family: 'Open Sans', Impact;
+}
+
+.clipart-title {
+  font-size: 3rem;
+  background: -webkit-linear-gradient(45deg, #f06, #9f6);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 3px 3px 2px rgba(0, 0, 0, 0.2);
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 10px 20px;
+  display: inline-block;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
 }
 </style>
