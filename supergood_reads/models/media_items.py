@@ -68,7 +68,7 @@ class BaseMediaItem(models.Model):
         return self.title
 
     @property
-    def media_item(self) -> str:
+    def media_type(self) -> str:
         return str(self._meta.verbose_name)
 
     @property

@@ -36,7 +36,7 @@
         <div class="sm:hidden">
           <dd class="truncate text-gray-700">
             <div class="flex flex-row space-x-3">
-              <BaseButton title="Write Review" />
+              <BaseButton title="Write Review" @click="navigateToReviewPage" />
               <!-- <BaseButton title="Add to Wishlist" @click="addToWishList" /> -->
               <BaseButton
                 v-if="props.updateUrl"
