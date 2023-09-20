@@ -37,7 +37,7 @@ export default defineConfig((mode) => {
       manifest: true,
       emptyOutDir: true,
       target: 'es2015',
-      outDir: resolve('./supergood_reads/assets/dist/supergood_reads'),
+      outDir: resolve('./supergood_reads/static/supergood_reads/dist'),
       rollupOptions: {
         input: {
           reviewForm: resolve(`${STATIC_DIR}/js/apps/reviewForm.ts`),

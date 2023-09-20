@@ -51,7 +51,7 @@ TEMPLATES = [
 ]
 
 STATIC_URL = "/static/"
-STATIC_ROOT = PROJECT_ROOT / "collectstatic"
+STATIC_ROOT = PROJECT_ROOT / "supergood_reads" / "static"
 MEDIA_URL = "/media/"
 
 LANGUAGE_CODE = "en-us"
@@ -123,12 +123,19 @@ SHELL_PLUS = "ipython"
 
 # django-vite
 DJANGO_VITE_ASSETS_PATH = (
-    PROJECT_ROOT / "supergood_reads" / "assets" / "dist" / "supergood_reads"
+    PROJECT_ROOT / "supergood_reads" / "static" / "supergood_reads" / "dist"
 )
-DJANGO_VITE_MANIFEST_PATH = STATIC_ROOT / "supergood_reads" / "manifest.json"
-DJANGO_VITE_DEV_MODE = True
+DJANGO_VITE_MANIFEST_PATH = (
+    PROJECT_ROOT
+    / "supergood_reads"
+    / "static"
+    / "supergood_reads"
+    / "dist"
+    / "manifest.json"
+)
+DJANGO_VITE_DEV_MODE = False
 DJANGO_VITE_DEV_SERVER_PORT = env("DJANGO_VITE_DEV_SERVER_PORT")
-STATICFILES_DIRS = [PROJECT_ROOT / "supergood_reads" / "assets" / "dist"]
+STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
 
 # supergood-reads
 SUPERGOOD_READS_CONFIG = "supergood_reads.utils.engine.DefaultSupergoodReadsConfig"

@@ -25,6 +25,7 @@ classifiers = [
     "Framework :: Django :: 4.0",
     "Framework :: Django :: 4.1",
 ]
+include = ["LICENSE.md", "README.md", "supergood_reads/static/supergood_reads/**/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4"

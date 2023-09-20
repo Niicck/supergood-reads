@@ -253,5 +253,5 @@ tsconfig.tsbuildinfo
 .DS_Store
 
 # compiled assets
-supergood_reads/assets/dist
+supergood_reads/static/supergood_reads/dist
 collectstatic
