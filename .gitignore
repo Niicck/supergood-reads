@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -254,4 +253,5 @@ tsconfig.tsbuildinfo
 
 # compiled assets
 supergood_reads/static/supergood_reads/dist
-collectstatic
+deploy/build/collect_static/**
+deploy/build/requirements/**

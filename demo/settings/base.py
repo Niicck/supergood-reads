@@ -95,7 +95,7 @@ STATIC_URL = "/static/"
 # From there, they should be transfered to a proper file server.
 # All other static file settings are handled in their respective Local or Production
 # settings classes.
-STATIC_ROOT = PROJECT_ROOT / "supergood_reads" / "static"
+STATIC_ROOT = PROJECT_ROOT / "deploy" / "build" / "collect_static"
 
 INSTALLED_APPS = [
     # Django
