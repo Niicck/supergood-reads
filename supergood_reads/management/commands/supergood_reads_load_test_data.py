@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
+from django.apps import apps
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
@@ -45,13 +45,15 @@ class Command(BaseCommand):
             "verbose", nargs="?", type=bool, help="Log every title that is loaded"
         )
 
-    def get_csv_file(self, filename: str) -> Path:
-        return settings.PROJECT_ROOT / "tests" / "data" / f"{filename}.csv"
+    def get_csv_filepath(self, filename: str) -> Path:
+        app_config = apps.get_app_config("supergood_reads")
+        filepath = Path(app_config.path) / "data" / f"{filename}.csv"
+        return filepath
 
     @transaction.atomic
     def load_films(self, filename: str) -> None:
         logger.info(f"~~~~ Loading {filename} films")
-        with open(self.get_csv_file(filename), newline="") as f:
+        with open(self.get_csv_filepath(filename), newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if self.verbosity >= 2:
@@ -91,7 +93,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def load_books(self, filename: str) -> None:
         logger.info(f"~~~~ Loading {filename} books")
-        with open(self.get_csv_file(filename), newline="") as f:
+        with open(self.get_csv_filepath(filename), newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if self.verbosity >= 2:

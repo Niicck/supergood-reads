@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  db:
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    image: postgres:14.1
+    restart: always
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    command: -p ${POSTGRES_PORT}
+
+  app:
+    environment:
+      - DJANGO_PORT
+      - DJANGO_HOST
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - DEBUG
+      - SECRET_KEY
+      - DJANGO_CONFIGURATION
+    image: ${APP_DOCKER_TAG}
+    build:
+      context: ../../..
+      dockerfile: ./docker/images/django/django.Dockerfile
+      args:
+        APP_HOME: ${APP_HOME}
+    ports:
+      - '${DJANGO_PORT}:${DJANGO_PORT}'
+    depends_on:
+      - db
+    links:
+      - db:postgres
+
+  # The "vite" service is responsible for static asset compilation.
+  vite:
+    environment:
+      - DJANGO_VITE_DEV_SERVER_PORT
+    build:
+      context: ../../..
+      dockerfile: ./demo/docker/images/vite/vite.Dockerfile
+      args:
+        APP_HOME: ${APP_HOME}
+    tty: true
+    volumes:
+      - '../../../vite.config.js:${APP_HOME}/vite.config.js'
+      - '../../../supergood_reads:${APP_HOME}/supergood_reads'

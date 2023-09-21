@@ -28,6 +28,7 @@ classifiers = [
 include = ["LICENSE.md", "README.md", "supergood_reads/static/supergood_reads/**/*"]
 
 [tool.poetry.dependencies]
+# Dependencies required for supergood_reads package itself.
 python = ">=3.8.1,<4"
 django = ">=3.2"
 django-stubs-ext = ">=4.2.2"
@@ -36,12 +37,16 @@ django-widget-tweaks = ">=1.4.12"
 djangorestframework = ">=3.14.0"
 
 [tool.poetry.group.dev.dependencies]
-# Dependencies required to run app locally.
-django-environ = "^0.9.0"
-beautifulsoup4 = "^4.11.2"
-pydantic = "^1.10.5"
+# Dependencies required during development.
+python-decouple = "^3.8"
+
+[tool.poetry.group.app.dependencies]
+# Dependencies required to run demo app.
+python-decouple = "^3.8"
+django-configurations = "^2.4.1"
 ipython = "^8.4"
 django-extensions = "^3.2.1"
+psycopg2 = "^2.9.7"
 
 [tool.poetry.group.debug.dependencies]
 debugpy = "^1.6.5"
@@ -68,3 +73,7 @@ safety = "==2.3.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE="demo.settings.test"
+norecursedirs= "tests/tests/browser/*"
