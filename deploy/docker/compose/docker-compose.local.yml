@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  # Mount a volume for "app" service so that it can read when changes to the code have
+  # been made. Expose "DEBUGPY_PORT" to allow breakpoints to be set during development.
+  app:
+    environment:
+      - DEBUGPY_PORT
+      - DJANGO_VITE_DEV_MODE
+      - DJANGO_VITE_DEV_SERVER_PORT
+      - DJANGO_VITE_DEV_SERVER_HOST
+    build:
+      target: local
+    ports:
+      - '${DEBUGPY_PORT}:${DEBUGPY_PORT}'
+    links:
+      - vite:vite
+    volumes:
+      - '../../../supergood_reads:${APP_HOME}/supergood_reads'
+      - '../../../demo:${APP_HOME}/demo'
+
+  # The "vite" service is responsible for static asset compilation.
+  vite:
+    environment:
+      - DJANGO_VITE_DEV_SERVER_PORT
+      - DJANGO_VITE_DEV_SERVER_HOST
+    build:
+      context: ../../..
+      dockerfile: ./deploy/docker/images/vite/vite.Dockerfile
+      args:
+        APP_HOME: ${APP_HOME}
+    tty: true
+    ports:
+      - '${DJANGO_VITE_DEV_SERVER_PORT}:${DJANGO_VITE_DEV_SERVER_PORT}'
+    volumes:
+      - '../../../vite.config.js:${APP_HOME}/vite.config.js'
+      - '../../../tailwind.config.js:${APP_HOME}/tailwind.config.js'
+      - '../../../tsconfig.json:${APP_HOME}/tsconfig.json'
+      - '../../../supergood_reads:${APP_HOME}/supergood_reads'

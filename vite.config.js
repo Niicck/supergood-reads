@@ -32,6 +32,7 @@ export default defineConfig((mode) => {
       postcss: postcssConfig,
     },
     server: {
+      host: env.DJANGO_VITE_DEV_SERVER_HOST,
       port: env.DJANGO_VITE_DEV_SERVER_PORT,
     },
     build: {

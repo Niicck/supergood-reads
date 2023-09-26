@@ -39,6 +39,7 @@ djangorestframework = ">=3.14.0"
 [tool.poetry.group.dev.dependencies]
 # Dependencies required during development.
 python-decouple = "^3.8"
+debugpy = "^1.6.5"
 
 [tool.poetry.group.app.dependencies]
 # Dependencies required to run demo app.
@@ -47,9 +48,6 @@ django-configurations = "^2.4.1"
 ipython = "^8.4"
 django-extensions = "^3.2.1"
 psycopg2 = "^2.9.7"
-
-[tool.poetry.group.debug.dependencies]
-debugpy = "^1.6.5"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"

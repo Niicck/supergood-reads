@@ -9,11 +9,11 @@ COPY ./package.json /app
 COPY ./package-lock.json /app
 RUN npm install && npm cache clean --force
 
-# Set ENV DJANGO_VITE_DEV_SERVER_PORT
-ENV DJANGO_VITE_DEV_SERVER_PORT=""
-
 # Copy application code to WORKDIR
-COPY ./vite.config.js ${APP_HOME}
-COPY ./supergood_reads ${APP_HOME}
+COPY ./vite.config.js .
+COPY ./tailwind.config.js .
+COPY ./tsconfig.json .
+COPY ./supergood_reads .
+COPY ./deploy/docker/images/vite/scripts ./deploy/docker/images/vite/scripts
 
-ENTRYPOINT .demo/docker/images/node/scripts/entrypoint.sh
+ENTRYPOINT ./deploy/docker/images/vite/scripts/entrypoint.sh

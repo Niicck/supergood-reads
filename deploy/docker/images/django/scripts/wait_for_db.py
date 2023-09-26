@@ -10,11 +10,11 @@ start = time.time()
 while True:
     try:
         psycopg2.connect(
-            dbname=os.environ["POSTGRES_DB"],
-            user=os.environ["POSTGRES_USER"],
-            password=os.environ["POSTGRES_PASSWORD"],
-            host=os.environ["POSTGRES_HOST"],
-            port=int(os.environ["POSTGRES_PORT"]),
+            dbname=os.environ["DATABASE_NAME"],
+            user=os.environ["DATABASE_USER"],
+            password=os.environ["DATABASE_PASSWORD"],
+            host=os.environ["DATABASE_HOST"],
+            port=int(os.environ["DATABASE_PORT"]),
         )
         break
     except psycopg2.OperationalError as error:

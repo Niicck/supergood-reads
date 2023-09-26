@@ -1,6 +1,6 @@
-###
-# base image
-###
+# ---------------------
+# Base
+# ---------------------
 FROM python:3.11-slim-bullseye as base
 
 # Install apt packages
@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Set working directory
 ARG APP_HOME=/app
+ENV APP_HOME ${APP_HOME}
 WORKDIR ${APP_HOME}
 
 # Python ENV vars
@@ -24,38 +25,48 @@ ENV \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
 
-# App ENV vars
-ENV \
-    DJANGO_PORT \
-    DJANGO_HOST \
-    POSTGRES_DB \
-    POSTGRES_USER \
-    POSTGRES_PASSWORD \
-    POSTGRES_HOST \
-    POSTGRES_PORT \
-    DEBUG \
-    SECRET_KEY \
-    DJANGO_CONFIGURATION
-
-# Install python packages
-COPY ./build/requirements/dev.txt ./requirements.txt
+# Install python requirements
+COPY ./deploy/build/requirements/dev.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 # Copy application code to WORKDIR
-COPY . ${APP_HOME}
+COPY ./supergood_reads .
+COPY ./demo .
+COPY ./manage.py .
+COPY ./deploy/docker/images/django/scripts ./deploy/docker/images/django/scripts
 
-ENTRYPOINT ./docker/images/django/scripts/entrypoint.sh $0 $@
-CMD ./docker/images/django/scripts/start.sh
+ENTRYPOINT ./deploy/docker/images/django/scripts/entrypoint.sh $0 $@
+CMD ./deploy/docker/images/django/scripts/start.sh
 
-###
-# local image
-###
+# ---------------------
+# Local
+# ---------------------
 FROM base as local
+ENV \
+  DJANGO_SETTINGS_MODULE="demo.settings.local" \
+  DJANGO_ENV="local"
+
+
+# ---------------------
+# Deployed
+# ---------------------
+FROM base as deployed
+
+
+# ---------------------
+# Staging
+# ---------------------
+FROM deployed as staging
+ENV \
+  DJANGO_SETTINGS_MODULE="demo.settings.staging" \
+  DJANGO_ENV="staging"
+
+# ---------------------
+# Production
+# ---------------------
+FROM deployed as production
 
 ENV \
-    DEBUGPY_PORT=
-
-###
-# deployed image
-###
-FROM base as deployed
+    DEBUG=false \
+    DJANGO_SETTINGS_MODULE="demo.settings.production" \
+    DJANGO_ENV="production"

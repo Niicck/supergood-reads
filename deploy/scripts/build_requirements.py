@@ -3,10 +3,10 @@ Exports poetry project.toml dependencies to a requirements.txt file.
 That requirements.txt file will then be used to install python dependencies within
 the django docker container.
 
-To build "build/requirements/production.txt":
+To build "deploy/build/requirements/production.txt":
     python build_requirements.py
 
-To build "build/requirements/dev.txt":
+To build "deply/build/requirements/dev.txt":
     python build_requirements.py --dev
 """
 
@@ -50,8 +50,9 @@ class BuildRequirementsHandler:
         self.export()
 
     def set_file_dest(self):
-        base_dir = Path(__file__).resolve().parent.parent
-        requirements_dir = base_dir / "deploy" / "build" / "requirements"
+        requirements_dir = (
+            Path(__file__).resolve().parent.parent / "build" / "requirements"
+        )
         file_name = "dev.txt" if self.is_dev else "production.txt"
         self.file_dest = requirements_dir / file_name
 

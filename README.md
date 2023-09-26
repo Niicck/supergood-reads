@@ -54,9 +54,7 @@ I hope this is fun for you to explore! I haven't seen any public examples of som
    - `npm install`
 7. Run initial data migrations
    - `poetry run python manage.py migrate`
-8. Initialize Groups
-   - `poetry run python manage.py supergood_reads_create_groups`
-9.  Install seed data
+8. Install seed data
    - `poetry run python manage.py supergood_reads_load_test_data`
 
 ### Running Locally
