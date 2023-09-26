@@ -1,43 +1,47 @@
 @font-face {
   font-family: LinguisticsPro;
-  src: url('/fonts/linguistics-pro/LinguisticsPro-Regular.otf') format('opentype');
+  src: url('/static/supergood_reads/fonts/linguistics-pro/LinguisticsPro-Regular.otf')
+    format('opentype');
 }
 
 @font-face {
   font-weight: bold;
   font-family: LinguisticsPro;
-  src: url('/fonts/linguistics-pro/LinguisticsPro-Bold.otf') format('opentype');
+  src: url('/static/supergood_reads/fonts/linguistics-pro/LinguisticsPro-Bold.otf')
+    format('opentype');
 }
 
 @font-face {
   font-weight: bold;
   font-family: LinguisticsPro;
   font-style: italic;
-  src: url('/fonts/linguistics-pro/LinguisticsPro-BoldItalic.otf') format('opentype');
+  src: url('/static/supergood_reads/fonts/linguistics-pro/LinguisticsPro-BoldItalic.otf')
+    format('opentype');
 }
 
 @font-face {
   font-weight: normal;
   font-family: LinguisticsPro;
   font-style: italic;
-  src: url('/fonts/linguistics-pro/LinguisticsPro-Italic.otf') format('opentype');
+  src: url('/static/supergood_reads/fonts/linguistics-pro/LinguisticsPro-Italic.otf')
+    format('opentype');
 }
 
 @font-face {
   font-family: Cardo;
-  src: url('/fonts/cardo/Cardo-Regular.ttf') format('truetype');
+  src: url('/static/supergood_reads/fonts/cardo/Cardo-Regular.ttf') format('truetype');
 }
 
 @font-face {
   font-weight: bold;
   font-family: Cardo;
-  src: url('/fonts/cardo/Cardo-Bold.ttf') format('truetype');
+  src: url('/static/supergood_reads/fonts/cardo/Cardo-Bold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: Cardo;
   font-style: italic;
-  src: url('/fonts/cardo/Cardo-Italic.ttf') format('truetype');
+  src: url('/static/supergood_reads/fonts/cardo/Cardo-Italic.ttf') format('truetype');
 }
 
 .supergood-font {
