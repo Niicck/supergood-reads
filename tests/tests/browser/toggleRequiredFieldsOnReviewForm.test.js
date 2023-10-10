@@ -4,9 +4,7 @@ dotenv.config();
 
 describe('toggleRequiredFieldsOnReviewForm', () => {
   beforeAll(async () => {
-    await page.goto(
-      `http://localhost:${process.env.DJANGO_PORT}/reads-app/reviews/new`,
-    );
+    await page.goto(`http://localhost:${process.env.PORT}/reads-app/reviews/new`);
     await setTimeout(3000); // Wait for vue to be mounted
   });
 

@@ -19,8 +19,8 @@ if [ "$DJANGO_ENV" == "local" ]; then
     python \
         -Xfrozen_modules=off \
         -m debugpy --listen 0.0.0.0:${DEBUGPY_PORT} \
-        manage.py runserver ${DJANGO_HOST}:${DJANGO_PORT} \
+        manage.py runserver ${HOST}:${PORT} \
         --insecure
 else
-    gunicorn --workers=1 --bind=${DJANGO_HOST}:${DJANGO_PORT} --chdir=${APP_HOME} demo.wsgi:application
+    gunicorn --workers=1 --bind=${HOST}:${PORT} --chdir=${APP_HOME} demo.wsgi:application
 fi

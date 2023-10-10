@@ -74,7 +74,7 @@ install:
 # Run django app
 .PHONY: up
 up:
-	poetry run python manage.py runserver ${DJANGO_PORT}
+	poetry run python manage.py runserver ${PORT}
 
 # Run vite static asset compilation dev server
 .PHONY: vite
@@ -84,7 +84,7 @@ vite:
 # Run django app with debugger enabled
 .PHONY: debug-up
 debug-up:
-	poetry run python -m debugpy --listen localhost:${DEBUGPY_PORT} manage.py runserver ${DJANGO_PORT}
+	poetry run python -m debugpy --listen localhost:${DEBUGPY_PORT} manage.py runserver ${PORT}
 
 # Start django python shell
 .PHONY: shell

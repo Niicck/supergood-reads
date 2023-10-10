@@ -14,8 +14,8 @@ services:
 
   app:
     environment:
-      - DJANGO_PORT
-      - DJANGO_HOST
+      - PORT
+      - HOST
       - DATABASE_ENGINE=django.db.backends.postgresql
       - DATABASE_NAME=${POSTGRES_DB}
       - DATABASE_USER=${POSTGRES_USER}
@@ -31,7 +31,7 @@ services:
       args:
         APP_HOME: ${APP_HOME}
     ports:
-      - '${DJANGO_PORT}:${DJANGO_PORT}'
+      - '${PORT}:${PORT}'
     depends_on:
       - db
     links:
