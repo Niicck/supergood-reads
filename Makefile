@@ -121,6 +121,15 @@ docker-up:
 		--env-file .env \
 		up
 
+# Run your production django app docker container
+.PHONY: docker-up
+docker-up-production:
+	docker compose \
+		-f ${DOCKER_COMPOSE_DIR}/docker-compose.yml \
+		-f ${DOCKER_COMPOSE_DIR}/docker-compose.production.yml \
+		--env-file .env \
+		up
+
 # Kill and restart your django app docker container
 .PHONY: docker-restart
 docker-restart:

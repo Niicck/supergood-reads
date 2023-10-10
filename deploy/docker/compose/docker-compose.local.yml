@@ -11,6 +11,8 @@ services:
       - DJANGO_VITE_DEV_SERVER_HOST
     build:
       target: local
+      args:
+        - REQUIREMENTS_FILE=dev.txt
     ports:
       - '${DEBUGPY_PORT}:${DEBUGPY_PORT}'
     links:

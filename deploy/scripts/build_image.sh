@@ -50,6 +50,7 @@ case $BUILD_TARGET in
             -f ./deploy/docker/images/django/django.Dockerfile \
             -t $DOCKER_APP_IMAGE_REPO:$DOCKER_APP_IMAGE_TAG \
             --target $BUILD_TARGET \
+            --build-arg REQUIREMENTS_FILE=production.txt \
             --progress=plain \
             .
         ;;

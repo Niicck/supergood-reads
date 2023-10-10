@@ -1,0 +1,18 @@
+version: '3.9'
+
+# Run production docker image locally
+
+services:
+  app:
+    environment:
+      - PORT
+      - HOST
+      - SECRET_KEY
+      - ALLOWED_HOSTS=localhost,0.0.0.0,127.0.0.1
+      - DATABASE_ENGINE=django.db.backends.postgresql
+      - DATABASE_NAME=${POSTGRES_DB}
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_HOST=${POSTGRES_HOST}
+      - DATABASE_PORT=${POSTGRES_PORT}
+    image: '${DOCKER_HUB_REPO}:latest'

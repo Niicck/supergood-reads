@@ -3,6 +3,9 @@
 # ---------------------
 FROM python:3.11-slim-bullseye as base
 
+# Build argument to parameterize the requirements file
+ARG REQUIREMENTS_FILE
+
 # Install apt packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
     # For building Python packages
@@ -25,16 +28,8 @@ ENV \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100
 
-# ---------------------
-# Local
-# ---------------------
-FROM base as local
-ENV \
-  DJANGO_SETTINGS_MODULE="demo.settings.local" \
-  DJANGO_ENV="local"
-
 # Install python requirements
-COPY ./deploy/build/requirements/dev.txt ./requirements.txt
+COPY ./deploy/build/requirements/${REQUIREMENTS_FILE} ./requirements.txt
 RUN pip install -r ./requirements.txt
 
 # Copy application code to WORKDIR
@@ -47,25 +42,23 @@ ENTRYPOINT ./deploy/docker/images/django/scripts/entrypoint.sh $0 $@
 CMD ./deploy/docker/images/django/scripts/start.sh
 
 # ---------------------
+# Local
+# ---------------------
+FROM base as local
+ENV \
+  DJANGO_SETTINGS_MODULE="demo.settings.local" \
+  DJANGO_ENV="local"
+
+# ---------------------
 # Deployed
 # ---------------------
 FROM base as deployed
 
-# Install python requirements
-COPY ./deploy/build/requirements/production.txt ./requirements.txt
-RUN pip install -r ./requirements.txt
-
 # Copy staticfiles
 COPY deploy/build/collect_static staticfiles
 
-# Copy application code to WORKDIR
-COPY ./supergood_reads/ ./supergood_reads/
-COPY ./demo/ ./demo/
-COPY ./manage.py ./manage.py
-COPY ./deploy/docker/images/django/scripts ./deploy/docker/images/django/scripts
-
-ENTRYPOINT ./deploy/docker/images/django/scripts/entrypoint.sh $0 $@
-CMD ./deploy/docker/images/django/scripts/start.sh
+ENV \
+    DEBUG=false
 
 # ---------------------
 # Staging
@@ -82,6 +75,5 @@ ENV \
 FROM deployed as production
 
 ENV \
-    DEBUG=false \
     DJANGO_SETTINGS_MODULE="demo.settings.production" \
     DJANGO_ENV="production"
