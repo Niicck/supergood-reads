@@ -50,6 +50,7 @@ django-extensions = "^3.2.1"
 psycopg2 = "^2.9.7"
 dj-database-url = "^2.1.0"
 gunicorn = "^21.2.0"
+whitenoise = {extras = ["brotli"], version = "^6.5.0"}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.2.0"

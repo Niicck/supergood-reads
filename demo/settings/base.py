@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import dj_database_url
@@ -128,6 +129,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -150,10 +152,14 @@ LOGGING = {
     },
 }
 
+# ---------------------
 # Django Extensions
+# ---------------------
 SHELL_PLUS = "ipython"
 
+# ---------------------
 # Django-vite
+# ---------------------
 DJANGO_VITE_ASSETS_PATH = PROJECT_ROOT / "supergood_reads" / "assets" / "dist"
 DJANGO_VITE_DEV_MODE = config("DJANGO_VITE_DEV_MODE", default=False, cast=bool)
 DJANGO_VITE_MANIFEST_PATH = DJANGO_VITE_ASSETS_PATH / "manifest.json"
@@ -162,7 +168,31 @@ DJANGO_VITE_DEV_SERVER_HOST = config("DJANGO_VITE_DEV_SERVER_HOST", default="loc
 
 STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
 
+# ---------------------
+# whitenoise
+# ---------------------
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
+# http://whitenoise.evans.io/en/stable/django.html#WHITENOISE_IMMUTABLE_FILE_TEST
+# https://github.com/MrBin99/django-vite/issues/30
+def immutable_file_test(path, url):
+    # Match filename with 8 or 12 hex digits before the extension.
+    # Vite generates files with 8 hash digits.
+    # Django generates files with 12 hash digits.
+    # e.g. app.db8f2edc0c8a.js
+    return re.match(r"^.+\.[0-9a-f]{8,12}\..+$", url)
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = immutable_file_test
+
+# ---------------------
 # supergood-reads
+# ---------------------
 SUPERGOOD_READS_CONFIG = "supergood_reads.utils.engine.DefaultSupergoodReadsConfig"
 LOGIN_URL = "/reads/auth/login/"
 LOGIN_REDIRECT_URL = "/reads/reviews"
