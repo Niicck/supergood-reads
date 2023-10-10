@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import dj_database_url
 import django_stubs_ext
 from decouple import config
 
@@ -73,17 +74,26 @@ USE_I18N = True
 
 USE_TZ = True
 
-DATABASES = {
-    "default": {
-        "ENGINE": config("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
-        "NAME": config("DATABASE_NAME", default=BASE_DIR / "db.sqlite3"),
-        "USER": config("DATABASE_USER", default=""),
-        "PASSWORD": config("DATABASE_PASSWORD", default=""),
-        "HOST": config("DATABASE_HOST", default=""),
-        "PORT": config("DATABASE_PORT", default=""),
-        "TEST": {"NAME": config("DATABASE_NAME", default=":memory:")},
-    },
-}
+
+if config("DATABASE_URL", default=""):
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        ),
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": config("DATABASE_ENGINE", default="django.db.backends.sqlite3"),
+            "NAME": config("DATABASE_NAME", default=BASE_DIR / "db.sqlite3"),
+            "USER": config("DATABASE_USER", default=""),
+            "PASSWORD": config("DATABASE_PASSWORD", default=""),
+            "HOST": config("DATABASE_HOST", default=""),
+            "PORT": config("DATABASE_PORT", default=""),
+            "TEST": {"NAME": config("DATABASE_NAME", default=":memory:")},
+        },
+    }
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -144,10 +154,10 @@ LOGGING = {
 SHELL_PLUS = "ipython"
 
 # Django-vite
-DJANGO_VITE_ASSETS_PATH = config("DJANGO_VITE_DEV_MODE", default="")
-DJANGO_VITE_MANIFEST_PATH = config("DJANGO_VITE_MANIFEST_PATH", default="")
+DJANGO_VITE_ASSETS_PATH = PROJECT_ROOT / "supergood_reads" / "assets" / "dist"
 DJANGO_VITE_DEV_MODE = config("DJANGO_VITE_DEV_MODE", default=False, cast=bool)
-DJANGO_VITE_DEV_SERVER_PORT = config("DJANGO_VITE_DEV_SERVER_PORT")
+DJANGO_VITE_MANIFEST_PATH = DJANGO_VITE_ASSETS_PATH / "manifest.json"
+DJANGO_VITE_DEV_SERVER_PORT = config("DJANGO_VITE_DEV_SERVER_PORT", default="5173")
 DJANGO_VITE_DEV_SERVER_HOST = config("DJANGO_VITE_DEV_SERVER_HOST", default="localhost")
 
 STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]

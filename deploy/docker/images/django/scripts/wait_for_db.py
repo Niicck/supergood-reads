@@ -9,13 +9,16 @@ start = time.time()
 
 while True:
     try:
-        psycopg2.connect(
-            dbname=os.environ["DATABASE_NAME"],
-            user=os.environ["DATABASE_USER"],
-            password=os.environ["DATABASE_PASSWORD"],
-            host=os.environ["DATABASE_HOST"],
-            port=int(os.environ["DATABASE_PORT"]),
-        )
+        if os.environ.get("DATABASE_URL"):
+            psycopg2.connect(os.environ["DATABASE_URL"])
+        else:
+            psycopg2.connect(
+                dbname=os.environ["DATABASE_NAME"],
+                user=os.environ["DATABASE_USER"],
+                password=os.environ["DATABASE_PASSWORD"],
+                host=os.environ["DATABASE_HOST"],
+                port=int(os.environ["DATABASE_PORT"]),
+            )
         break
     except psycopg2.OperationalError as error:
         sys.stderr.write("Waiting for PostgreSQL to become available...\n")

@@ -167,7 +167,7 @@ docker-shell-plus:
 # collect static django assets
 .PHONY: collectstatic
 collectstatic:
-	poetry run python manage.py collectstatic
+	poetry run python manage.py collectstatic --noinput
 
 # compile vite assets for production
 .PHONY: build-vite
@@ -187,11 +187,8 @@ production-requirements:
 # Build local django app docker container
 .PHONY: build-local
 build-local:
-	sh ./deploy/scripts/build_container.sh local
+	sh ./deploy/scripts/build_image.sh local
 
 # Build local django app docker container
-build-production: production-requirements collectstatic
-	docker compose \
-		-f ${DOCKER_COMPOSE_DIR}/docker-compose.yml \
-		--env-file .env \
-		build
+build-production:
+	sh ./deploy/scripts/build_image.sh production

@@ -18,9 +18,9 @@ if [ -z "$VERSION" ]; then
 fi
 
 # This is the image tag for the django app. It is consumed by the "app" service in docker-compose.yml
-DOCKER_APP_IMAGE_REPO="${COMPOSE_PROJECT_NAME}-app"
-DOCKER_APP_IMAGE_TAG="${BUILD_TARGET}-v${VERSION}"
-DOCKER_APP_IMAGE_TAG_LATEST="${BUILD_TARGET}-latest"
+DOCKER_APP_IMAGE_REPO="${COMPOSE_PROJECT_NAME}-${BUILD_TARGET}"
+DOCKER_APP_IMAGE_TAG="v${VERSION}"
+DOCKER_APP_IMAGE_TAG_LATEST="latest"
 
 DOCKER_COMPOSE_DIR="./deploy/docker/compose"
 CURRENT_DIR=`dirname "${BASH_SOURCE[0]}"`
@@ -48,8 +48,9 @@ case $BUILD_TARGET in
         make collectstatic
         docker build \
             -f ./deploy/docker/images/django/django.Dockerfile \
-            -t $DOCKER_TAG_APP \
+            -t $DOCKER_APP_IMAGE_REPO:$DOCKER_APP_IMAGE_TAG \
             --target $BUILD_TARGET \
+            --progress=plain \
             .
         ;;
     *)
@@ -60,3 +61,6 @@ esac
 
 # Add "latest" tag to created image
 docker tag $DOCKER_APP_IMAGE_REPO:$DOCKER_APP_IMAGE_TAG $DOCKER_APP_IMAGE_REPO:$DOCKER_APP_IMAGE_TAG_LATEST
+
+# Tag for Docker Hub
+docker tag $DOCKER_APP_IMAGE_REPO:$DOCKER_APP_IMAGE_TAG $DOCKER_HUB_REPO:$DOCKER_APP_IMAGE_TAG_LATEST

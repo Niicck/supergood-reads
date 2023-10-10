@@ -1,3 +1,6 @@
+from decouple import Csv, config
+
 from .base import *
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="0.0.0.0,", cast=Csv())
+# STATIC_ROOT = config("STATIC_ROOT", default="staticfiles/")
