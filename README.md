@@ -6,7 +6,8 @@
 
 Unlike every other review site, the *Supergood Review Site™* allows users to choose their own rating schema they want to use for reviewing a work of media. Scale of 1 to 10? 4 stars out of 5? Thumbs up / thumbs down? The choice is yours.
 
-**Table of Contents:**
+## Table of Contents
+- [Table of Contents](#table-of-contents)
 - [What features does this app have?](#what-features-does-this-app-have)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
@@ -48,13 +49,14 @@ I hope this is fun for you to explore! I haven't seen any public examples of som
 4. Create a .env file.
    - `make .env`
 5. Install Nodejs
+6.
    - I recommend using [nvm](https://github.com/nvm-sh/nvm) to manage installations of node. nvm (node version manager) allows you to install and use multiple versions of nodejs on the same computer.
    - After nvm is installed, run `nvm use` inside this directory to install the version of nodejs specified by the `.nvmrc` file.
-6. Install Nodejs packages
+7. Install Nodejs packages
    - `npm install`
-7. Run initial data migrations
+8. Run initial data migrations
    - `poetry run python manage.py migrate`
-8. Install seed data
+9. Install seed data
    - `poetry run python manage.py supergood_reads_load_test_data`
 
 ### Running Locally

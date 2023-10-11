@@ -194,5 +194,5 @@ WHITENOISE_IMMUTABLE_FILE_TEST = immutable_file_test
 # supergood-reads
 # ---------------------
 SUPERGOOD_READS_CONFIG = "supergood_reads.utils.engine.DefaultSupergoodReadsConfig"
-LOGIN_URL = "/reads/auth/login/"
-LOGIN_REDIRECT_URL = "/reads/reviews"
+LOGIN_URL = config("LOGIN_URL", default="/auth/login/")
+LOGIN_REDIRECT_URL = config("LOGIN_REDIRECT_URL", default="/reviews")
