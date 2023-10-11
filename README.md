@@ -23,16 +23,15 @@
 
 Finally, one review site to rule them all! Use any rating schema to review anything.
 
-This is a fun little Django + Vue.js demo project. It's an MVP containing all the features that I'd want to see in a production-ready web application.
+This is a fun little Django + Vue.js demo project. It's an MVP containing all the development tools that I'd want to see set up in a production web application.
 
 ### Here's what we got inside
 
-- Modern Python tooling: type-checking with mypy, packaging with Poetry, multi-environment testing with nox, linting with pre-commit
-- Modern JavaScript tooling with Vitejs: TypeScript and Vue.js compilation, linting, bundling
-- TailwindCSS, HeadlessUI, and PostCSS for styling
-- Containerization with Docker
-- Python testing suite with Pytest
-- Browser testing with jest and puppeteer
+- **Python tooling:** type-checking with mypy, packaging with Poetry, linting with pre-commit, multi-environment testing with nox
+- **Vitejs JavaScript tooling**: TypeScript and Vue.js compilation, linting, bundling
+- **Styling:** TailwindCSS, HeadlessUI, PostCSS
+- **Docker:** containerization for multiple deployment environments
+- **Testing:** with Pytest for Django code, jest and puppeteer for browser testing
 
 ### It's also got some interesting stuff going on with Vue
 
