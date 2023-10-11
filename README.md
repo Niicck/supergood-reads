@@ -1,43 +1,54 @@
-# supergood review site
+# Supergood Reads
 
 <p align="left">
   <img src="./docs/app.png" width="600">
 </p>
 
-Unlike every other review site, the *Supergood Review Site™* allows users to choose their own rating schema they want to use for reviewing a work of media. Scale of 1 to 10? 4 stars out of 5? Thumbs up / thumbs down? The choice is yours.
+[reads.supergood.site](https://reads.supergood.site)
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
-- [What features does this app have?](#what-features-does-this-app-have)
-- [Getting Started](#getting-started)
-  - [Installation](#installation)
-  - [Running Locally](#running-locally)
-  - [Development Guide](#development-guide)
-  - [Thanks](#thanks)
+- [Welcome](#welcome)
+  - [Here's what we got inside](#heres-what-we-got-inside)
+  - [It's also got some interesting stuff going on with Vue](#its-also-got-some-interesting-stuff-going-on-with-vue)
+- [Installation](#installation)
+- [Running Locally](#running-locally)
+- [Development Guide](#development-guide)
+  - [Extra Installation steps](#extra-installation-steps)
+  - [Useful Commands](#useful-commands)
+  - [Add new MediaItem types and ReviewStrategies](#add-new-mediaitem-types-and-reviewstrategies)
+- [Thanks](#thanks)
 
-## What features does this app have?
+## Welcome
 
-This is an experimental demo app for applying advanced web development features to django templates. My goal was to implement a fairly complicated form page to test how far I could push the capabilites of django templating before needing to use a totally decoupled frontend. To do this, I used [Vue](https://vuejs.org/) to progessively enhance a django form template.
+Finally, one review site to rule them all! Use any rating schema to review anything.
 
-Some of this app's most compelling features are:
+This is a fun little Django + Vue.js demo project. It's an MVP containing all the features that I'd want to see in a production-ready web application.
+
+### Here's what we got inside
+
+- Modern Python tooling: type-checking with mypy, packaging with Poetry, multi-environment testing with nox, linting with pre-commit
+- Modern JavaScript tooling with Vitejs: TypeScript and Vue.js compilation, linting, bundling
+- TailwindCSS, HeadlessUI, and PostCSS for styling
+- Containerization with Docker
+- Python testing suite with Pytest
+- Browser testing with jest and puppeteer
+
+### It's also got some interesting stuff going on with Vue
+
+One of the purposes of this project was to experiment with integrating Vue.js with Django templates and forms. The theory was that this could be the ultimate web framework combination -- all the simplicity and development velocity of Django matched with all of the power of a full JavaScript framework.
+
+It did not turn out to be the ultimate web framework of my dreams. There are way too many gotchas and edge cases and complexity for me to really recommend this approach to anyone else (I'll write a more complete postmortem in the future). But the integration does work! And it might serve as inspiration for the next developer who wants to give it a shot.
+
+Some of those fun vue/django integrations are:
+
 - Vue SFC (Single File Componets) rendered as django templates
 - Autocomplete dropdown form fields
-- Support for GenericForeignKeys within ModelForms
+- Support for Generic Model Relations in Django ModelForms
 - Conditional form sections
-- TailwindCSS and HeadlessUI for styling
-- Modern js tooling: typescript, linting, bundling with Vitejs
-- Browser testing using jest and puppeteer
-- An inevitable datepicker
+- And of course, a datepicker
 
-In retrospect, I actually would *not* recommend this approach to other developers. It is possible, though very complicated, to mix django form templates with Vue. For some features (like toggling the "required" attribute for hidden form fields), jquery would have been much easier to use. For other features (like binding form inputs to vue store values), it would have been easier to implement them within a decoupled standalone Vue app -- without having to worry about translating data from the django context into the Vue virtualDOM. But I wouldn't have known that if I haven't tried it. And now you don't have to.
-
-I implemented every feature to the best of my admittedly limited Vue abilities. It's possible that there are some Vue techniques that I'm unaware of that would have made the code cleaner or the development experience easier.
-
-I hope this is fun for you to explore! I haven't seen any public examples of some of these features, so I thought it would be neat to try them out. A slew of blog posts is forthcoming which will explain how everything works.
-
-## Getting Started
-
-### Installation
+## Installation
 1. Install Python
    - I recommend using [pyenv](https://github.com/pyenv/pyenv) to manage installations of python. Pyenv allows you to install and use multiple versions of python on the same computer.
    - After pyenv is installed, run `pyenv local` inside this directory to install the version of python3 specified by the `.python-version` file.
@@ -49,7 +60,6 @@ I hope this is fun for you to explore! I haven't seen any public examples of som
 4. Create a .env file.
    - `make .env`
 5. Install Nodejs
-6.
    - I recommend using [nvm](https://github.com/nvm-sh/nvm) to manage installations of node. nvm (node version manager) allows you to install and use multiple versions of nodejs on the same computer.
    - After nvm is installed, run `nvm use` inside this directory to install the version of nodejs specified by the `.nvmrc` file.
 7. Install Nodejs packages
@@ -59,7 +69,7 @@ I hope this is fun for you to explore! I haven't seen any public examples of som
 9. Install seed data
    - `poetry run python manage.py supergood_reads_load_test_data`
 
-### Running Locally
+## Running Locally
 Now that your dependencies have been installed, you're ready to run the app.
 
 1. Start the django server.
@@ -72,7 +82,9 @@ Now that your dependencies have been installed, you're ready to run the app.
    - `make shell`
    - Once inside the shell, you can look at your raw django data. Example: `Review.objects.all()`
 
-### Development Guide
+## Development Guide
+
+### Extra Installation steps
 
 If you want to make contributions to the project, you need to run one additional installation step.
 
@@ -83,7 +95,8 @@ If you want to make contributions to the project, you need to run one additional
    - https://pre-commit.com/#install to install the pre-commit program itself.
    - `pre-commit install` to install the pre-commit hooks for this particular project.
 
-And now you have access to these additonal commands:
+### Useful Commands
+
 1. Run the python test suite.
    - `make pytest`
 2. Run the javascript test suite.
@@ -95,8 +108,17 @@ And now you have access to these additonal commands:
 5. Check for type errors in python code.
    - `make mypy`
 
+You can find more commands in the Makefile.
 
-### Thanks
+[TODO: Add docs about running on docker]
+
+### Add new MediaItem types and ReviewStrategies
+
+SupergoodReads is fully extensible and allows developers to seemlessly add new review strategies and media types by adding their own custom [SupergoodReadsConfig](./supergood_reads/utils/engine.py).
+
+[TODO: finish this section.]
+
+## Thanks
 
 Test data was provided by these datasets:
 - ["7k books" from Kaggle](https://www.kaggle.com/datasets/dylanjcastillo/7k-books-with-metadata)
