@@ -4,7 +4,7 @@
   <img src="./docs/app.png" width="600">
 </p>
 
-[reads.supergood.site](https://reads.supergood.site)
+Try it out at: [reads.supergood.site](https://reads.supergood.site)
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
@@ -28,7 +28,7 @@ This is a fun little Django + Vue.js demo project. It's an MVP containing all th
 ### Here's what we got inside
 
 - **Python tooling:** type-checking with mypy, packaging with Poetry, linting with pre-commit, multi-environment testing with nox
-- **Vitejs JavaScript tooling**: TypeScript and Vue.js compilation, linting, bundling
+- **Vitejs JavaScript tooling**: TypeScript and Vue.js compilation, hot reloading, linting, bundling
 - **Styling:** TailwindCSS, HeadlessUI, PostCSS
 - **Docker:** containerization for multiple deployment environments
 - **Testing:** with Pytest for Django code, jest and puppeteer for browser testing
