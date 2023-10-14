@@ -17,9 +17,9 @@
     "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["supergood_reads/assets/*"]
+      "@/*": ["supergood_reads/vite_assets/*"]
     }
   },
   "exclude": ["node_modules", "**/*.spec.ts"],
-  "include": ["supergood_reads/assets"]
+  "include": ["supergood_reads/vite_assets"]
 }

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { defineConfig, loadEnv } from 'vite';
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 import vue from '@vitejs/plugin-vue';
 
-const INPUT_DIR = './supergood_reads/assets';
-const OUTPUT_DIR = './supergood_reads/assets/dist';
+const INPUT_DIR = './supergood_reads/vite_assets';
+const OUTPUT_DIR = './supergood_reads/vite_assets_dist/supergood_reads/vite';
 
 const postcssConfig = {
   plugins: [
@@ -42,15 +42,15 @@ export default defineConfig((mode) => {
       outDir: resolve(OUTPUT_DIR),
       rollupOptions: {
         input: {
-          reviewForm: resolve(`${INPUT_DIR}/js/apps/reviewForm.ts`),
-          mediaForm: resolve(`${INPUT_DIR}/js/apps/mediaForm.ts`),
-          messages: resolve(`${INPUT_DIR}/js/apps/messages.ts`),
-          navBar: resolve(`${INPUT_DIR}/js/apps/navBar.ts`),
-          library: resolve(`${INPUT_DIR}/js/apps/library.ts`),
-          reviewList: resolve(`${INPUT_DIR}/js/apps/reviewList.ts`),
-          userSettings: resolve(`${INPUT_DIR}/js/apps/userSettings.ts`),
-          home: resolve(`${INPUT_DIR}/js/apps/home.ts`),
-          css: resolve(`${INPUT_DIR}/css/main.css.js`),
+          reviewForm: join(INPUT_DIR, '/js/apps/reviewForm.ts'),
+          mediaForm: join(INPUT_DIR, '/js/apps/mediaForm.ts'),
+          messages: join(INPUT_DIR, '/js/apps/messages.ts'),
+          navBar: join(INPUT_DIR, '/js/apps/navBar.ts'),
+          library: join(INPUT_DIR, '/js/apps/library.ts'),
+          reviewList: join(INPUT_DIR, '/js/apps/reviewList.ts'),
+          userSettings: join(INPUT_DIR, '/js/apps/userSettings.ts'),
+          home: join(INPUT_DIR, '/js/apps/home.ts'),
+          css: join(INPUT_DIR, '/css/main.css.js'),
         },
         output: {
           chunkFileNames: undefined,

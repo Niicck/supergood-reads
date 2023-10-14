@@ -252,6 +252,7 @@ tsconfig.tsbuildinfo
 .DS_Store
 
 # compiled assets
-supergood_reads/static/supergood_reads/dist
+staticfiles
+supergood_reads/vite_assets_dist/**
 deploy/build/collect_static/**
 deploy/build/requirements/**

@@ -106,7 +106,7 @@ STATIC_URL = "/static/"
 # From there, they should be transfered to a proper file server.
 # All other static file settings are handled in their respective Local or Production
 # settings classes.
-STATIC_ROOT = PROJECT_ROOT / "deploy" / "build" / "collect_static"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 INSTALLED_APPS = [
     # Django
@@ -160,13 +160,14 @@ SHELL_PLUS = "ipython"
 # ---------------------
 # Django-vite
 # ---------------------
-DJANGO_VITE_ASSETS_PATH = PROJECT_ROOT / "supergood_reads" / "assets" / "dist"
+DJANGO_VITE_ASSETS_PATH = ""
 DJANGO_VITE_DEV_MODE = config("DJANGO_VITE_DEV_MODE", default=False, cast=bool)
-DJANGO_VITE_MANIFEST_PATH = DJANGO_VITE_ASSETS_PATH / "manifest.json"
+if not DJANGO_VITE_DEV_MODE:
+    DJANGO_VITE_STATIC_URL_PREFIX = "supergood_reads/vite"
 DJANGO_VITE_DEV_SERVER_PORT = config("DJANGO_VITE_DEV_SERVER_PORT", default="5173")
 DJANGO_VITE_DEV_SERVER_HOST = config("DJANGO_VITE_DEV_SERVER_HOST", default="localhost")
 
-STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
+STATICFILES_DIRS = [PROJECT_ROOT / "supergood_reads" / "vite_assets_dist"]
 
 # ---------------------
 # whitenoise
