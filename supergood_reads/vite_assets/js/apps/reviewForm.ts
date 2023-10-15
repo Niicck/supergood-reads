@@ -2,7 +2,7 @@ import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
 import { createPinia, storeToRefs } from 'pinia';
 import RadioCards from '@/js/components/forms/fields/RadioCards.vue';
-import { useReviewFormStore } from '@/js/stores/reviewForm';
+import { useReviewFormStore } from '@/js/stores/reviewForm.ts';
 import ComboboxAutocomplete from '@/js/components/forms/fields/ComboboxAutocomplete.vue';
 import DeleteModal from '@/js/components/DeleteModal.vue';
 import FieldWrapper from '@/js/components/forms/layout/FieldWrapper.vue';

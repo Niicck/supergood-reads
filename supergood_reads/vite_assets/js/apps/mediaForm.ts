@@ -6,7 +6,7 @@ import type { Ref } from 'vue';
 import RadioCards from '@/js/components/forms/fields/RadioCards.vue';
 import DeleteModal from '@/js/components/DeleteModal.vue';
 import FieldWrapper from '@/js/components/forms/layout/FieldWrapper.vue';
-import { parseJsonScript } from '@/js/utils/parseJsonScript';
+import { parseJsonScript } from '@/js/utils/parseJsonScript.ts';
 
 interface InitialDataForVueStore {
   selectedMediaItemContentType: number;

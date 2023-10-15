@@ -1,7 +1,7 @@
 import 'vite/modulepreload-polyfill'; // required for vite entrypoints
 import { createApp, defineComponent } from 'vue';
 import { createPinia, storeToRefs } from 'pinia';
-import { useMessagesStore } from '@/js/stores/messages';
+import { useMessagesStore } from '@/js/stores/messages.ts';
 import SimpleNotifcation from '@/js/components/SimpleNotification.vue';
 
 const pinia = createPinia();
