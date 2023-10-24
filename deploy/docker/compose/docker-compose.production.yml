@@ -15,4 +15,5 @@ services:
       - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE_HOST=${POSTGRES_HOST}
       - DATABASE_PORT=${POSTGRES_PORT}
+      - CSRF_TRUSTED_ORIGINS=http://localhost,http://0.0.0.0,http://127.0.0.1
     image: '${DOCKER_HUB_REPO}:latest'

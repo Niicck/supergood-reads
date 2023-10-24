@@ -54,9 +54,6 @@ ENV \
 # ---------------------
 FROM base as deployed
 
-# Copy staticfiles
-COPY deploy/build/collect_static staticfiles
-
 ENV \
     DEBUG=false
 
