@@ -1,7 +1,6 @@
 import re
 from pathlib import Path
 
-import dj_database_url
 import django_stubs_ext
 from decouple import config
 
@@ -77,6 +76,8 @@ USE_TZ = True
 
 
 if config("DATABASE_URL", default=""):
+    import dj_database_url
+
     DATABASES = {
         "default": dj_database_url.config(
             conn_max_age=600,
