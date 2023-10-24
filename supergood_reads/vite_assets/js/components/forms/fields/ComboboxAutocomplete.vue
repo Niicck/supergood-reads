@@ -188,6 +188,7 @@ watch(
       if (!newValue) {
         // If modelValue is unset to "", then unset selectedResult
         selectedResult.value = null;
+        query.value = '';
       } else {
         // If modelValue exists, then fetch it's selectedResult by id
         await getInitial(newValue);
