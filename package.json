@@ -61,10 +61,7 @@
     "env": {
       "browser": true,
       "node": true,
-      "es6": true
-    },
-    "rules": {
-      "vue/script-setup-uses-vars": "error"
+      "es2017": true
     }
   },
   "stylelint": {
