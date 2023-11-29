@@ -4,7 +4,7 @@
   <img src="./docs/app.png" width="600">
 </p>
 
-Try it out at: [reads.supergood.site](https://reads.supergood.site)
+Try it out at: [reads.supergood.cloud](https://reads.supergood.cloud/)
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
