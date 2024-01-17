@@ -6,6 +6,8 @@
 
 Try it out at: [reads.supergood.cloud](https://reads.supergood.cloud/)
 
+Read about it on: [supergood.site](https://supergood.site)
+
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Welcome](#welcome)
@@ -21,31 +23,27 @@ Try it out at: [reads.supergood.cloud](https://reads.supergood.cloud/)
 
 ## Welcome
 
-Finally, one review site to rule them all! Use any rating schema to review anything.
+Finally, one review site to rule them all! Use any rating schema to review any type of media. Use rating systems from Goodreads, Letterboxd, IMDB and more to review books, movies, or your own custom media types.
 
-This is a fun little Django + Vue.js demo project. It's an MVP containing all the development tools that I'd want to see set up in a production web application.
+This is a demo project for experimenting with Vue integrations inside of Django templates. The theory was that this could be the ultimate web framework combination -- all the simplicity and development velocity of Django matched with all of the power of a full JavaScript framework.
 
-### Here's what we got inside
+It did not turn out to be the ultimate web framework of my dreams. There are way too many gotchas and edge cases and complexity for me to really recommend this approach to anyone else (I'll write a more complete postmortem in the future). But the integration does work! And it might serve as inspiration for the next developer who wants to give it a shot.
+
+Some of those fun Vue + Django integrations include:
+
+- **Vue SFC** (Single File Componets) rendered as django templates
+- **Autocomplete** dropdown form fields
+- Support for **Generic Model Relations** in Django ModelForm Views
+- **Conditional Form** sections
+- And of course, a **datepicker**
+
+### Tooling
 
 - **Python tooling:** type-checking with mypy, packaging with Poetry, linting with pre-commit, multi-environment testing with nox
 - **Vitejs JavaScript tooling**: TypeScript and Vue.js compilation, hot reloading, linting, bundling
 - **Styling:** TailwindCSS, HeadlessUI, PostCSS
 - **Docker:** containerization for multiple deployment environments
 - **Testing:** with Pytest for Django code, jest and puppeteer for browser testing
-
-### It's also got some interesting stuff going on with Vue
-
-One of the purposes of this project was to experiment with integrating Vue.js with Django templates and forms. The theory was that this could be the ultimate web framework combination -- all the simplicity and development velocity of Django matched with all of the power of a full JavaScript framework.
-
-It did not turn out to be the ultimate web framework of my dreams. There are way too many gotchas and edge cases and complexity for me to really recommend this approach to anyone else (I'll write a more complete postmortem in the future). But the integration does work! And it might serve as inspiration for the next developer who wants to give it a shot.
-
-Some of those fun vue/django integrations are:
-
-- Vue SFC (Single File Componets) rendered as django templates
-- Autocomplete dropdown form fields
-- Support for Generic Model Relations in Django ModelForms
-- Conditional form sections
-- And of course, a datepicker
 
 ## Installation
 1. Install Python
@@ -75,11 +73,20 @@ Now that your dependencies have been installed, you're ready to run the app.
    - `make up`
 2. In a separate terminal window, start the nodejs server.
    - `make vite`
-   - Note: both servers must be running at the same time for the app to function.
+   - Note: both servers must be running simultaneously for the app to function.
 3. Navigate to `http://localhost:8000/app/review` to try out the form.
 4. The app is not yet complete. The only thing that is finished is the review form itself -- there isn't yet a page that renders all of the reviews you've inputted. But you can inspect the raw data:
    - `make shell`
    - Once inside the shell, you can look at your raw django data. Example: `Review.objects.all()`
+
+### Running in Docker
+
+1. Build docker containers for local development
+  - `make build-local`
+2. Start docker containers
+  - `make docker-up`
+
+You can find more commands in the Makefile.
 
 ## Development Guide
 
@@ -107,15 +114,15 @@ If you want to make contributions to the project, you need to run one additional
 5. Check for type errors in python code.
    - `make mypy`
 
-You can find more commands in the Makefile.
-
-[TODO: Add docs about running on docker]
-
 ### Add new MediaItem types and ReviewStrategies
 
-SupergoodReads is fully extensible and allows developers to seemlessly add new review strategies and media types by adding their own custom [SupergoodReadsConfig](./supergood_reads/utils/engine.py).
+SupergoodReads is fully extensible and allows developers to seamlessly add new review strategies and media types.
 
-[TODO: finish this section.]
+1. Add your classes directly to a new `SupergoodReadsConfig`.
+2. In your Django settings, add `SUPERGOOD_READS_CONFIG=[YourSupergoodReadsConfigClass]`
+3. The rest of the site will be automatically generated around your config.
+
+(See the [DefaultSupergoodReadsConfig](./supergood_reads/utils/engine.py) for an example.)
 
 ## Thanks
 
