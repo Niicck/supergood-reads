@@ -68,6 +68,7 @@ repos:
         entry: make tsc-check
         types: [file]
         types_or: [ts, tsx, vue]
+        pass_filenames: false
 
   - repo: https://github.com/thibaudcolas/pre-commit-stylelint
     rev: v15.2.0
